@@ -7,5 +7,12 @@ export default defineConfig({
   server: {
     port: 4321
   },
-  output: 'static'
+  output: 'static',
+  vite: {
+    define: {
+      'import.meta.env.ENVIRONMENT': JSON.stringify(
+        process.env.NODE_ENV === 'production' ? 'production' : 'development'
+      )
+    }
+  }
 });
