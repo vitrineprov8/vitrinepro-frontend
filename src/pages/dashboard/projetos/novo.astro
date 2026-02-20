@@ -1,5 +1,5 @@
 ---
-import DashboardHome from '../components/dashboard/DashboardHome.vue';
+import ProjectEditor from '../../../components/dashboard/ProjectEditor.vue';
 ---
 
 <!DOCTYPE html>
@@ -7,14 +7,14 @@ import DashboardHome from '../components/dashboard/DashboardHome.vue';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | VitrinePro</title>
+    <title>Novo Projeto | Dashboard VitrinePro</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style is:global>
-      @import '../styles/global.css';
-      @import '../styles/dashboard.css';
+      @import '../../../styles/global.css';
+      @import '../../../styles/dashboard.css';
     </style>
   </head>
   <body>
-    <DashboardHome client:load />
+    <ProjectEditor client:load />
   </body>
 </html>

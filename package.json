@@ -10,6 +10,17 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^8.3.4",
+    "@tiptap/extension-character-count": "^3.20.0",
+    "@tiptap/extension-highlight": "^3.20.0",
+    "@tiptap/extension-image": "^3.20.0",
+    "@tiptap/extension-link": "^3.20.0",
+    "@tiptap/extension-placeholder": "^3.20.0",
+    "@tiptap/extension-text-align": "^3.20.0",
+    "@tiptap/extension-underline": "^3.20.0",
+    "@tiptap/pm": "^3.20.0",
+    "@tiptap/starter-kit": "^3.20.0",
+    "@tiptap/vue-3": "^3.20.0",
     "astro": "^4.0.0",
     "vue": "^3.4.0"
   },

@@ -159,6 +159,348 @@ export async function getProfile(): Promise<UserProfile> {
   });
 }
 
+// ─── TIPOS ────────────────────────────────────────────────────────────────────
+
+export interface FullProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  username?: string;
+  profession?: string;
+  bio?: string;
+  phone?: string;
+  website?: string;
+  location?: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  socialLinks: {
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
+  createdAt: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+}
+
+export interface Article {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  content?: any;
+  conclusion?: string;
+  coverImageUrl?: string;
+  readTime?: number;
+  status?: 'DRAFT' | 'PUBLISHED';
+  tags: Tag[];
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export interface ProjectImage {
+  id: string;
+  imageUrl: string;
+  caption?: string;
+  order: number;
+}
+
+export interface Project {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  description: string;
+  content?: any;
+  coverImageUrl?: string;
+  clientName?: string;
+  year?: number;
+  duration?: string;
+  role?: string;
+  projectStatus?: 'ONGOING' | 'COMPLETED' | 'PAUSED' | 'CANCELLED';
+  status?: 'DRAFT' | 'PUBLISHED';
+  externalUrl?: string;
+  tags: Tag[];
+  images: ProjectImage[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CV {
+  id: string;
+  label: string;
+  isActive: boolean;
+  fileUrl: string;
+  createdAt: string;
+}
+
+export interface Education {
+  id: string;
+  type: 'UNIVERSITY' | 'COURSE' | 'DIPLOMA' | 'CERTIFICATION';
+  institution: string;
+  title: string;
+  fieldOfStudy?: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  order?: number;
+  certificateUrl?: string;
+}
+
+// ─── UPLOAD HELPER ────────────────────────────────────────────────────────────
+
+/**
+ * Fetch wrapper para uploads multipart/form-data.
+ * NÃO define Content-Type (o browser define automaticamente com o boundary).
+ */
+export async function fetchAPIFormData<T = any>(
+  endpoint: string,
+  formData: FormData,
+  method: 'POST' | 'PATCH' = 'POST'
+): Promise<T> {
+  const url = `${getBackendUrl()}${endpoint}`;
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  try {
+    const response = await fetch(url, { method, headers, body: formData });
+    if (!response.ok) {
+      let errorMessage = 'Erro na requisição';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch { /* */ }
+      throw new ApiException(response.status, errorMessage);
+    }
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiException) throw error;
+    throw new ApiException(0, 'Erro de conexão. Verifique sua internet e se o backend está rodando.');
+  }
+}
+
+// ─── PROFILE ──────────────────────────────────────────────────────────────────
+
+export async function getFullProfile(): Promise<FullProfile> {
+  return fetchAPI<FullProfile>('/profile/me');
+}
+
+export async function updateProfile(data: {
+  username?: string; profession?: string; bio?: string;
+  phone?: string; website?: string; location?: string;
+  socialLinks?: Partial<FullProfile['socialLinks']>;
+}): Promise<FullProfile> {
+  return fetchAPI<FullProfile>('/profile', { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function uploadAvatar(file: File): Promise<FullProfile> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<FullProfile>('/profile/avatar', fd);
+}
+
+export async function uploadBanner(file: File): Promise<FullProfile> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<FullProfile>('/profile/banner', fd);
+}
+
+export async function getPublicProfile(username: string): Promise<FullProfile> {
+  return fetchAPI<FullProfile>(`/profile/${username}`);
+}
+
+// ─── ARTICLES ─────────────────────────────────────────────────────────────────
+
+export async function getArticles(params?: {
+  page?: number; limit?: number; status?: string; tagId?: string; userId?: string;
+}): Promise<PaginatedResponse<Article>> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set('page', String(params.page));
+  if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.status) qs.set('status', params.status);
+  if (params?.tagId) qs.set('tagId', params.tagId);
+  if (params?.userId) qs.set('userId', params.userId);
+  const query = qs.toString() ? `?${qs}` : '';
+  return fetchAPI<PaginatedResponse<Article>>(`/articles${query}`);
+}
+
+export async function getArticle(slug: string): Promise<Article> {
+  return fetchAPI<Article>(`/articles/${slug}`);
+}
+
+export async function createArticle(data: {
+  title: string; subtitle?: string; content?: any;
+  conclusion?: string; tagIds?: string[]; status?: string;
+}): Promise<Article> {
+  return fetchAPI<Article>('/articles', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateArticle(id: string, data: Partial<Article> & { tagIds?: string[] }): Promise<Article> {
+  return fetchAPI<Article>(`/articles/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteArticle(id: string): Promise<void> {
+  return fetchAPI<void>(`/articles/${id}`, { method: 'DELETE' });
+}
+
+export async function uploadArticleCover(id: string, file: File): Promise<Article> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<Article>(`/articles/${id}/cover`, fd);
+}
+
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+
+export async function getProjects(params?: {
+  page?: number; limit?: number; status?: string; userId?: string;
+}): Promise<PaginatedResponse<Project>> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set('page', String(params.page));
+  if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.status) qs.set('status', params.status);
+  if (params?.userId) qs.set('userId', params.userId);
+  const query = qs.toString() ? `?${qs}` : '';
+  return fetchAPI<PaginatedResponse<Project>>(`/projects${query}`);
+}
+
+export async function getProject(slug: string): Promise<Project> {
+  return fetchAPI<Project>(`/projects/${slug}`);
+}
+
+export async function createProject(data: {
+  title: string; description: string; subtitle?: string; content?: any;
+  clientName?: string; year?: number; duration?: string; role?: string;
+  projectStatus?: string; status?: string; externalUrl?: string; tagIds?: string[];
+}): Promise<Project> {
+  return fetchAPI<Project>('/projects', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateProject(id: string, data: Partial<Project> & { tagIds?: string[] }): Promise<Project> {
+  return fetchAPI<Project>(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  return fetchAPI<void>(`/projects/${id}`, { method: 'DELETE' });
+}
+
+export async function uploadProjectCover(id: string, file: File): Promise<Project> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<Project>(`/projects/${id}/cover`, fd);
+}
+
+export async function addProjectImage(id: string, file: File, caption?: string): Promise<ProjectImage> {
+  const fd = new FormData();
+  fd.append('file', file);
+  if (caption) fd.append('caption', caption);
+  return fetchAPIFormData<ProjectImage>(`/projects/${id}/images`, fd);
+}
+
+export async function deleteProjectImage(projectId: string, imageId: string): Promise<void> {
+  return fetchAPI<void>(`/projects/${projectId}/images/${imageId}`, { method: 'DELETE' });
+}
+
+export async function reorderProjectImages(projectId: string, orders: { id: string; order: number }[]): Promise<Project> {
+  return fetchAPI<Project>(`/projects/${projectId}/images/reorder`, {
+    method: 'PATCH', body: JSON.stringify({ orders }),
+  });
+}
+
+// ─── TAGS ─────────────────────────────────────────────────────────────────────
+
+export async function getTags(): Promise<Tag[]> {
+  return fetchAPI<Tag[]>('/tags');
+}
+
+export async function createTag(name: string): Promise<Tag> {
+  return fetchAPI<Tag>('/tags', { method: 'POST', body: JSON.stringify({ name }) });
+}
+
+export async function deleteTag(id: string): Promise<void> {
+  return fetchAPI<void>(`/tags/${id}`, { method: 'DELETE' });
+}
+
+// ─── CV ───────────────────────────────────────────────────────────────────────
+
+export async function getCVList(): Promise<CV[]> {
+  return fetchAPI<CV[]>('/cv');
+}
+
+export async function uploadCV(file: File, label: string): Promise<CV> {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('label', label);
+  return fetchAPIFormData<CV>('/cv', fd);
+}
+
+export async function updateCV(id: string, data: { label?: string; isActive?: boolean }): Promise<CV> {
+  return fetchAPI<CV>(`/cv/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteCV(id: string): Promise<void> {
+  return fetchAPI<void>(`/cv/${id}`, { method: 'DELETE' });
+}
+
+export async function getCVDownloadUrl(id: string): Promise<{ url: string }> {
+  return fetchAPI<{ url: string }>(`/cv/${id}/download`);
+}
+
+// ─── EDUCATION ────────────────────────────────────────────────────────────────
+
+export async function getEducation(): Promise<Education[]> {
+  return fetchAPI<Education[]>('/education');
+}
+
+export async function createEducation(data: {
+  type: string; institution: string; title: string;
+  fieldOfStudy?: string; startDate: string; endDate?: string;
+  description?: string; order?: number;
+}): Promise<Education> {
+  return fetchAPI<Education>('/education', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateEducation(id: string, data: Partial<Education>): Promise<Education> {
+  return fetchAPI<Education>(`/education/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteEducation(id: string): Promise<void> {
+  return fetchAPI<void>(`/education/${id}`, { method: 'DELETE' });
+}
+
+export async function uploadCertificate(id: string, file: File): Promise<Education> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<Education>(`/education/${id}/certificate`, fd);
+}
+
+// ─── UPLOADS ──────────────────────────────────────────────────────────────────
+
+export async function uploadContentImage(file: File): Promise<{ url: string }> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<{ url: string }>('/uploads/image', fd);
+}
+
+// ─── ERROR MESSAGES ───────────────────────────────────────────────────────────
+
 /**
  * Mapear erros da API para mensagens amigáveis em português
  */
