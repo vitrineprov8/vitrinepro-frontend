@@ -110,6 +110,7 @@ export function redirectAfterLogin(): void {
 
 /**
  * Fazer logout e redirecionar para home
+ * 
  */
 export function logout(): void {
   removeToken();
