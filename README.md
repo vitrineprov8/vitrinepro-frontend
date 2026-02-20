@@ -8,7 +8,6 @@ Plataforma de portfólio profissional para advogados, médicos, programadores e 
 - **Vue 3** - Componentes interativos
 - **TypeScript** - Type safety
 - **CSS Modules** - Estilização
-
 ## Desenvolvimento
 ### Configuração Inicial
 
