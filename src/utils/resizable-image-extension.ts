@@ -19,6 +19,6 @@ export const ResizableImage = Image.extend({
   },
 
   addNodeView() {
-    return VueNodeViewRenderer(ImageNodeView);
+    return VueNodeViewRenderer(ImageNodeView as any);
   },
 });

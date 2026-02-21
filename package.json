@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
-    "start": "node dist/server/entry.mjs",
+    "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^8.3.4",
+    "@astrojs/vercel": "^9.0.4",
     "@tiptap/extension-character-count": "^3.20.0",
     "@tiptap/extension-highlight": "^3.20.0",
     "@tiptap/extension-image": "^3.20.0",
@@ -21,12 +21,12 @@
     "@tiptap/pm": "^3.20.0",
     "@tiptap/starter-kit": "^3.20.0",
     "@tiptap/vue-3": "^3.20.0",
-    "astro": "^4.0.0",
+    "astro": "^5.17.3",
     "vue": "^3.4.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.4.0",
-    "@astrojs/vue": "^4.0.0",
+    "@astrojs/vue": "^5.1.4",
     "@types/node": "^20.0.0",
     "typescript": "^5.3.0"
   }
