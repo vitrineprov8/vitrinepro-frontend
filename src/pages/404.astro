@@ -1,0 +1,249 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Generar ID único para este error
+const errorId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+const timestamp = new Date().toISOString();
+---
+
+<BaseLayout
+  title="Página não encontrada - VitrinePro"
+  description="A página que você está procurando não existe ou foi movida."
+>
+  <Header />
+
+  <main class="error-container">
+    <div class="error-content">
+      <div class="error-code">404</div>
+      
+      <h1>Página não encontrada</h1>
+      
+      <p class="error-message">
+        Desculpe, a página que você está procurando não existe ou foi removida.
+      </p>
+
+      <div class="error-details">
+        <div class="detail-item">
+          <span class="label">Código:</span>
+          <span class="value">NOT_FOUND</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">ID do Erro:</span>
+          <span class="value error-id">{errorId}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Timestamp:</span>
+          <span class="value">{timestamp}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">URL:</span>
+          <span class="value">{Astro.url.pathname}</span>
+        </div>
+      </div>
+
+      <div class="error-actions">
+        <a href="/" class="btn btn-primary">Voltar para a Home</a>
+        <a href="/dashboard" class="btn btn-secondary">Ir para Dashboard</a>
+      </div>
+
+      <div class="helpful-links">
+        <h2>Links úteis</h2>
+        <ul>
+          <li><a href="/">Página inicial</a></li>
+          <li><a href="/login">Fazer login</a></li>
+          <li><a href="/signup">Criar conta</a></li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  main.error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .error-content {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .error-code {
+    font-size: clamp(4rem, 15vw, 10rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    line-height: 1;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  .error-message {
+    font-size: 1.125rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .error-details {
+    background: var(--bg-secondary, #f5f5f5);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+    font-size: 0.875rem;
+    font-family: 'Monaco', 'Courier New', monospace;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+  }
+
+  .detail-item:last-child {
+    border-bottom: none;
+  }
+
+  .detail-item .label {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 100px;
+  }
+
+  .detail-item .value {
+    color: var(--text-secondary, #666);
+    word-break: break-all;
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+  }
+
+  .error-id {
+    color: #667eea;
+    font-weight: 500;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    min-width: 150px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--bg-secondary, #f5f5f5);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color, #e0e0e0);
+  }
+
+  .btn-secondary:hover {
+    background: var(--text-primary);
+    color: white;
+    border-color: var(--text-primary);
+  }
+
+  .helpful-links {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+  }
+
+  .helpful-links h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .helpful-links ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .helpful-links a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .helpful-links a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    main.error-container {
+      min-height: 50vh;
+      padding: 1rem;
+    }
+
+    .error-details {
+      padding: 1rem;
+    }
+
+    .detail-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .detail-item .value {
+      text-align: left;
+      margin-left: 0;
+      margin-top: 0.25rem;
+      width: 100%;
+    }
+
+    .error-actions {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
