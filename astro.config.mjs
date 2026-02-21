@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     port: 4321
   },
-  output: 'server',
+  output: 'hybrid',
   vite: {
     define: {
       'import.meta.env.ENVIRONMENT': JSON.stringify(
