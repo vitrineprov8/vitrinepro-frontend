@@ -19,7 +19,7 @@ PUBLIC_ENVIRONMENT=development
 
 ### `.env.production` (Producción - v8pro.com.br)
 ```bash
-PUBLIC_BACKEND_URL=https://api.v8pro.com.br
+PUBLIC_BACKEND_URL=https://vitrinepro-bakend-production.up.railway.app
 PUBLIC_FRONTEND_URL=https://www.v8pro.com.br
 PUBLIC_ENVIRONMENT=production
 ```
