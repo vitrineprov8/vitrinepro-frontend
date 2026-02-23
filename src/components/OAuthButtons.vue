@@ -7,7 +7,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const backendUrl = 'https://vitrinepro-bakend-production.up.railway.app';
+const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
 
 const isLoading = ref(false);
 
