@@ -1,7 +1,32 @@
 ---
 export const prerender = false;
-import PublicProjectPage from '../../components/profile/PublicProjectPage.vue';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ProjectContent from '../../components/profile/ProjectContent.vue';
+
 const { slug } = Astro.params;
+const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
+
+let project: any = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${BACKEND}/projects/${slug}`);
+  if (res.status === 404) {
+    notFound = true;
+  } else if (res.ok) {
+    project = await res.json();
+  } else {
+    notFound = true;
+  }
+} catch {
+  notFound = true;
+}
+
+const title = project ? `${project.title} | VitrinePro` : 'Projeto não encontrado | VitrinePro';
+const description = project?.subtitle || project?.description || 'Veja este projeto no VitrinePro';
+const ogImage = project?.coverImageUrl || '';
+const canonicalUrl = `${Astro.site?.origin ?? ''}/projeto/${slug}`;
 ---
 
 <!DOCTYPE html>
@@ -9,7 +34,17 @@ const { slug } = Astro.params;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projeto | VitrinePro</title>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style is:global>
       @import '../../styles/global.css';
@@ -17,6 +52,18 @@ const { slug } = Astro.params;
     </style>
   </head>
   <body>
-    <PublicProjectPage client:load slug={slug!} />
+    <Header />
+    <main>
+      {notFound ? (
+        <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem">
+          <h1 style="font-size:1.5rem;color:var(--text-primary)">Projeto não encontrado</h1>
+          <p style="color:var(--text-secondary)">Este projeto não existe ou foi removido.</p>
+          <a href="/" class="btn btn-primary">Voltar ao início</a>
+        </div>
+      ) : (
+        <ProjectContent client:load project={project} />
+      )}
+    </main>
+    <Footer />
   </body>
 </html>

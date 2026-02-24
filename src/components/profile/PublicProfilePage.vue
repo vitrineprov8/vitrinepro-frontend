@@ -1,128 +1,188 @@
 <template>
   <div>
-    <div v-if="loading" class="loading-center" style="min-height: 100vh;"><div class="spinner spinner-lg" /></div>
-    <div v-else-if="!profile" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; text-align: center; padding: 2rem;">
-      <h1 style="font-size: 1.5rem; color: var(--text-primary);">Perfil não encontrado</h1>
-      <p style="color: var(--text-secondary);">O usuário <strong>{{ username }}</strong> não existe ou o perfil está privado.</p>
-      <a href="/" class="btn btn-primary">Voltar ao início</a>
+    <!-- ── BANNER ─────────────────────────────────────────────────────── -->
+    <div class="behance-banner">
+      <img v-if="profile.bannerUrl" :src="profile.bannerUrl" alt="Banner" class="behance-banner-img" />
+      <div v-else class="behance-banner-gradient" />
+      <div class="behance-banner-overlay" />
     </div>
 
-    <div v-else>
-      <!-- Banner -->
-      <div class="public-profile-banner-wrap">
-        <img v-if="profile.bannerUrl" :src="profile.bannerUrl" alt="Banner" class="public-profile-banner" />
-        <div v-else class="public-profile-banner" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);" />
+    <!-- ── PROFILE HEADER ─────────────────────────────────────────────── -->
+    <div class="behance-profile-header">
+      <!-- Avatar -->
+      <div class="behance-avatar">
+        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="fullName" />
+        <span v-else>{{ initials }}</span>
       </div>
 
-      <!-- Header -->
-      <div class="public-profile-header">
-        <div class="public-profile-avatar">
-          <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="profile.firstName" />
-          <span v-else>{{ initials }}</span>
-        </div>
-        <h1 class="public-profile-name">{{ profile.firstName }} {{ profile.lastName }}</h1>
-        <p v-if="profile.profession" class="public-profile-profession">{{ profile.profession }}</p>
-        <p v-if="profile.bio" class="public-profile-bio">{{ profile.bio }}</p>
-        <div class="public-profile-meta">
-          <span v-if="profile.location">
-            <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="vertical-align: middle; margin-right: 3px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-            {{ profile.location }}
-          </span>
-          <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener">{{ displayWebsite }}</a>
-        </div>
-        <!-- Social links -->
-        <div class="public-profile-socials">
-          <a v-for="net in activeSocials" :key="net.key" :href="net.url" target="_blank" rel="noopener" :title="net.label">
+      <!-- Info -->
+      <div class="behance-profile-info">
+        <h1 class="behance-name">{{ fullName }}</h1>
+        <p v-if="profile.profession" class="behance-profession">{{ profile.profession }}</p>
+        <span v-if="profile.location" class="behance-location">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+          </svg>
+          {{ profile.location }}
+        </span>
+        <!-- Social icons row -->
+        <div v-if="activeSocials.length" class="behance-socials">
+          <a
+            v-for="net in activeSocials"
+            :key="net.key"
+            :href="net.url"
+            target="_blank"
+            rel="noopener"
+            :title="net.label"
+            class="behance-social-btn"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
           </a>
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="profile-tabs">
-        <div class="profile-tabs-nav">
-          <button
-            v-for="tab in tabs"
-            :key="tab.value"
-            class="profile-tab-btn"
-            :class="{ active: activeTab === tab.value }"
-            @click="activeTab = tab.value"
-          >{{ tab.label }}</button>
-        </div>
+      <!-- Actions -->
+      <div v-if="profile.website" class="behance-profile-actions">
+        <a :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary">
+          Entrar em Contato
+        </a>
+      </div>
+    </div>
 
-        <!-- All / Articles -->
-        <div v-if="activeTab === 'all' || activeTab === 'articles'">
-          <div v-if="loadingContent" class="loading-center"><div class="spinner spinner-lg" /></div>
-          <div v-else-if="filteredArticles.length === 0 && activeTab === 'articles'" class="empty-state">
-            <p class="empty-state-title">Nenhum artigo publicado</p>
-          </div>
-          <div v-else class="profile-content-grid">
-            <a
-              v-for="article in filteredArticles"
-              :key="article.id"
-              :href="`/artigo/${article.slug}`"
-              class="profile-content-card"
-            >
-              <img v-if="article.coverImageUrl" :src="article.coverImageUrl" :alt="article.title" class="profile-content-card-cover" />
-              <div v-else class="profile-content-card-cover-placeholder">
-                <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
-              </div>
-              <div class="profile-content-card-body">
-                <div v-if="article.tags.length" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
-                  <span v-for="tag in article.tags.slice(0,3)" :key="tag.id" class="public-article-tag">{{ tag.name }}</span>
-                </div>
-                <div class="profile-content-card-title">{{ article.title }}</div>
-                <div class="profile-content-card-meta">
-                  <span v-if="article.readTime">{{ article.readTime }} min</span>
-                  <span>{{ formatDate(article.publishedAt || article.createdAt) }}</span>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
+    <!-- ── CONTENT TABS ────────────────────────────────────────────────── -->
+    <div class="behance-content">
+      <nav class="behance-tabs-nav">
+        <button
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="behance-tab-btn"
+          :class="{ active: activeTab === tab.value }"
+          @click="activeTab = tab.value"
+        >
+          {{ tab.label }}
+          <span v-if="tab.count != null" class="behance-tab-count">{{ tab.count }}</span>
+        </button>
+      </nav>
 
-        <!-- Projects -->
-        <div v-if="activeTab === 'all' || activeTab === 'projects'">
-          <div v-if="activeTab === 'all' && filteredArticles.length > 0 && filteredProjects.length > 0" style="margin: var(--spacing-2xl) 0 var(--spacing-lg); font-size: var(--text-lg); font-weight: 600; color: var(--text-primary);">Projetos</div>
-          <div v-if="loadingContent" class="loading-center"><div class="spinner spinner-lg" /></div>
-          <div v-else-if="filteredProjects.length === 0 && activeTab === 'projects'" class="empty-state">
-            <p class="empty-state-title">Nenhum projeto publicado</p>
-          </div>
-          <div v-else class="profile-content-grid">
-            <a
-              v-for="project in filteredProjects"
-              :key="project.id"
-              :href="`/projeto/${project.slug}`"
-              class="profile-content-card"
-            >
-              <img v-if="project.coverImageUrl" :src="project.coverImageUrl" :alt="project.title" class="profile-content-card-cover" />
-              <div v-else class="profile-content-card-cover-placeholder">
-                <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Z" /></svg>
-              </div>
-              <div class="profile-content-card-body">
-                <div class="profile-content-card-title">{{ project.title }}</div>
-                <div class="profile-content-card-meta">
-                  <span v-if="project.projectStatus">{{ statusLabel(project.projectStatus) }}</span>
-                  <span v-if="project.year">{{ project.year }}</span>
-                </div>
-              </div>
-            </a>
-          </div>
+      <!-- Grid view: Todos / Artigos / Projetos -->
+      <div v-if="activeTab !== 'about'">
+        <div v-if="visibleItems.length === 0" class="empty-state" style="padding:var(--spacing-4xl) 0">
+          <p class="empty-state-title">Nenhum conteúdo publicado ainda</p>
         </div>
-
-        <!-- About -->
-        <div v-if="activeTab === 'about'">
-          <div class="db-card" style="max-width: 640px;">
-            <div v-if="profile.bio" style="margin-bottom: var(--spacing-lg);">
-              <div class="db-form-section-title" style="margin-bottom: var(--spacing-sm);">Sobre</div>
-              <p style="color: var(--text-secondary); line-height: var(--leading-relaxed);">{{ profile.bio }}</p>
+        <div v-else class="behance-grid">
+          <a
+            v-for="item in visibleItems"
+            :key="item.id"
+            :href="item.href"
+            class="behance-card"
+          >
+            <div class="behance-card-image">
+              <img v-if="item.coverImageUrl" :src="item.coverImageUrl" :alt="item.title" />
+              <div v-else class="behance-card-placeholder">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v14.25a.75.75 0 01-.75.75H3.75A.75.75 0 013 18V3.75A.75.75 0 013.75 3z"/>
+                </svg>
+              </div>
+              <div class="behance-card-overlay">
+                <span class="behance-category-badge">{{ item.type }}</span>
+              </div>
             </div>
-            <div v-if="profile.location || profile.website || profile.email" style="margin-bottom: var(--spacing-lg);">
-              <div class="db-form-section-title" style="margin-bottom: var(--spacing-sm);">Contato</div>
-              <div style="display: flex; flex-direction: column; gap: var(--spacing-xs); font-size: var(--text-sm); color: var(--text-secondary);">
-                <span v-if="profile.location">📍 {{ profile.location }}</span>
-                <a v-if="profile.website" :href="profile.website" target="_blank" style="color: var(--primary);">🌐 {{ displayWebsite }}</a>
+            <div class="behance-card-body">
+              <div v-if="item.tags?.length" class="behance-card-tags">
+                <span v-for="tag in item.tags.slice(0,3)" :key="tag.id" class="behance-tag">{{ tag.name }}</span>
               </div>
+              <p class="behance-card-title">{{ item.title }}</p>
+              <p v-if="item.subtitle" class="behance-card-subtitle">{{ item.subtitle }}</p>
+              <div class="behance-card-meta">
+                <span v-if="item.meta1">{{ item.meta1 }}</span>
+                <span v-if="item.meta1 && item.meta2" style="color:var(--border)">•</span>
+                <span v-if="item.meta2">{{ item.meta2 }}</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- About tab -->
+      <div v-if="activeTab === 'about'" class="about-section">
+        <!-- Bio -->
+        <div v-if="profile.bio" class="about-card">
+          <p class="about-card-title">Sobre</p>
+          <p class="about-bio-text">{{ profile.bio }}</p>
+        </div>
+
+        <!-- Contact -->
+        <div class="about-card">
+          <p class="about-card-title">Contato</p>
+          <a v-if="profile.location" href="#" class="about-contact-item" style="cursor:default;pointer-events:none">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+            </svg>
+            {{ profile.location }}
+          </a>
+          <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener" class="about-contact-item">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253"/>
+            </svg>
+            {{ displayWebsite }}
+          </a>
+        </div>
+
+        <!-- Social links -->
+        <div v-if="activeSocials.length" class="about-card">
+          <p class="about-card-title">Redes Sociais</p>
+          <div class="about-social-grid">
+            <a
+              v-for="net in activeSocials"
+              :key="net.key"
+              :href="net.url"
+              target="_blank"
+              rel="noopener"
+              class="about-social-btn"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
+              {{ net.label }}
+            </a>
+          </div>
+        </div>
+
+        <!-- CV list -->
+        <div v-if="cvList.length" class="about-card">
+          <p class="about-card-title">Currículos</p>
+          <a
+            v-for="cv in cvList"
+            :key="cv.id"
+            :href="cv.fileUrl"
+            target="_blank"
+            rel="noopener"
+            class="about-cv-item"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--primary);flex-shrink:0">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+            </svg>
+            <span class="about-cv-label">{{ cv.label }}</span>
+            <span class="about-cv-download">Baixar PDF</span>
+          </a>
+        </div>
+
+        <!-- Education -->
+        <div v-if="education.length" class="about-card">
+          <p class="about-card-title">Formação</p>
+          <div v-for="edu in education" :key="edu.id" class="about-edu-item">
+            <span class="about-edu-type-badge" :class="`about-edu-type-${edu.type}`">
+              {{ eduTypeLabel(edu.type) }}
+            </span>
+            <div>
+              <p class="about-edu-title">{{ edu.title }}</p>
+              <p class="about-edu-institution">{{ edu.institution }}<span v-if="edu.fieldOfStudy"> · {{ edu.fieldOfStudy }}</span></p>
+              <p class="about-edu-dates">{{ formatEduDate(edu.startDate, edu.endDate) }}</p>
+              <p v-if="edu.description" style="font-size:var(--text-xs);color:var(--text-secondary);margin:4px 0 0">{{ edu.description }}</p>
+              <a v-if="edu.certificateUrl" :href="edu.certificateUrl" target="_blank" rel="noopener"
+                 style="font-size:var(--text-xs);color:var(--primary);text-decoration:none;display:inline-block;margin-top:4px">
+                Ver certificado →
+              </a>
             </div>
           </div>
         </div>
@@ -132,38 +192,95 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { getPublicProfile, getArticles, getProjects } from '../../utils/api';
-import type { FullProfile, Article, Project } from '../../utils/api';
+import { ref, computed } from 'vue';
 
-const props = defineProps<{ username: string }>();
+interface Tag { id: string; name: string; }
+interface SocialLinks {
+  linkedin?: string; github?: string; twitter?: string; instagram?: string;
+  facebook?: string; youtube?: string; tiktok?: string;
+}
+interface FullProfile {
+  id: string; firstName: string; lastName: string; username?: string;
+  profession?: string; bio?: string; phone?: string; website?: string;
+  location?: string; avatarUrl?: string; bannerUrl?: string;
+  socialLinks?: SocialLinks; createdAt?: string;
+}
+interface Article {
+  id: string; slug: string; title: string; subtitle?: string;
+  coverImageUrl?: string; readTime?: number; publishedAt?: string;
+  createdAt?: string; tags: Tag[];
+}
+interface Project {
+  id: string; slug: string; title: string; subtitle?: string;
+  coverImageUrl?: string; year?: number; projectStatus?: string;
+  clientName?: string; tags: Tag[];
+}
+interface CV { id: string; label: string; fileUrl: string; createdAt?: string; }
+interface Education {
+  id: string; type: string; institution: string; title: string;
+  fieldOfStudy?: string; startDate: string; endDate?: string;
+  description?: string; certificateUrl?: string; order?: number;
+}
 
-const loading = ref(true);
-const loadingContent = ref(true);
-const profile = ref<FullProfile | null>(null);
-const articles = ref<Article[]>([]);
-const projects = ref<Project[]>([]);
+const props = defineProps<{
+  profile: FullProfile;
+  articles: Article[];
+  projects: Project[];
+  cvList: CV[];
+  education: Education[];
+}>();
+
 const activeTab = ref<'all' | 'articles' | 'projects' | 'about'>('all');
 
-const tabs = [
-  { label: 'Todos', value: 'all' },
-  { label: 'Artigos', value: 'articles' },
-  { label: 'Projetos', value: 'projects' },
-  { label: 'Sobre', value: 'about' },
-];
+const tabs = computed(() => [
+  { label: 'Todos', value: 'all', count: null },
+  { label: 'Artigos', value: 'articles', count: props.articles.length || null },
+  { label: 'Projetos', value: 'projects', count: props.projects.length || null },
+  { label: 'Sobre', value: 'about', count: null },
+]);
 
-const initials = computed(() => {
-  if (!profile.value) return '';
-  return `${profile.value.firstName[0] ?? ''}${profile.value.lastName[0] ?? ''}`.toUpperCase();
+// Merged grid items
+interface GridItem {
+  id: string; href: string; type: string; title: string; subtitle?: string;
+  coverImageUrl?: string; tags: Tag[]; meta1?: string; meta2?: string;
+}
+
+const allItems = computed((): GridItem[] => {
+  const arts: GridItem[] = props.articles.map(a => ({
+    id: `a-${a.id}`, href: `/artigo/${a.slug}`, type: 'Artigo',
+    title: a.title, subtitle: a.subtitle, coverImageUrl: a.coverImageUrl, tags: a.tags,
+    meta1: formatDate(a.publishedAt || a.createdAt),
+    meta2: a.readTime ? `${a.readTime} min` : undefined,
+  }));
+  const projs: GridItem[] = props.projects.map(p => ({
+    id: `p-${p.id}`, href: `/projeto/${p.slug}`, type: 'Projeto',
+    title: p.title, subtitle: p.subtitle, coverImageUrl: p.coverImageUrl, tags: p.tags,
+    meta1: p.year ? String(p.year) : undefined,
+    meta2: p.projectStatus ? statusLabel(p.projectStatus) : undefined,
+  }));
+  return [...arts, ...projs];
 });
 
-const displayWebsite = computed(() => {
-  if (!profile.value?.website) return '';
-  return profile.value.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const visibleItems = computed((): GridItem[] => {
+  if (activeTab.value === 'all') return allItems.value;
+  if (activeTab.value === 'articles')
+    return allItems.value.filter(i => i.type === 'Artigo');
+  if (activeTab.value === 'projects')
+    return allItems.value.filter(i => i.type === 'Projeto');
+  return [];
 });
 
-const filteredArticles = computed(() => articles.value.filter(a => a.status === 'published'));
-const filteredProjects = computed(() => projects.value.filter(p => p.status === 'published'));
+const fullName = computed(() =>
+  `${props.profile.firstName ?? ''} ${props.profile.lastName ?? ''}`.trim()
+);
+
+const initials = computed(() =>
+  `${props.profile.firstName?.[0] ?? ''}${props.profile.lastName?.[0] ?? ''}`.toUpperCase()
+);
+
+const displayWebsite = computed(() =>
+  props.profile.website?.replace(/^https?:\/\//, '').replace(/\/$/, '') ?? ''
+);
 
 const socialIconMap: Record<string, string> = {
   linkedin:  '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
@@ -175,54 +292,51 @@ const socialIconMap: Record<string, string> = {
   tiktok:    '<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>',
 };
 
+const socialPrefixes: Record<string, string> = {
+  linkedin: 'https://linkedin.com/in/', github: 'https://github.com/',
+  twitter: 'https://x.com/', instagram: 'https://instagram.com/',
+  facebook: 'https://facebook.com/', youtube: 'https://youtube.com/@', tiktok: 'https://tiktok.com/@',
+};
+
 const activeSocials = computed(() => {
-  if (!profile.value?.socialLinks) return [];
-  const result = [];
-  for (const [key, handle] of Object.entries(profile.value.socialLinks)) {
-    if (!handle) continue;
-    const prefixes: Record<string, string> = {
-      linkedin: 'https://linkedin.com/in/', github: 'https://github.com/',
-      twitter: 'https://x.com/', instagram: 'https://instagram.com/',
-      facebook: 'https://facebook.com/', youtube: 'https://youtube.com/@',
-      tiktok: 'https://tiktok.com/@',
-    };
-    result.push({
+  const links = props.profile.socialLinks;
+  if (!links) return [];
+  return Object.entries(links)
+    .filter(([, val]) => !!val)
+    .map(([key, val]) => ({
       key,
       label: key.charAt(0).toUpperCase() + key.slice(1),
-      url: handle.startsWith('http') ? handle : `${prefixes[key] ?? ''}${handle}`,
+      url: (val as string).startsWith('http') ? (val as string) : `${socialPrefixes[key] ?? ''}${val}`,
       icon: socialIconMap[key] ?? '',
-    });
-  }
-  return result;
+    }));
 });
 
-function formatDate(d: string) {
+function formatDate(d?: string) {
+  if (!d) return '';
   return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function formatEduDate(start: string, end?: string) {
+  const fmt = (d: string) => {
+    const [year, month] = d.split('-');
+    return `${month}/${year}`;
+  };
+  return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – Atual`;
+}
+
 function statusLabel(s: string) {
-  const m: Record<string, string> = { ongoing: 'Em andamento', completed: 'Concluído', paused: 'Pausado', cancelled: 'Cancelado' };
+  const m: Record<string, string> = {
+    ONGOING: 'Em andamento', COMPLETED: 'Concluído',
+    PAUSED: 'Pausado', CANCELLED: 'Cancelado',
+  };
   return m[s] ?? s;
 }
 
-onMounted(async () => {
-  try {
-    profile.value = await getPublicProfile(props.username);
-  } catch {
-    profile.value = null;
-  } finally {
-    loading.value = false;
-  }
-
-  try {
-    const [arts, projs] = await Promise.all([
-      getArticles({ limit: 50, status: 'published' }),
-      getProjects({ limit: 50, status: 'published' }),
-    ]);
-    articles.value = arts.data;
-    projects.value = projs.data;
-  } catch { /* */ } finally {
-    loadingContent.value = false;
-  }
-});
+function eduTypeLabel(type: string) {
+  const m: Record<string, string> = {
+    UNIVERSITY: 'Universidade', COURSE: 'Curso',
+    DIPLOMA: 'Diploma', CERTIFICATION: 'Certificação',
+  };
+  return m[type] ?? type;
+}
 </script>

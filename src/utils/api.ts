@@ -449,6 +449,10 @@ export async function getCVList(): Promise<CV[]> {
   return fetchAPI<CV[]>('/cv');
 }
 
+export async function getPublicCVList(userId: string): Promise<CV[]> {
+  return fetchAPI<CV[]>(`/cv/public/${userId}`);
+}
+
 export async function uploadCV(file: File, label: string): Promise<CV> {
   const fd = new FormData();
   fd.append('file', file);
@@ -472,6 +476,10 @@ export async function getCVDownloadUrl(id: string): Promise<{ url: string }> {
 
 export async function getEducation(): Promise<Education[]> {
   return fetchAPI<Education[]>('/education');
+}
+
+export async function getPublicEducation(userId: string): Promise<Education[]> {
+  return fetchAPI<Education[]>(`/education/public/${userId}`);
 }
 
 export async function createEducation(data: {
