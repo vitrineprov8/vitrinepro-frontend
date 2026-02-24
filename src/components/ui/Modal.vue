@@ -31,4 +31,6 @@ defineEmits<{ close: [] }>();
 .modal-enter-active .modal, .modal-leave-active .modal { transition: transform 200ms; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-from .modal, .modal-leave-to .modal { transform: scale(0.95) translateY(-10px); }
+/* Don't block page interactions while the modal fades out */
+.modal-leave-active { pointer-events: none; }
 </style>

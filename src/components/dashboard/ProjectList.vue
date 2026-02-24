@@ -108,9 +108,9 @@ const filters = [
   { label: 'Rascunhos', value: 'DRAFT' },
 ];
 
-async function load() {
+async function load(showSpinner = true) {
   if (!userId) return;
-  loading.value = true;
+  if (showSpinner) loading.value = true;
   try {
     if (activeFilter.value === '') {
       const [drafts, published] = await Promise.all([
@@ -151,12 +151,14 @@ function changePage(p: number) {
 async function confirmDelete() {
   if (!deleteTarget.value) return;
   deleting.value = true;
+  const target = deleteTarget.value;
   try {
-    await deleteProject(deleteTarget.value.id);
-    toast.value?.show('Projeto excluído', 'success');
+    await deleteProject(target.id);
     deleteTarget.value = null;
-    load();
+    toast.value?.show('Projeto excluído', 'success');
+    load(false);
   } catch {
+    deleteTarget.value = null;
     toast.value?.show('Erro ao excluir projeto', 'error');
   } finally {
     deleting.value = false;

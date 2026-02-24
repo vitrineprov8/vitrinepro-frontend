@@ -106,12 +106,14 @@ async function create() {
 async function confirmDelete() {
   if (!deleteTarget.value) return;
   deleting.value = true;
+  const id = deleteTarget.value.id;
   try {
-    await deleteTag(deleteTarget.value.id);
-    tags.value = tags.value.filter(t => t.id !== deleteTarget.value!.id);
-    toast.value?.show('Tag excluída', 'success');
+    await deleteTag(id);
     deleteTarget.value = null;
+    toast.value?.show('Tag excluída', 'success');
+    load();
   } catch {
+    deleteTarget.value = null;
     toast.value?.show('Erro ao excluir tag', 'error');
   } finally {
     deleting.value = false;

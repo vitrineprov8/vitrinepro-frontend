@@ -1,6 +1,14 @@
 <template>
   <DashboardLayout>
     <Toast ref="toast" />
+    <ImageAdjustModal
+      :visible="showCropModal"
+      :image-src="cropSrc"
+      :aspect-ratio="16 / 9"
+      title="Ajustar imagem de capa"
+      @confirm="onCropConfirm"
+      @cancel="showCropModal = false"
+    />
 
     <div class="editor-toolbar">
       <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
@@ -130,6 +138,7 @@ import StatusBadge from '../ui/StatusBadge.vue';
 import TiptapEditor from './TiptapEditor.vue';
 import TagSelect from '../ui/TagSelect.vue';
 import ProjectGallery from './ProjectGallery.vue';
+import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import {
   getProject, createProject, updateProject, uploadProjectCover,
   getTags, addProjectImage, deleteProjectImage, reorderProjectImages,
@@ -148,6 +157,8 @@ const uploadingImage = ref(false);
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
+const showCropModal = ref(false);
+const cropSrc = ref('');
 let pendingCover: File | null = null;
 
 const form = ref({
@@ -173,8 +184,18 @@ const gallery = ref<ProjectImage[]>([]);
 function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
-  pendingCover = file;
-  coverPreview.value = URL.createObjectURL(file);
+  cropSrc.value = URL.createObjectURL(file);
+  showCropModal.value = true;
+  (e.target as HTMLInputElement).value = '';
+}
+
+function onCropConfirm(blob: Blob) {
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value);
+  coverPreview.value = URL.createObjectURL(blob);
+  pendingCover = new File([blob], 'cover.jpg', { type: blob.type });
+  showCropModal.value = false;
+  URL.revokeObjectURL(cropSrc.value);
+  cropSrc.value = '';
 }
 
 function onTagCreated(tag: Tag) { allTags.value.push(tag); }
@@ -195,10 +216,13 @@ async function addImage(file: File) {
 
 async function removeImage(imageId: string) {
   if (!projectUUID.value) return;
+  // Optimistic: remove immediately so the gallery updates without waiting for the API
+  const previousGallery = [...gallery.value];
+  gallery.value = gallery.value.filter(img => img.id !== imageId);
   try {
     await deleteProjectImage(projectUUID.value, imageId);
-    gallery.value = gallery.value.filter(img => img.id !== imageId);
   } catch {
+    gallery.value = previousGallery; // restore on failure
     toast.value?.show('Erro ao remover imagem', 'error');
   }
 }
@@ -226,6 +250,7 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
     toast.value?.show('Título e descrição são obrigatórios', 'warning');
     return;
   }
+  if (saving.value) return;
   saving.value = true;
   form.value.status = status;
   try {
@@ -256,8 +281,9 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
     if (pendingCover && projectUUID.value) {
       const updated = await uploadProjectCover(projectUUID.value, pendingCover);
       form.value.coverImageUrl = updated.coverImageUrl ?? '';
-      URL.revokeObjectURL(coverPreview.value);
-      coverPreview.value = '';
+      // Keep coverPreview (blob URL) so the template shows the new image immediately.
+      // The blob bypasses the browser cache (server reuses the same URL on replace).
+      // onCropConfirm() revokes the previous blob when the user picks a new image.
       pendingCover = null;
     }
 

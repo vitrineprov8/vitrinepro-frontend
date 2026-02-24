@@ -1,6 +1,22 @@
 <template>
   <DashboardLayout>
     <Toast ref="toast" />
+    <ImageAdjustModal
+      :visible="showAvatarCrop"
+      :image-src="cropSrc"
+      :aspect-ratio="1"
+      title="Ajustar foto de perfil"
+      @confirm="onAvatarCropConfirm"
+      @cancel="showAvatarCrop = false"
+    />
+    <ImageAdjustModal
+      :visible="showBannerCrop"
+      :image-src="cropSrc"
+      :aspect-ratio="3"
+      title="Ajustar imagem de capa"
+      @confirm="onBannerCropConfirm"
+      @cancel="showBannerCrop = false"
+    />
 
     <div class="db-section-header">
       <div>
@@ -17,7 +33,7 @@
 
     <form v-else @submit.prevent="save">
       <!-- Cover & Avatar -->
-      <div class="db-card" style="margin-bottom: var(--spacing-lg); padding: 0; overflow: hidden;">
+      <div class="db-card" style="margin-bottom: var(--spacing-lg); padding: 0;">
         <!-- Banner -->
         <div class="profile-banner-upload" @click="bannerInput?.click()">
           <img v-if="bannerPreview || form.bannerUrl" :src="bannerPreview || form.bannerUrl" alt="Banner" />
@@ -83,7 +99,14 @@
         <div class="db-form-row">
           <div class="db-form-group">
             <label class="db-label">Telefone</label>
-            <input v-model="form.phone" class="db-input" placeholder="+55 11 99999-9999" type="tel" />
+            <input
+              v-model="form.phone"
+              class="db-input"
+              placeholder="+55 11 99999-9999"
+              type="tel"
+              maxlength="20"
+              @input="formatPhone"
+            />
           </div>
           <div class="db-form-group">
             <label class="db-label">Website</label>
@@ -117,6 +140,7 @@
 import { ref, computed, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
+import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import { getFullProfile, updateProfile, uploadAvatar, uploadBanner } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
 
@@ -128,6 +152,9 @@ const avatarInput = ref<HTMLInputElement>();
 const bannerInput = ref<HTMLInputElement>();
 const avatarPreview = ref('');
 const bannerPreview = ref('');
+const showAvatarCrop = ref(false);
+const showBannerCrop = ref(false);
+const cropSrc = ref('');
 let pendingAvatar: File | null = null;
 let pendingBanner: File | null = null;
 
@@ -165,15 +192,40 @@ const socialNetworks = [
 function onAvatarChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
-  pendingAvatar = file;
-  avatarPreview.value = URL.createObjectURL(file);
+  cropSrc.value = URL.createObjectURL(file);
+  showAvatarCrop.value = true;
+  (e.target as HTMLInputElement).value = '';
+}
+
+function onAvatarCropConfirm(blob: Blob) {
+  if (avatarPreview.value) URL.revokeObjectURL(avatarPreview.value);
+  avatarPreview.value = URL.createObjectURL(blob);
+  pendingAvatar = new File([blob], 'avatar.jpg', { type: blob.type });
+  showAvatarCrop.value = false;
+  URL.revokeObjectURL(cropSrc.value);
+  cropSrc.value = '';
 }
 
 function onBannerChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
-  pendingBanner = file;
-  bannerPreview.value = URL.createObjectURL(file);
+  cropSrc.value = URL.createObjectURL(file);
+  showBannerCrop.value = true;
+  (e.target as HTMLInputElement).value = '';
+}
+
+function onBannerCropConfirm(blob: Blob) {
+  if (bannerPreview.value) URL.revokeObjectURL(bannerPreview.value);
+  bannerPreview.value = URL.createObjectURL(blob);
+  pendingBanner = new File([blob], 'banner.jpg', { type: blob.type });
+  showBannerCrop.value = false;
+  URL.revokeObjectURL(cropSrc.value);
+  cropSrc.value = '';
+}
+
+function formatPhone(e: Event) {
+  const raw = (e.target as HTMLInputElement).value.replace(/[^\d+\s\-()]/g, '');
+  form.value.phone = raw.slice(0, 20);
 }
 
 function fillForm(p: FullProfile) {
@@ -205,15 +257,15 @@ async function save() {
     if (pendingAvatar) {
       const updated = await uploadAvatar(pendingAvatar);
       form.value.avatarUrl = updated.avatarUrl ?? '';
-      URL.revokeObjectURL(avatarPreview.value);
-      avatarPreview.value = '';
+      // Keep avatarPreview (blob URL) showing the freshly uploaded image.
+      // It will be revoked the next time the user picks a new avatar.
       pendingAvatar = null;
     }
     if (pendingBanner) {
       const updated = await uploadBanner(pendingBanner);
       form.value.bannerUrl = updated.bannerUrl ?? '';
-      URL.revokeObjectURL(bannerPreview.value);
-      bannerPreview.value = '';
+      // Keep bannerPreview (blob URL) showing the freshly uploaded image.
+      // Avoids browser-cache returning the old image from the same remote URL.
       pendingBanner = null;
     }
     // Save profile data

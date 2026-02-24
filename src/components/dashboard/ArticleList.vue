@@ -118,9 +118,9 @@ function formatDate(d?: string) {
   return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-async function load() {
+async function load(showSpinner = true) {
   if (!userId) return;
-  loading.value = true;
+  if (showSpinner) loading.value = true;
   try {
     if (activeFilter.value === '') {
       const [drafts, published] = await Promise.all([
@@ -161,12 +161,14 @@ function changePage(p: number) {
 async function confirmDelete() {
   if (!deleteTarget.value) return;
   deleting.value = true;
+  const target = deleteTarget.value;
   try {
-    await deleteArticle(deleteTarget.value.id);
-    toast.value?.show('Artigo excluído', 'success');
+    await deleteArticle(target.id);
     deleteTarget.value = null;
-    load();
+    toast.value?.show('Artigo excluído', 'success');
+    load(false);
   } catch {
+    deleteTarget.value = null;
     toast.value?.show('Erro ao excluir artigo', 'error');
   } finally {
     deleting.value = false;

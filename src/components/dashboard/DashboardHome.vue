@@ -75,7 +75,18 @@
                   <span>{{ formatDate(a.publishedAt || a.createdAt) }}</span>
                 </div>
               </div>
-              <a :href="`/dashboard/artigos/${a.id}`" class="btn btn-ghost btn-sm">Editar</a>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <a
+                  v-if="a.status === 'PUBLISHED'"
+                  :href="`/artigo/${a.slug}`"
+                  target="_blank"
+                  class="btn btn-ghost btn-sm"
+                  title="Ver publicado"
+                >
+                  <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                </a>
+                <a :href="`/dashboard/artigos/${a.slug}`" class="btn btn-ghost btn-sm">Editar</a>
+              </div>
             </div>
           </div>
         </div>
@@ -96,7 +107,18 @@
                   <span>{{ formatDate(p.createdAt) }}</span>
                 </div>
               </div>
-              <a :href="`/dashboard/projetos/${p.id}`" class="btn btn-ghost btn-sm">Editar</a>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <a
+                  v-if="p.status === 'PUBLISHED'"
+                  :href="`/projeto/${p.slug}`"
+                  target="_blank"
+                  class="btn btn-ghost btn-sm"
+                  title="Ver publicado"
+                >
+                  <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                </a>
+                <a :href="`/dashboard/projetos/${p.slug}`" class="btn btn-ghost btn-sm">Editar</a>
+              </div>
             </div>
           </div>
         </div>

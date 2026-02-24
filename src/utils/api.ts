@@ -81,6 +81,11 @@ export async function fetchAPI<T = any>(
       throw new ApiException(response.status, errorMessage, errorDetail);
     }
 
+    // 204 No Content — sem corpo para parsear
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return undefined as T;
+    }
+
     // Retornar resposta parseada
     return await response.json();
   } catch (error) {

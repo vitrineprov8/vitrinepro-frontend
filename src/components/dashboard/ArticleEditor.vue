@@ -1,6 +1,14 @@
 <template>
   <DashboardLayout>
     <Toast ref="toast" />
+    <ImageAdjustModal
+      :visible="showCropModal"
+      :image-src="cropSrc"
+      :aspect-ratio="16 / 9"
+      title="Ajustar imagem de capa"
+      @confirm="onCropConfirm"
+      @cancel="showCropModal = false"
+    />
 
     <!-- Toolbar -->
     <div class="editor-toolbar">
@@ -92,6 +100,7 @@ import Toast from '../ui/Toast.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import TiptapEditor from './TiptapEditor.vue';
 import TagSelect from '../ui/TagSelect.vue';
+import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import {
   getArticle, createArticle, updateArticle, uploadArticleCover, getTags,
 } from '../../utils/api';
@@ -109,6 +118,8 @@ const lastSaved = ref('');
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
+const showCropModal = ref(false);
+const cropSrc = ref('');
 let pendingCover: File | null = null;
 let autoSaveTimer: ReturnType<typeof setInterval>;
 
@@ -128,8 +139,19 @@ const allTags = ref<Tag[]>([]);
 function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
-  pendingCover = file;
-  coverPreview.value = URL.createObjectURL(file);
+  cropSrc.value = URL.createObjectURL(file);
+  showCropModal.value = true;
+  // Reset input so the same file can be selected again
+  (e.target as HTMLInputElement).value = '';
+}
+
+function onCropConfirm(blob: Blob) {
+  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value);
+  coverPreview.value = URL.createObjectURL(blob);
+  pendingCover = new File([blob], 'cover.jpg', { type: blob.type });
+  showCropModal.value = false;
+  URL.revokeObjectURL(cropSrc.value);
+  cropSrc.value = '';
 }
 
 function onTagCreated(tag: Tag) {
@@ -137,6 +159,7 @@ function onTagCreated(tag: Tag) {
 }
 
 async function persist(status: 'DRAFT' | 'PUBLISHED') {
+  if (saving.value) return;
   saving.value = true;
   form.value.status = status;
   try {
@@ -163,8 +186,10 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
     if (pendingCover && articleUUID.value) {
       const updated = await uploadArticleCover(articleUUID.value, pendingCover);
       form.value.coverImageUrl = updated.coverImageUrl ?? '';
-      URL.revokeObjectURL(coverPreview.value);
-      coverPreview.value = '';
+      // Keep coverPreview (blob URL) so the template shows the new image immediately.
+      // The blob bypasses the browser cache that would otherwise serve the old image
+      // (the server reuses the same URL when replacing a cover).
+      // onCropConfirm() revokes the previous blob when the user picks a new image.
       pendingCover = null;
     }
 

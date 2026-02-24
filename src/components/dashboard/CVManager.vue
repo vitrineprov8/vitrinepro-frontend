@@ -144,14 +144,18 @@ async function setActive(id: string) {
 async function confirmDelete() {
   if (!deleteTarget.value) return;
   deleting.value = true;
+  const id = deleteTarget.value.id;
+  // Optimistic: remove immediately
+  const previousCvs = [...cvs.value];
+  cvs.value = cvs.value.filter(c => c.id !== id);
   try {
-    await deleteCV(deleteTarget.value.id);
-    cvs.value = cvs.value.filter(c => c.id !== deleteTarget.value!.id);
+    await deleteCV(id);
     toast.value?.show('Currículo excluído', 'success');
-    deleteTarget.value = null;
   } catch {
+    cvs.value = previousCvs; // restore on failure
     toast.value?.show('Erro ao excluir', 'error');
   } finally {
+    deleteTarget.value = null;
     deleting.value = false;
   }
 }

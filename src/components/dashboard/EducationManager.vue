@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
@@ -190,6 +190,7 @@ async function saveForm() {
     toast.value?.show('Preencha todos os campos obrigatórios', 'warning');
     return;
   }
+  if (formSaving.value) return;
   formSaving.value = true;
   try {
     const payload = {
@@ -218,26 +219,32 @@ async function saveForm() {
       items.value.push(created);
       toast.value?.show('Formação adicionada!', 'success');
     }
-    closeForm();
   } catch (e: any) {
     toast.value?.show(e?.message || 'Erro ao salvar', 'error');
   } finally {
     formSaving.value = false;
+    closeForm();
   }
 }
 
 async function confirmDelete() {
   if (!deleteTarget.value) return;
   deleting.value = true;
+  const id = deleteTarget.value.id;
+  // Optimistic: remove immediately so list refreshes without waiting
+  const previousItems = [...items.value];
+  items.value = items.value.filter(i => i.id !== id);
   try {
-    await deleteEducation(deleteTarget.value.id);
-    items.value = items.value.filter(i => i.id !== deleteTarget.value!.id);
+    await deleteEducation(id);
     toast.value?.show('Formação excluída', 'success');
-    deleteTarget.value = null;
   } catch {
+    items.value = previousItems; // restore on failure
     toast.value?.show('Erro ao excluir', 'error');
   } finally {
+    deleteTarget.value = null;
     deleting.value = false;
+    // Ensure Vue processes all reactive state changes before next interaction
+    await nextTick();
   }
 }
 
