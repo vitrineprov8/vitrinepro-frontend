@@ -12,14 +12,14 @@
 
     <!-- Toolbar -->
     <div class="editor-toolbar">
-      <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+      <div class="editor-toolbar-left">
         <a href="/dashboard/artigos" class="btn btn-ghost btn-sm">
           <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
           Artigos
         </a>
-        <span style="color: var(--text-secondary);">·</span>
+        <span class="editor-toolbar-sep">·</span>
         <StatusBadge :status="form.status" />
-        <span v-if="lastSaved" style="font-size: var(--text-xs); color: var(--text-secondary);">Auto-salvo {{ lastSaved }}</span>
+        <span v-if="lastSaved" class="editor-toolbar-autosave">Auto-salvo {{ lastSaved }}</span>
       </div>
       <div class="editor-toolbar-actions">
         <button class="btn btn-secondary" @click="saveDraft" :disabled="saving">

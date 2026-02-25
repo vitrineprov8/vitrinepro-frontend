@@ -918,7 +918,7 @@
   }
 
   .editor-sidebar {
-    order: -1;
+    position: static;
   }
 }
 
@@ -971,6 +971,22 @@
   justify-content: space-between;
   margin-bottom: var(--spacing-lg);
   gap: var(--spacing-md);
+}
+
+.editor-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.editor-toolbar-sep {
+  color: var(--text-secondary);
+}
+
+.editor-toolbar-autosave {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
 
 .editor-toolbar-actions {
@@ -1083,6 +1099,12 @@
 
 .gallery-item:hover .gallery-item-actions {
   opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .gallery-item-actions {
+    opacity: 1;
+  }
 }
 
 .gallery-item-btn {
@@ -2905,4 +2927,99 @@
   .article-title-hero { font-size: var(--text-3xl); }
   .article-header-inner { padding: var(--spacing-3xl) var(--spacing-lg) var(--spacing-2xl); }
   .article-body { padding: 0 var(--spacing-lg) var(--spacing-3xl); }
+}
+
+/* ─── DASHBOARD MOBILE RESPONSIVE ───────────────────────────────────────────── */
+
+/* URL prefix input: shrink prefix text on small phones */
+@media (max-width: 480px) {
+  .db-input-prefix-text {
+    font-size: var(--text-xs);
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+}
+
+/* Main content padding on small phones */
+@media (max-width: 480px) {
+  .db-main {
+    padding: var(--spacing-sm);
+    padding-bottom: 80px;
+  }
+}
+
+/* db-card padding reduction on small phones */
+@media (max-width: 480px) {
+  .db-card {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Editor toolbar: wrap to 2 rows on phones */
+@media (max-width: 640px) {
+  .editor-toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .editor-toolbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-toolbar-actions {
+    gap: var(--spacing-xs);
+  }
+
+  .editor-toolbar-actions .btn {
+    font-size: var(--text-xs);
+    padding: 6px 10px;
+  }
+}
+
+/* Editor title input: reduce font size on phones */
+@media (max-width: 640px) {
+  .editor-title-input {
+    font-size: var(--text-2xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-title-input {
+    font-size: var(--text-xl);
+  }
+}
+
+/* TipTap editor: reduce min-height on small phones */
+@media (max-width: 640px) {
+  .tiptap-content {
+    min-height: 200px;
+    max-height: 400px;
+  }
+
+  .ProseMirror {
+    min-height: 200px;
+    padding: var(--spacing-md);
+  }
+}
+
+/* Bottom nav: slightly larger touch targets on very small screens */
+@media (max-width: 360px) {
+  .db-bottom-nav-item {
+    font-size: 9px;
+    padding: 6px 2px;
+  }
+
+  .db-bottom-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Gallery grid: single column on small phones */
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
 }
