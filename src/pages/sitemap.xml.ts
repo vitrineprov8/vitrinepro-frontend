@@ -4,8 +4,9 @@ import type { APIRoute } from 'astro';
 
 const SITE = 'https://v8pro.com.br';
 const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
+const PAGE_LIMIT = 20; // backend max is 20
 
-// Static pages with their SEO priorities
+// Static pages
 const staticPages = [
   { url: '/',            priority: '1.0', changefreq: 'weekly' },
   { url: '/faq',         priority: '0.7', changefreq: 'monthly' },
@@ -34,95 +35,100 @@ function urlEntry(loc: string, lastmod?: string, changefreq?: string, priority?:
   </url>`;
 }
 
+/** Fetch all pages of a paginated endpoint. Returns the accumulated items array. */
+async function fetchAllPages(endpoint: string): Promise<any[]> {
+  const items: any[] = [];
+  let page = 1;
+  let lastPage = 1;
+
+  do {
+    try {
+      const res = await fetch(`${BACKEND}${endpoint}&page=${page}&limit=${PAGE_LIMIT}`);
+      if (!res.ok) break;
+      const body = await res.json();
+      // Response shape: { data: [...], total, page, lastPage }
+      const pageItems: any[] = body?.data ?? [];
+      items.push(...pageItems);
+      lastPage = body?.lastPage ?? 1;
+      page++;
+    } catch {
+      break;
+    }
+  } while (page <= lastPage);
+
+  return items;
+}
+
 export const GET: APIRoute = async () => {
   const entries: string[] = [];
 
   // Static pages
-  for (const page of staticPages) {
-    entries.push(urlEntry(`${SITE}${page.url}`, undefined, page.changefreq, page.priority));
+  for (const p of staticPages) {
+    entries.push(urlEntry(`${SITE}${p.url}`, undefined, p.changefreq, p.priority));
   }
 
-  // Fetch published articles
-  try {
-    const res = await fetch(`${BACKEND}/articles?status=PUBLISHED&limit=500`);
-    if (res.ok) {
-      const data = await res.json();
-      const articles = data?.data ?? data ?? [];
-      for (const a of articles) {
-        if (a.slug) {
-          entries.push(urlEntry(
-            `${SITE}/artigo/${a.slug}`,
-            a.updatedAt || a.publishedAt || a.createdAt,
-            'monthly',
-            '0.8',
-          ));
-        }
-      }
+  // Fetch all published articles (paginated)
+  // Note: list endpoint uses `author` field (not `user`) with `username`
+  const articles = await fetchAllPages('/articles?status=PUBLISHED');
+  for (const a of articles) {
+    if (a.slug) {
+      entries.push(urlEntry(
+        `${SITE}/artigo/${a.slug}`,
+        a.updatedAt || a.publishedAt || a.createdAt,
+        'monthly',
+        '0.8',
+      ));
     }
-  } catch { /* skip on error */ }
+  }
 
-  // Fetch published projects
-  try {
-    const res = await fetch(`${BACKEND}/projects?status=PUBLISHED&limit=500`);
-    if (res.ok) {
-      const data = await res.json();
-      const projects = data?.data ?? data ?? [];
-      for (const p of projects) {
-        if (p.slug) {
-          entries.push(urlEntry(
-            `${SITE}/projeto/${p.slug}`,
-            p.updatedAt || p.createdAt,
-            'monthly',
-            '0.8',
-          ));
-        }
-      }
+  // Fetch all published projects (paginated)
+  const projects = await fetchAllPages('/projects?status=PUBLISHED');
+  for (const p of projects) {
+    if (p.slug) {
+      entries.push(urlEntry(
+        `${SITE}/projeto/${p.slug}`,
+        p.updatedAt || p.createdAt,
+        'monthly',
+        '0.8',
+      ));
     }
-  } catch { /* skip on error */ }
+  }
 
-  // Fetch public profiles (via users with published content)
-  // Using the projects list to get unique usernames
+  // Collect unique profile usernames from both articles and projects
+  // List endpoint returns `author` object with `username` field
   const seenUsers = new Set<string>();
-  try {
-    const res = await fetch(`${BACKEND}/projects?status=PUBLISHED&limit=500`);
-    if (res.ok) {
-      const data = await res.json();
-      const projects = data?.data ?? data ?? [];
-      for (const p of projects) {
-        const username = p.user?.username;
-        if (username && !seenUsers.has(username)) {
-          seenUsers.add(username);
-          entries.push(urlEntry(
-            `${SITE}/perfil/${username}`,
-            p.updatedAt || p.createdAt,
-            'weekly',
-            '0.9',
-          ));
-        }
-      }
-    }
-  } catch { /* skip on error */ }
+  const profileDates = new Map<string, string>();
 
-  // Also check articles for additional usernames
-  try {
-    const res = await fetch(`${BACKEND}/articles?status=PUBLISHED&limit=500`);
-    if (res.ok) {
-      const data = await res.json();
-      const articles = data?.data ?? data ?? [];
-      for (const a of articles) {
-        const username = a.user?.username;
-        if (username && !seenUsers.has(username)) {
-          seenUsers.add(username);
-          entries.push(urlEntry(
-            `${SITE}/perfil/${username}`,
-            a.updatedAt || a.createdAt,
-            'weekly',
-            '0.9',
-          ));
-        }
+  for (const a of articles) {
+    const username = a.author?.username;
+    if (username && !seenUsers.has(username)) {
+      seenUsers.add(username);
+      profileDates.set(username, a.updatedAt || a.createdAt);
+    }
+  }
+  for (const p of projects) {
+    const username = p.author?.username;
+    if (username) {
+      if (!seenUsers.has(username)) {
+        seenUsers.add(username);
+        profileDates.set(username, p.updatedAt || p.createdAt);
+      } else {
+        // Update date if project is more recent
+        const existing = profileDates.get(username) ?? '';
+        const candidate = p.updatedAt || p.createdAt;
+        if (candidate > existing) profileDates.set(username, candidate);
       }
     }
-  } catch { /* skip on error */ }
+  }
+
+  for (const [username, lastmod] of profileDates) {
+    entries.push(urlEntry(
+      `${SITE}/perfil/${username}`,
+      lastmod,
+      'weekly',
+      '0.9',
+    ));
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -132,7 +138,7 @@ ${entries.join('\n')}
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600', // cache 1h
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 };
