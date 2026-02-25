@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+const lastUpdated = '25 de fevereiro de 2026';
+---
+
+<BaseLayout
+  title="Termos de Uso - VitrinePro"
+  description="Leia os termos e condições de uso da plataforma VitrinePro."
+>
+  <Header />
+
+  <main class="static-page">
+    <div class="static-page-header">
+      <div class="container">
+        <p class="static-page-label">Legal</p>
+        <h1>Termos de Uso</h1>
+        <p class="static-page-meta">Última atualização: {lastUpdated}</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="static-page-content">
+
+        <section class="static-section">
+          <h2>1. Aceitação dos termos</h2>
+          <p>Ao criar uma conta ou utilizar a plataforma <strong>VitrinePro</strong>, você concorda com estes Termos de Uso. Se não concordar com qualquer parte destes termos, não utilize a plataforma.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>2. Descrição do serviço</h2>
+          <p>A VitrinePro é uma plataforma de portfólio profissional que permite aos usuários criar perfis públicos, publicar projetos, artigos e currículos para apresentação profissional online.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>3. Cadastro e conta</h2>
+          <ul>
+            <li>Você deve ter ao menos 16 anos para criar uma conta.</li>
+            <li>As informações fornecidas no cadastro devem ser verdadeiras e atualizadas.</li>
+            <li>Você é responsável pela confidencialidade de sua senha e por toda atividade realizada em sua conta.</li>
+            <li>Notifique-nos imediatamente em caso de uso não autorizado de sua conta.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>4. Conteúdo do usuário</h2>
+          <p>Você mantém a propriedade intelectual do conteúdo que publica na plataforma. Ao publicar, você nos concede uma licença não exclusiva, mundial e gratuita para exibir e distribuir esse conteúdo dentro da plataforma.</p>
+          <p>É proibido publicar conteúdo que:</p>
+          <ul>
+            <li>Viole direitos autorais ou propriedade intelectual de terceiros.</li>
+            <li>Contenha material ilegal, difamatório, obsceno ou discriminatório.</li>
+            <li>Inclua informações falsas, enganosas ou fraudulentas.</li>
+            <li>Faça spam ou publicidade não autorizada.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>5. Uso aceitável</h2>
+          <p>Você concorda em não:</p>
+          <ul>
+            <li>Usar a plataforma para fins ilegais ou não autorizados.</li>
+            <li>Tentar acessar sistemas ou áreas restritas da plataforma.</li>
+            <li>Fazer engenharia reversa, descompilar ou modificar qualquer parte da plataforma.</li>
+            <li>Criar contas falsas ou se passar por outra pessoa.</li>
+            <li>Coletar dados de outros usuários sem seu consentimento.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>6. Suspensão e encerramento</h2>
+          <p>Reservamo-nos o direito de suspender ou encerrar contas que violem estes termos, sem aviso prévio. Você pode encerrar sua conta a qualquer momento através das configurações do painel ou entrando em contato conosco.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>7. Limitação de responsabilidade</h2>
+          <p>A VitrinePro não se responsabiliza por danos indiretos, incidentais ou consequenciais resultantes do uso ou da impossibilidade de uso da plataforma. O serviço é fornecido "como está", sem garantias expressas ou implícitas de disponibilidade contínua.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>8. Modificações</h2>
+          <p>Podemos modificar estes Termos de Uso a qualquer momento. Continuando a usar a plataforma após as alterações, você aceita os novos termos. Comunicaremos mudanças significativas por e-mail.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>9. Lei aplicável</h2>
+          <p>Estes termos são regidos pelas leis da República Federativa do Brasil. Qualquer disputa será submetida ao foro da comarca competente no Brasil.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>10. Contato</h2>
+          <p>Dúvidas sobre os termos? Fale conosco pela <a href="/contato">página de contato</a>.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  @import '../styles/static-pages.css';
+</style>

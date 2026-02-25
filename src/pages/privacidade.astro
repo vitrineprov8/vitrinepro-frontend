@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+const lastUpdated = '25 de fevereiro de 2026';
+---
+
+<BaseLayout
+  title="Política de Privacidade - VitrinePro"
+  description="Saiba como a VitrinePro coleta, usa e protege suas informações pessoais."
+>
+  <Header />
+
+  <main class="static-page">
+    <div class="static-page-header">
+      <div class="container">
+        <p class="static-page-label">Legal</p>
+        <h1>Política de Privacidade</h1>
+        <p class="static-page-meta">Última atualização: {lastUpdated}</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="static-page-content">
+
+        <section class="static-section">
+          <h2>1. Quem somos</h2>
+          <p>A <strong>VitrinePro</strong> é uma plataforma de portfólio profissional que permite a profissionais das mais diversas áreas criar e compartilhar seu trabalho online. Neste documento explicamos como tratamos os dados pessoais coletados durante o uso da plataforma.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>2. Dados que coletamos</h2>
+          <p>Coletamos as seguintes categorias de informação:</p>
+          <ul>
+            <li><strong>Dados de cadastro:</strong> nome, sobrenome, endereço de e-mail e senha (criptografada).</li>
+            <li><strong>Dados de perfil:</strong> foto de avatar, imagem de banner, profissão, bio, localização, telefone, site e links de redes sociais que você opte por fornecer.</li>
+            <li><strong>Conteúdo publicado:</strong> projetos, artigos, imagens, currículos e certificados que você faz upload na plataforma.</li>
+            <li><strong>Dados de autenticação OAuth:</strong> quando você entra via Google ou LinkedIn, recebemos apenas o identificador e e-mail fornecidos por essas plataformas.</li>
+            <li><strong>Dados de uso:</strong> páginas visitadas, tempo de sessão e preferências de navegação, de forma anônima e agregada.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>3. Como usamos seus dados</h2>
+          <p>Utilizamos suas informações para:</p>
+          <ul>
+            <li>Criar e manter sua conta na plataforma.</li>
+            <li>Exibir seu portfólio público para visitantes.</li>
+            <li>Enviar comunicações essenciais sobre sua conta (redefinição de senha, alertas de segurança).</li>
+            <li>Melhorar continuamente os recursos e a experiência da plataforma.</li>
+            <li>Cumprir obrigações legais aplicáveis.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>4. Compartilhamento de dados</h2>
+          <p>Não vendemos nem alugamos seus dados pessoais a terceiros. Podemos compartilhar informações apenas nas seguintes situações:</p>
+          <ul>
+            <li><strong>Provedores de serviço:</strong> empresas que nos auxiliam na operação da plataforma (armazenamento em nuvem AWS S3, servidores de e-mail), sempre sob contrato de confidencialidade.</li>
+            <li><strong>Obrigação legal:</strong> quando exigido por autoridade competente ou ordem judicial.</li>
+          </ul>
+        </section>
+
+        <section class="static-section">
+          <h2>5. Armazenamento e segurança</h2>
+          <p>Seus dados são armazenados em servidores seguros. Adotamos medidas técnicas e organizacionais adequadas para proteger suas informações contra acesso não autorizado, alteração, divulgação ou destruição, incluindo criptografia de senhas e transmissão via HTTPS.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>6. Seus direitos (LGPD)</h2>
+          <p>Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem o direito de:</p>
+          <ul>
+            <li>Acessar os dados pessoais que temos sobre você.</li>
+            <li>Corrigir dados incompletos, inexatos ou desatualizados.</li>
+            <li>Solicitar a exclusão de seus dados pessoais.</li>
+            <li>Revogar o consentimento a qualquer momento.</li>
+            <li>Solicitar a portabilidade dos seus dados.</li>
+          </ul>
+          <p>Para exercer qualquer desses direitos, entre em contato através da nossa <a href="/contato">página de contato</a>.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>7. Retenção de dados</h2>
+          <p>Mantemos seus dados enquanto sua conta estiver ativa. Após a exclusão da conta, os dados são removidos em até 30 dias, exceto quando a retenção for exigida por lei.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>8. Alterações nesta política</h2>
+          <p>Reservamo-nos o direito de atualizar esta Política de Privacidade periodicamente. Quando houver alterações relevantes, notificaremos você por e-mail ou por aviso na plataforma.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>9. Contato</h2>
+          <p>Dúvidas sobre esta política? Entre em contato conosco pela <a href="/contato">página de contato</a> ou pelo LinkedIn <a href="https://www.linkedin.com/in/vitrinepro-v8-5015713b0/" target="_blank" rel="noopener">VitrinePro</a>.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  @import '../styles/static-pages.css';
+</style>

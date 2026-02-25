@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+const lastUpdated = '25 de fevereiro de 2026';
+---
+
+<BaseLayout
+  title="Política de Cookies - VitrinePro"
+  description="Entenda como a VitrinePro usa cookies e tecnologias similares."
+>
+  <Header />
+
+  <main class="static-page">
+    <div class="static-page-header">
+      <div class="container">
+        <p class="static-page-label">Legal</p>
+        <h1>Política de Cookies</h1>
+        <p class="static-page-meta">Última atualização: {lastUpdated}</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="static-page-content">
+
+        <section class="static-section">
+          <h2>1. O que são cookies</h2>
+          <p>Cookies são pequenos arquivos de texto armazenados no seu navegador quando você visita um site. Eles permitem que o site reconheça seu dispositivo e lembre preferências entre visitas.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>2. Como usamos cookies atualmente</h2>
+          <div class="info-box">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>
+            <p>Atualmente, a VitrinePro utiliza <strong>apenas armazenamento local (localStorage)</strong> para manter sua sessão autenticada — não utilizamos cookies de rastreamento ou publicidade.</p>
+          </div>
+        </section>
+
+        <section class="static-section">
+          <h2>3. Cookies essenciais</h2>
+          <p>Utilizamos tecnologias de armazenamento estritamente necessárias para o funcionamento da plataforma:</p>
+          <div class="static-table-wrap">
+            <table class="static-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Finalidade</th>
+                  <th>Duração</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>vitrinepro_token</code></td>
+                  <td>localStorage</td>
+                  <td>Mantém a sessão do usuário autenticado (JWT)</td>
+                  <td>Até logout</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="static-section">
+          <h2>4. Cookies de terceiros</h2>
+          <p>Atualmente não utilizamos cookies de terceiros como Google Analytics, Facebook Pixel ou plataformas de publicidade. Caso isso mude no futuro, atualizaremos esta política e notificaremos os usuários.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>5. Como controlar cookies</h2>
+          <p>Você pode controlar e/ou excluir cookies através das configurações do seu navegador:</p>
+          <ul>
+            <li><strong>Google Chrome:</strong> Configurações → Privacidade e segurança → Cookies e outros dados do site</li>
+            <li><strong>Mozilla Firefox:</strong> Preferências → Privacidade e Segurança → Cookies e dados do site</li>
+            <li><strong>Safari:</strong> Preferências → Privacidade → Gerenciar Dados do Site</li>
+            <li><strong>Microsoft Edge:</strong> Configurações → Cookies e permissões do site</li>
+          </ul>
+          <p>Note que desabilitar o localStorage pode impedir o funcionamento correto do login na plataforma.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>6. Alterações nesta política</h2>
+          <p>Esta política pode ser atualizada conforme evoluímos nossa plataforma. A data de última atualização sempre será exibida no topo desta página.</p>
+        </section>
+
+        <section class="static-section">
+          <h2>7. Contato</h2>
+          <p>Dúvidas sobre nossa política de cookies? <a href="/contato">Entre em contato</a>.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  @import '../styles/static-pages.css';
+</style>

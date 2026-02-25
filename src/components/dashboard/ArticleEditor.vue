@@ -40,8 +40,11 @@
         <input
           v-model="form.title"
           class="db-input editor-title-input"
-          placeholder="Título do artigo"
+          :class="{ 'input-error': errors.title }"
+          placeholder="Título do artigo *"
+          @input="errors.title = false"
         />
+        <p v-if="errors.title" class="field-error-msg">O título é obrigatório para publicar.</p>
         <input
           v-model="form.subtitle"
           class="db-input editor-subtitle-input"
@@ -115,6 +118,7 @@ const toast = ref<InstanceType<typeof Toast>>();
 const loading = ref(!!props.articleId);
 const saving = ref(false);
 const lastSaved = ref('');
+const errors = ref({ title: false });
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
@@ -160,6 +164,12 @@ function onTagCreated(tag: Tag) {
 
 async function persist(status: 'DRAFT' | 'PUBLISHED') {
   if (saving.value) return;
+  // Validate required fields
+  errors.value.title = !form.value.title.trim();
+  if (errors.value.title) {
+    toast.value?.show('O título é obrigatório', 'warning');
+    return;
+  }
   saving.value = true;
   form.value.status = status;
   try {

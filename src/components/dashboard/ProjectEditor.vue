@@ -33,12 +33,14 @@
     <div v-else class="editor-layout">
       <!-- Main -->
       <div class="editor-main">
-        <input v-model="form.title" class="db-input editor-title-input" placeholder="Título do projeto" />
+        <input v-model="form.title" class="db-input editor-title-input" :class="{ 'input-error': errors.title }" placeholder="Título do projeto *" @input="errors.title = false" />
+        <p v-if="errors.title" class="field-error-msg">O título é obrigatório.</p>
         <input v-model="form.subtitle" class="db-input editor-subtitle-input" placeholder="Subtítulo (opcional)" />
 
         <div class="db-form-group">
-          <label class="db-label">Descrição <span>(resumo curto)</span></label>
-          <textarea v-model="form.description" class="db-textarea" rows="3" placeholder="Descreva brevemente o projeto..." />
+          <label class="db-label">Descrição <span>(resumo curto)</span> <span class="required-star">*</span></label>
+          <textarea v-model="form.description" class="db-textarea" :class="{ 'input-error': errors.description }" rows="3" placeholder="Descreva brevemente o projeto..." @input="errors.description = false" />
+          <p v-if="errors.description" class="field-error-msg">A descrição é obrigatória.</p>
         </div>
 
         <div>
@@ -154,6 +156,7 @@ const toast = ref<InstanceType<typeof Toast>>();
 const loading = ref(!!props.projectId);
 const saving = ref(false);
 const uploadingImage = ref(false);
+const errors = ref({ title: false, description: false });
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
@@ -246,8 +249,10 @@ function updateCaption(imageId: string, caption: string) {
 }
 
 async function persist(status: 'DRAFT' | 'PUBLISHED') {
-  if (!form.value.title || !form.value.description) {
-    toast.value?.show('Título e descrição são obrigatórios', 'warning');
+  errors.value.title = !form.value.title.trim();
+  errors.value.description = !form.value.description.trim();
+  if (errors.value.title || errors.value.description) {
+    toast.value?.show('Preencha os campos obrigatórios', 'warning');
     return;
   }
   if (saving.value) return;

@@ -1,0 +1,162 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const faqs = [
+  {
+    category: 'Conta e Cadastro',
+    items: [
+      {
+        q: 'Como me cadastro na VitrinePro?',
+        a: 'Você pode se cadastrar gratuitamente clicando em "Cadastre-se" na página inicial. Aceitamos cadastro via e-mail/senha ou através das contas Google e LinkedIn.'
+      },
+      {
+        q: 'Posso usar a VitrinePro sem pagar?',
+        a: 'Sim! A VitrinePro oferece um plano gratuito que permite criar seu perfil, publicar projetos e artigos. Consulte a seção de Preços para conhecer os planos disponíveis.'
+      },
+      {
+        q: 'Como altero minha senha?',
+        a: 'Acesse o painel → Configurações de perfil e clique em "Alterar senha". Se esqueceu sua senha, use a opção "Esqueci minha senha" na página de login.'
+      },
+      {
+        q: 'Posso ter mais de uma conta?',
+        a: 'Cada pessoa pode ter apenas uma conta ativa. Criar múltiplas contas viola nossos Termos de Uso.'
+      },
+    ]
+  },
+  {
+    category: 'Perfil e Portfólio',
+    items: [
+      {
+        q: 'Como personalizo meu perfil público?',
+        a: 'Acesse o painel e clique em "Perfil". Você pode adicionar foto, banner, bio, localização, links de redes sociais e fazer upload de currículos.'
+      },
+      {
+        q: 'Qual é o tamanho máximo para imagens?',
+        a: 'O tamanho máximo para upload de imagens é de 8MB. Aceitamos os formatos JPG, PNG e WebP. As imagens são automaticamente otimizadas após o upload.'
+      },
+      {
+        q: 'Como publico um projeto?',
+        a: 'No painel, acesse "Projetos" → "Novo Projeto". Preencha o título e a descrição (obrigatórios), adicione imagens, tags e detalhes do projeto. Clique em "Publicar" para tornar o projeto público.'
+      },
+      {
+        q: 'Posso ter projetos privados (rascunhos)?',
+        a: 'Sim! Projetos e artigos salvos como "Rascunho" ficam visíveis apenas para você no painel e não aparecem no seu perfil público.'
+      },
+      {
+        q: 'Meu portfólio tem um URL personalizado?',
+        a: 'Sim! Seu perfil público fica disponível em vitrinepro.com/perfil/seu-usuario. Você pode definir seu nome de usuário nas configurações de perfil.'
+      },
+    ]
+  },
+  {
+    category: 'Projetos e Artigos',
+    items: [
+      {
+        q: 'Quantas imagens posso adicionar a um projeto?',
+        a: 'Não há limite específico de imagens por projeto. Você pode adicionar, reordenar e remover imagens na galeria do projeto a qualquer momento.'
+      },
+      {
+        q: 'Posso editar um projeto depois de publicado?',
+        a: 'Sim! Acesse o painel → Projetos → selecione o projeto e clique em "Editar". As alterações ficam disponíveis imediatamente no perfil público.'
+      },
+      {
+        q: 'O que são tags e como usá-las?',
+        a: 'Tags são palavras-chave que categorizam seus projetos e artigos (ex: "React", "UI Design", "Fotografia"). Ajudam visitantes a encontrar conteúdos relacionados.'
+      },
+      {
+        q: 'Posso excluir um projeto ou artigo?',
+        a: 'Sim. Acesse a lista de projetos ou artigos no painel e clique no ícone de lixeira. A exclusão é permanente e não pode ser desfeita.'
+      },
+    ]
+  },
+  {
+    category: 'Currículos e Formação',
+    items: [
+      {
+        q: 'Posso fazer upload do meu currículo?',
+        a: 'Sim! Acesse o painel → "Currículos" para fazer upload de arquivos PDF. Você pode ter múltiplos currículos com nomes diferentes (ex: "CV Português", "CV Inglês").'
+      },
+      {
+        q: 'Visitantes podem baixar meu currículo?',
+        a: 'Sim. Os currículos marcados como ativos aparecem na aba "Sobre" do seu perfil público com um botão de download.'
+      },
+      {
+        q: 'Como adiciono minha formação acadêmica?',
+        a: 'No painel, acesse "Formação" para adicionar universidades, cursos, diplomas e certificações. Você pode incluir datas, descrição e link para certificado.'
+      },
+    ]
+  },
+  {
+    category: 'Privacidade e Segurança',
+    items: [
+      {
+        q: 'Meus dados são compartilhados com terceiros?',
+        a: 'Não vendemos seus dados. Compartilhamos informações apenas com provedores de serviço essenciais (como armazenamento em nuvem) sob contrato de confidencialidade. Consulte nossa Política de Privacidade para mais detalhes.'
+      },
+      {
+        q: 'Como excluo minha conta?',
+        a: 'Para solicitar a exclusão da sua conta e todos os dados associados, entre em contato conosco pela página de Contato. A remoção é processada em até 30 dias.'
+      },
+    ]
+  },
+];
+---
+
+<BaseLayout
+  title="FAQ - Perguntas Frequentes - VitrinePro"
+  description="Encontre respostas para as perguntas mais frequentes sobre a plataforma VitrinePro."
+>
+  <Header />
+
+  <main class="static-page">
+    <div class="static-page-header">
+      <div class="container">
+        <p class="static-page-label">Suporte</p>
+        <h1>Perguntas Frequentes</h1>
+        <p class="static-page-subtitle">Não encontrou o que procura? <a href="/contato">Entre em contato</a> e respondemos em até 48h.</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="static-page-content faq-content">
+        {faqs.map(group => (
+          <div class="faq-group">
+            <h2 class="faq-category">{group.category}</h2>
+            <div class="faq-list">
+              {group.items.map(item => (
+                <details class="faq-item">
+                  <summary class="faq-question">
+                    {item.q}
+                    <svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                    </svg>
+                  </summary>
+                  <div class="faq-answer">
+                    <p set:html={item.a} />
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div class="faq-cta">
+          <h3>Ainda tem dúvidas?</h3>
+          <p>Nossa equipe está pronta para ajudar. Entre em contato e responderemos em até 48 horas.</p>
+          <div class="faq-cta-actions">
+            <a href="/contato" class="btn btn-primary">Entrar em Contato</a>
+            <a href="/ajuda" class="btn btn-secondary">Central de Ajuda</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  @import '../styles/static-pages.css';
+</style>

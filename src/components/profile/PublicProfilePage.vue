@@ -105,83 +105,121 @@
       </div>
 
       <!-- About tab -->
-      <div v-if="activeTab === 'about'" class="about-section">
-        <!-- Bio -->
-        <div v-if="profile.bio" class="about-card">
-          <p class="about-card-title">Sobre</p>
-          <p class="about-bio-text">{{ profile.bio }}</p>
-        </div>
+      <div v-if="activeTab === 'about'" class="about-section-v2">
+        <!-- Two-column grid layout -->
+        <div class="about-main-col">
+          <!-- Bio -->
+          <div v-if="profile.bio" class="about-card-v2">
+            <div class="about-card-header">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+              <h3 class="about-card-heading">Sobre</h3>
+            </div>
+            <p class="about-bio-text">{{ profile.bio }}</p>
+          </div>
 
-        <!-- Contact -->
-        <div class="about-card">
-          <p class="about-card-title">Contato</p>
-          <a v-if="profile.location" href="#" class="about-contact-item" style="cursor:default;pointer-events:none">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
-            </svg>
-            {{ profile.location }}
-          </a>
-          <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener" class="about-contact-item">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253"/>
-            </svg>
-            {{ displayWebsite }}
-          </a>
-        </div>
-
-        <!-- Social links -->
-        <div v-if="activeSocials.length" class="about-card">
-          <p class="about-card-title">Redes Sociais</p>
-          <div class="about-social-grid">
-            <a
-              v-for="net in activeSocials"
-              :key="net.key"
-              :href="net.url"
-              target="_blank"
-              rel="noopener"
-              class="about-social-btn"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
-              {{ net.label }}
-            </a>
+          <!-- Education -->
+          <div v-if="education.length" class="about-card-v2">
+            <div class="about-card-header">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.905 59.905 0 0 1 12 3.493a59.902 59.902 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg>
+              <h3 class="about-card-heading">Formação</h3>
+            </div>
+            <div class="about-edu-list">
+              <div v-for="edu in education" :key="edu.id" class="about-edu-item-v2">
+                <div class="about-edu-dot"></div>
+                <div class="about-edu-body">
+                  <div class="about-edu-top">
+                    <p class="about-edu-title">{{ edu.title }}</p>
+                    <span class="about-edu-type-badge" :class="`about-edu-type-${edu.type}`">{{ eduTypeLabel(edu.type) }}</span>
+                  </div>
+                  <p class="about-edu-institution">{{ edu.institution }}<span v-if="edu.fieldOfStudy"> · {{ edu.fieldOfStudy }}</span></p>
+                  <p class="about-edu-dates">{{ formatEduDate(edu.startDate, edu.endDate) }}</p>
+                  <p v-if="edu.description" class="about-edu-desc">{{ edu.description }}</p>
+                  <a v-if="edu.certificateUrl" :href="edu.certificateUrl" target="_blank" rel="noopener" class="about-edu-cert-link">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/></svg>
+                    Ver certificado
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- CV list -->
-        <div v-if="cvList.length" class="about-card">
-          <p class="about-card-title">Currículos</p>
-          <a
-            v-for="cv in cvList"
-            :key="cv.id"
-            :href="cv.fileUrl"
-            target="_blank"
-            rel="noopener"
-            class="about-cv-item"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--primary);flex-shrink:0">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
-            </svg>
-            <span class="about-cv-label">{{ cv.label }}</span>
-            <span class="about-cv-download">Baixar PDF</span>
-          </a>
-        </div>
+        <!-- Right column: contact, social, CV -->
+        <div class="about-side-col">
+          <!-- Contact & Location -->
+          <div v-if="profile.location || profile.website || profile.phone" class="about-card-v2">
+            <div class="about-card-header">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+              <h3 class="about-card-heading">Contato</h3>
+            </div>
+            <div class="about-contact-list">
+              <span v-if="profile.location" class="about-contact-row">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                {{ profile.location }}
+              </span>
+              <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener" class="about-contact-row about-contact-link">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/></svg>
+                {{ displayWebsite }}
+              </a>
+              <a v-if="profile.phone" :href="`tel:${profile.phone}`" class="about-contact-row about-contact-link">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                {{ profile.phone }}
+              </a>
+            </div>
+          </div>
 
-        <!-- Education -->
-        <div v-if="education.length" class="about-card">
-          <p class="about-card-title">Formação</p>
-          <div v-for="edu in education" :key="edu.id" class="about-edu-item">
-            <span class="about-edu-type-badge" :class="`about-edu-type-${edu.type}`">
-              {{ eduTypeLabel(edu.type) }}
-            </span>
-            <div>
-              <p class="about-edu-title">{{ edu.title }}</p>
-              <p class="about-edu-institution">{{ edu.institution }}<span v-if="edu.fieldOfStudy"> · {{ edu.fieldOfStudy }}</span></p>
-              <p class="about-edu-dates">{{ formatEduDate(edu.startDate, edu.endDate) }}</p>
-              <p v-if="edu.description" style="font-size:var(--text-xs);color:var(--text-secondary);margin:4px 0 0">{{ edu.description }}</p>
-              <a v-if="edu.certificateUrl" :href="edu.certificateUrl" target="_blank" rel="noopener"
-                 style="font-size:var(--text-xs);color:var(--primary);text-decoration:none;display:inline-block;margin-top:4px">
-                Ver certificado →
+          <!-- Social networks -->
+          <div v-if="activeSocials.length" class="about-card-v2">
+            <div class="about-card-header">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/></svg>
+              <h3 class="about-card-heading">Redes Sociais</h3>
+            </div>
+            <div class="about-social-list">
+              <a
+                v-for="net in activeSocials"
+                :key="net.key"
+                :href="net.url"
+                target="_blank"
+                rel="noopener"
+                class="about-social-row"
+                :class="`social-${net.key}`"
+              >
+                <span class="about-social-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
+                </span>
+                <span class="about-social-name">{{ net.label }}</span>
+                <svg class="about-social-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- CV downloads -->
+          <div v-if="cvList.length" class="about-card-v2">
+            <div class="about-card-header">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+              <h3 class="about-card-heading">Currículos</h3>
+            </div>
+            <div class="about-cv-list">
+              <a
+                v-for="cv in cvList"
+                :key="cv.id"
+                :href="cv.fileUrl"
+                target="_blank"
+                rel="noopener"
+                class="about-cv-card"
+                download
+              >
+                <div class="about-cv-icon">
+                  <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                </div>
+                <div class="about-cv-info">
+                  <span class="about-cv-name">{{ cv.label }}</span>
+                  <span class="about-cv-type">PDF</span>
+                </div>
+                <div class="about-cv-btn">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  Baixar
+                </div>
               </a>
             </div>
           </div>

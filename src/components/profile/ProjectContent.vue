@@ -71,16 +71,44 @@
         <TiptapRenderer v-if="project.content" :content="project.content" />
 
         <!-- Image gallery -->
-        <div v-if="sortedImages.length" class="project-gallery">
-          <figure
-            v-for="img in sortedImages"
-            :key="img.id"
-            class="project-gallery-item"
-          >
-            <img :src="img.imageUrl" :alt="img.caption || project.title" />
-            <figcaption v-if="img.caption" class="project-gallery-caption">{{ img.caption }}</figcaption>
-          </figure>
+        <div v-if="sortedImages.length" class="project-gallery-v2">
+          <h3 class="project-gallery-heading">Galeria</h3>
+          <div class="project-gallery-grid">
+            <figure
+              v-for="(img, idx) in sortedImages"
+              :key="img.id"
+              class="project-gallery-thumb"
+              :class="{ 'gallery-thumb-wide': idx === 0 && sortedImages.length > 2 }"
+              @click="openLightbox(idx)"
+            >
+              <img :src="img.imageUrl" :alt="img.caption || project.title" loading="lazy" />
+              <div class="gallery-thumb-overlay">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803M15.803 15.803L21 21"/><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 7.5v6m-3-3h6"/></svg>
+              </div>
+              <figcaption v-if="img.caption" class="gallery-thumb-caption">{{ img.caption }}</figcaption>
+            </figure>
+          </div>
         </div>
+
+        <!-- Lightbox -->
+        <Teleport to="body">
+          <div v-if="lightboxOpen" class="gallery-lightbox" @click.self="closeLightbox">
+            <button class="lightbox-close" @click="closeLightbox" aria-label="Fechar">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <button v-if="sortedImages.length > 1" class="lightbox-prev" @click="prevImage" aria-label="Anterior">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            </button>
+            <div class="lightbox-content">
+              <img :src="sortedImages[lightboxIdx].imageUrl" :alt="sortedImages[lightboxIdx].caption || project.title" />
+              <p v-if="sortedImages[lightboxIdx].caption" class="lightbox-caption">{{ sortedImages[lightboxIdx].caption }}</p>
+              <p class="lightbox-counter">{{ lightboxIdx + 1 }} / {{ sortedImages.length }}</p>
+            </div>
+            <button v-if="sortedImages.length > 1" class="lightbox-next" @click="nextImage" aria-label="Próxima">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          </div>
+        </Teleport>
 
         <!-- CTA box -->
         <div v-if="authorUsername" class="project-cta-box">
@@ -94,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import TiptapRenderer from './TiptapRenderer.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 
@@ -132,6 +160,42 @@ const props = defineProps<{ project: Project }>();
 const sortedImages = computed(() =>
   props.project.images ? [...props.project.images].sort((a, b) => a.order - b.order) : []
 );
+
+// Lightbox
+const lightboxOpen = ref(false);
+const lightboxIdx = ref(0);
+
+function openLightbox(idx: number) {
+  lightboxIdx.value = idx;
+  lightboxOpen.value = true;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  lightboxOpen.value = false;
+  document.body.style.overflow = '';
+}
+
+function nextImage() {
+  lightboxIdx.value = (lightboxIdx.value + 1) % sortedImages.value.length;
+}
+
+function prevImage() {
+  lightboxIdx.value = (lightboxIdx.value - 1 + sortedImages.value.length) % sortedImages.value.length;
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (!lightboxOpen.value) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') nextImage();
+  if (e.key === 'ArrowLeft') prevImage();
+}
+
+onMounted(() => document.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown);
+  document.body.style.overflow = '';
+});
 
 const authorName = computed(() => {
   const u = props.project.user;
