@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /auth/
+
+Sitemap: https://v8pro.com.br/sitemap.xml

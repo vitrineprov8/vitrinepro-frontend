@@ -1,13 +1,37 @@
 ---
+const SITE = 'https://v8pro.com.br';
+
 interface Props {
   title?: string;
   description?: string;
+  canonical?: string;
+  ogImage?: string;
+  ogType?: string;
 }
 
 const {
-  title = 'VitrinePro V8 - Seu Portfólio Profissional',
-  description = 'Plataforma de portfólio profissional para advogados, médicos, programadores e outros profissionais. Mostre suas habilidades, serviços e conquistas.'
+  title = 'VitrinePro - Seu Portfólio Profissional',
+  description = 'Plataforma de portfólio profissional para advogados, médicos, programadores e outros profissionais. Mostre suas habilidades, serviços e conquistas.',
+  canonical,
+  ogImage,
+  ogType = 'website',
 } = Astro.props;
+
+const canonicalUrl = canonical ?? `${SITE}${Astro.url.pathname}`;
+const defaultOgImage = `${SITE}/og-default.png`;
+const resolvedOgImage = ogImage || defaultOgImage;
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'VitrinePro',
+  url: SITE,
+  logo: `${SITE}/favicon.svg`,
+  sameAs: [
+    'https://www.linkedin.com/in/vitrinepro-v8-5015713b0/',
+    'https://www.instagram.com/vitrine.v8pro/',
+  ],
+};
 ---
 
 <!DOCTYPE html>
@@ -18,18 +42,33 @@ const {
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="VitrinePro" />
+    <meta property="og:image" content={resolvedOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@vitrinev8pro" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={resolvedOgImage} />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+
+    <!-- Organization JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 
     <style is:global>
       @import '../styles/global.css';

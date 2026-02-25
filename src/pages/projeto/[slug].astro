@@ -4,6 +4,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import ProjectContent from '../../components/profile/ProjectContent.vue';
 
+const SITE = 'https://v8pro.com.br';
 const { slug } = Astro.params;
 const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
@@ -23,10 +24,40 @@ try {
   notFound = true;
 }
 
+const authorName = project?.user
+  ? `${project.user.firstName ?? ''} ${project.user.lastName ?? ''}`.trim()
+  : 'VitrinePro';
+const authorUsername = project?.user?.username ?? null;
+
 const title = project ? `${project.title} | VitrinePro` : 'Projeto não encontrado | VitrinePro';
 const description = project?.subtitle || project?.description || 'Veja este projeto no VitrinePro';
-const ogImage = project?.coverImageUrl || '';
-const canonicalUrl = `${Astro.site?.origin ?? ''}/projeto/${slug}`;
+const ogImage = project?.coverImageUrl || `${SITE}/og-default.png`;
+const canonicalUrl = `${SITE}/projeto/${slug}`;
+
+// All project images for schema
+const allImages = [
+  ...(project?.coverImageUrl ? [project.coverImageUrl] : []),
+  ...(project?.images ?? []).map((i: any) => i.imageUrl),
+].slice(0, 5);
+
+// JSON-LD CreativeWork
+const projectSchema = project ? {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: project.title,
+  description: project.subtitle || project.description,
+  image: allImages,
+  url: canonicalUrl,
+  dateCreated: project.createdAt,
+  dateModified: project.updatedAt,
+  creator: {
+    '@type': 'Person',
+    name: authorName,
+    url: authorUsername ? `${SITE}/perfil/${authorUsername}` : SITE,
+  },
+  ...(project.tags?.length ? { keywords: project.tags.map((t: any) => t.name).join(', ') } : {}),
+  ...(project.externalUrl ? { sameAs: project.externalUrl } : {}),
+} : null;
 ---
 
 <!DOCTYPE html>
@@ -36,16 +67,32 @@ const canonicalUrl = `${Astro.site?.origin ?? ''}/projeto/${slug}`;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {project && <meta name="author" content={authorName} />}
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="VitrinePro" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@vitrinev8pro" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- JSON-LD CreativeWork -->
+    {projectSchema && <script type="application/ld+json" set:html={JSON.stringify(projectSchema)} />}
+
     <style is:global>
       @import '../../styles/global.css';
       @import '../../styles/dashboard.css';

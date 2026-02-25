@@ -4,6 +4,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import PublicProfilePage from '../../components/profile/PublicProfilePage.vue';
 
+const SITE = 'https://v8pro.com.br';
 const { slug: username } = Astro.params;
 const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
@@ -21,7 +22,6 @@ try {
   } else if (profileRes.ok) {
     profile = await profileRes.json();
 
-    // Fetch content in parallel once we have the profile userId
     const [artsRes, projsRes, cvsRes, edusRes] = await Promise.allSettled([
       fetch(`${BACKEND}/articles?userId=${profile.id}&status=PUBLISHED&limit=20`).then(r => r.ok ? r.json() : { data: [] }),
       fetch(`${BACKEND}/projects?userId=${profile.id}&status=PUBLISHED&limit=20`).then(r => r.ok ? r.json() : { data: [] }),
@@ -44,9 +44,35 @@ const fullName = profile ? `${profile.firstName ?? ''} ${profile.lastName ?? ''}
 const title = profile
   ? `${fullName}${profile.profession ? ' - ' + profile.profession : ''} | VitrinePro`
   : 'Perfil não encontrado | VitrinePro';
-const description = profile?.bio || fullName || 'Perfil profissional no VitrinePro';
-const ogImage = profile?.avatarUrl || '';
-const canonicalUrl = `${Astro.site?.origin ?? ''}/perfil/${username}`;
+const description = profile?.bio || `Portfólio profissional de ${fullName} no VitrinePro`;
+// Use banner for og:image (better dimensions 3:1) — fallback to avatar, then default
+const ogImage = profile?.bannerUrl || profile?.avatarUrl || `${SITE}/og-default.png`;
+const canonicalUrl = `${SITE}/perfil/${username}`;
+
+// Build sameAs array from social links
+const socialPrefixes: Record<string, string> = {
+  linkedin: 'https://linkedin.com/in/', github: 'https://github.com/',
+  twitter: 'https://x.com/', instagram: 'https://instagram.com/',
+  facebook: 'https://facebook.com/', youtube: 'https://youtube.com/@', tiktok: 'https://tiktok.com/@',
+};
+const sameAs = profile?.socialLinks
+  ? Object.entries(profile.socialLinks)
+      .filter(([, v]) => !!v)
+      .map(([k, v]) => (v as string).startsWith('http') ? v as string : `${socialPrefixes[k] ?? ''}${v}`)
+  : [];
+
+// JSON-LD Person
+const personSchema = profile ? {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: fullName,
+  ...(profile.profession ? { jobTitle: profile.profession } : {}),
+  ...(profile.bio ? { description: profile.bio } : {}),
+  image: profile.avatarUrl || undefined,
+  url: canonicalUrl,
+  ...(profile.website ? { sameAs: [profile.website, ...sameAs] } : (sameAs.length ? { sameAs } : {})),
+  ...(profile.location ? { address: { '@type': 'PostalAddress', addressLocality: profile.location } } : {}),
+} : null;
 ---
 
 <!DOCTYPE html>
@@ -56,16 +82,34 @@ const canonicalUrl = `${Astro.site?.origin ?? ''}/perfil/${username}`;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:type" content="profile" />
     <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="VitrinePro" />
+    {profile?.firstName && <meta property="profile:first_name" content={profile.firstName} />}
+    {profile?.lastName && <meta property="profile:last_name" content={profile.lastName} />}
+    {username && <meta property="profile:username" content={username} />}
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@vitrinev8pro" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- JSON-LD Person -->
+    {personSchema && <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />}
+
     <style is:global>
       @import '../../styles/global.css';
       @import '../../styles/dashboard.css';

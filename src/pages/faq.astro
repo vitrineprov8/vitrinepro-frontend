@@ -102,12 +102,31 @@ const faqs = [
     ]
   },
 ];
+
+// JSON-LD FAQPage — generates rich snippets in Google search results
+const allQAs = faqs.flatMap(g => g.items);
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: allQAs.map(item => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a,
+    },
+  })),
+};
 ---
 
 <BaseLayout
-  title="FAQ - Perguntas Frequentes - VitrinePro"
-  description="Encontre respostas para as perguntas mais frequentes sobre a plataforma VitrinePro."
+  title="FAQ - Perguntas Frequentes | VitrinePro"
+  description="Encontre respostas para as perguntas mais frequentes sobre a plataforma VitrinePro: cadastro, portfólio, projetos, artigos e privacidade."
+  canonical="https://v8pro.com.br/faq"
 >
+  <!-- JSON-LD FAQPage schema for Google rich snippets -->
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
   <Header />
 
   <main class="static-page">
