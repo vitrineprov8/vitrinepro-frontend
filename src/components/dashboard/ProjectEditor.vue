@@ -11,12 +11,12 @@
     />
 
     <div class="editor-toolbar">
-      <div class="editor-toolbar-left">
+      <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
         <a href="/dashboard/projetos" class="btn btn-ghost btn-sm">
           <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
           Projetos
         </a>
-        <span class="editor-toolbar-sep">·</span>
+        <span style="color: var(--text-secondary);">·</span>
         <StatusBadge :status="form.status" />
       </div>
       <div class="editor-toolbar-actions">
