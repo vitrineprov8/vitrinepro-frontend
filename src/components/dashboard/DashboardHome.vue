@@ -75,7 +75,7 @@
                   <span>{{ formatDate(a.publishedAt || a.createdAt) }}</span>
                 </div>
               </div>
-              <div style="display: flex; gap: 4px; align-items: center;">
+              <div class="db-list-actions">
                 <a
                   v-if="a.status === 'PUBLISHED'"
                   :href="`/artigo/${a.slug}`"
@@ -107,7 +107,7 @@
                   <span>{{ formatDate(p.createdAt) }}</span>
                 </div>
               </div>
-              <div style="display: flex; gap: 4px; align-items: center;">
+              <div class="db-list-actions">
                 <a
                   v-if="p.status === 'PUBLISHED'"
                   :href="`/projeto/${p.slug}`"

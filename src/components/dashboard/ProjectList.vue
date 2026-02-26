@@ -58,10 +58,10 @@
           <div class="db-list-title">{{ project.title }}</div>
           <div class="db-list-meta">
             <StatusBadge :status="project.status" />
-            <StatusBadge v-if="project.projectStatus" :status="project.projectStatus" />
+            <StatusBadge v-if="project.projectStatus" :status="project.projectStatus" class="db-list-meta-hide" />
             <span v-if="project.year">{{ project.year }}</span>
-            <span v-if="project.clientName">{{ project.clientName }}</span>
-            <span v-if="project.tags.length">{{ project.tags.map(t => t.name).join(', ') }}</span>
+            <span v-if="project.clientName" class="db-list-meta-hide">{{ project.clientName }}</span>
+            <span v-if="project.tags.length" class="db-list-meta-hide">{{ project.tags.map(t => t.name).join(', ') }}</span>
           </div>
         </div>
 

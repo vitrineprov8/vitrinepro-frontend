@@ -62,9 +62,9 @@
           <div class="db-list-title">{{ article.title }}</div>
           <div class="db-list-meta">
             <StatusBadge :status="article.status" />
-            <span v-if="article.readTime">{{ article.readTime }} min de leitura</span>
+            <span v-if="article.readTime" class="db-list-meta-hide">{{ article.readTime }} min de leitura</span>
             <span>{{ formatDate(article.publishedAt || article.createdAt) }}</span>
-            <span v-if="article.tags.length">
+            <span v-if="article.tags.length" class="db-list-meta-hide">
               {{ article.tags.map(t => t.name).join(', ') }}
             </span>
           </div>
