@@ -37,7 +37,7 @@
       <!-- Quick actions -->
       <div class="db-card" style="margin-bottom: var(--spacing-lg);">
         <div class="db-card-title">Ações rápidas</div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--spacing-md);">
+        <div class="db-quick-actions-grid">
           <a href="/dashboard/artigos/novo" class="btn btn-primary">
             <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             Novo Artigo
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Recent articles -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+      <div class="db-home-recent-grid">
         <div class="db-card">
           <div class="db-card-title" style="display: flex; justify-content: space-between; align-items: center;">
             Artigos recentes
@@ -185,10 +185,3 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-@media (max-width: 640px) {
-  div[style*="grid-template-columns: 1fr 1fr"] {
-    grid-template-columns: 1fr !important;
-  }
-}
-</style>
