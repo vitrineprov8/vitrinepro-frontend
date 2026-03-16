@@ -3,7 +3,9 @@
     <!-- Sidebar desktop -->
     <aside class="db-sidebar">
       <div class="db-sidebar-logo">
-        <a href="/dashboard">VitrinePro</a>
+        <a href="/" class="logo">
+        <img src="logo.png" alt="Logo VitrinePro" class="logo-image"  width="140" height="40" />
+      </a>
       </div>
 
       <div class="db-sidebar-user" v-if="user">

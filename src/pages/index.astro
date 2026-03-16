@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Hero from '../components/Hero.vue';
-import Features from '../components/Features.vue';
 import WhyChoose from '../components/WhyChoose.vue';
 import HowItWorks from '../components/HowItWorks.vue';
 import Testimonials from '../components/Testimonials.vue';
@@ -20,10 +19,9 @@ import FloatingCTA from '../components/FloatingCTA.vue';
 
   <main>
     <Hero client:load />
-    <Features client:visible />
-    <WhyChoose client:visible />
     <HowItWorks client:visible />
-    <Testimonials client:visible />
+    <WhyChoose client:visible />
+    <!-- <Testimonials client:visible /> -->
   </main>
 
   <Footer />

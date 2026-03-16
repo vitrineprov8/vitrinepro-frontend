@@ -4,14 +4,14 @@
       <div :class="$style.heroContent">
         <div :class="$style.heroText">
           <h1 :class="$style.title">
-            Conquiste Mais Clientes e Oportunidades com Seu Portfólio Online
+            Coloque suas habilidades na vitrine e conquiste mais oportunidades!​
           </h1>
           <p :class="$style.subtitle">
-            A plataforma preferida de advogados, médicos e programadores para mostrar resultados e atrair clientes ideais. 100% gratuito.
+            Seja qual for sua área de atuação, o vitrine é para você!​
           </p>
 
           <!-- Social Proof -->
-          <div :class="$style.socialProof">
+          <!-- <div :class="$style.socialProof">
             <div :class="$style.avatars">
               <div :class="$style.avatar">MS</div>
               <div :class="$style.avatar">JS</div>
@@ -28,7 +28,7 @@
                 <span>4.9/5 · 500+ avaliações</span>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div :class="$style.cta">
             <a href="/signup" :class="[$style.btnPrimary, 'btn', 'btn-accent', 'btn-lg']">
@@ -39,7 +39,7 @@
             </a>
           </div>
 
-          <div :class="$style.stats">
+          <!-- <div :class="$style.stats">
             <div :class="$style.stat">
               <span :class="$style.statNumber">5 min</span>
               <span :class="$style.statLabel">Para criar</span>
@@ -52,7 +52,7 @@
               <span :class="$style.statNumber">24/7</span>
               <span :class="$style.statLabel">Disponível</span>
             </div>
-          </div>
+          </div> -->
         </div>
         <div :class="$style.heroImage">
           <div :class="$style.imageContainer">

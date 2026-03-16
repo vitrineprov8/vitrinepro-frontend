@@ -57,7 +57,7 @@ const steps: Step[] = [
 <style module>
 .howItWorks {
   padding: var(--spacing-4xl) 0;
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);
 }
 
 .header {
