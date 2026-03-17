@@ -1,0 +1,170 @@
+---
+export const prerender = false;
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const SITE = 'https://v8pro.com.br';
+const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
+
+const tag = Astro.url.searchParams.get('tag') ?? '';
+const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+
+let items: any[] = [];
+let lastPage = 1;
+
+try {
+  const params = new URLSearchParams({ status: 'PUBLISHED', limit: '20', page: String(page) });
+  if (tag) params.set('tag', tag);
+  const res = await fetch(`${BACKEND}/portfolio?${params.toString()}`);
+  if (res.ok) {
+    const body = await res.json();
+    items = body?.data ?? [];
+    lastPage = body?.lastPage ?? 1;
+  }
+} catch { /* fallback: empty */ }
+
+const title = 'Explorar Portfólios | VitrinePro';
+const description = 'Descubra portfólios de profissionais criativos no VitrinePro.';
+const canonicalUrl = `${SITE}/explorar${tag ? `?tag=${encodeURIComponent(tag)}` : ''}`;
+
+// Featured tag chips (can be extended)
+const tagChips = [
+  { label: 'Todos', slug: '' },
+  { label: 'Artigos', slug: 'artigo' },
+  { label: 'Projetos', slug: 'projeto' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${SITE}/og-default.png`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="VitrinePro" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@vitrinev8pro" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${SITE}/og-default.png`} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <style is:global>
+      @import '../styles/global.css';
+      @import '../styles/dashboard.css';
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main style="max-width:1200px;margin:0 auto;padding:2rem 1rem 4rem">
+      <div style="margin-bottom:2rem">
+        <h1 style="font-size:1.75rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem">Explorar</h1>
+        <p style="color:var(--text-secondary)">Descubra portfólios de profissionais criativos</p>
+      </div>
+
+      <!-- Tag filter chips -->
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem">
+        {tagChips.map(chip => (
+          <a
+            href={chip.slug ? `/explorar?tag=${encodeURIComponent(chip.slug)}` : '/explorar'}
+            style={`
+              display:inline-flex;align-items:center;padding:0.4rem 1rem;
+              border-radius:999px;font-size:0.875rem;font-weight:500;text-decoration:none;
+              border:1px solid ${tag === chip.slug ? 'var(--primary)' : 'var(--border-color)'};
+              background:${tag === chip.slug ? 'var(--primary)' : 'transparent'};
+              color:${tag === chip.slug ? '#fff' : 'var(--text-secondary)'};
+              transition:all 0.15s;
+            `}
+          >
+            {chip.label}
+          </a>
+        ))}
+      </div>
+
+      <!-- Grid -->
+      {items.length === 0 ? (
+        <div style="min-height:40vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.75rem;text-align:center">
+          <p style="color:var(--text-secondary);font-size:1rem">Nenhum item encontrado.</p>
+          <a href="/explorar" style="color:var(--primary);font-size:0.9rem">Ver todos</a>
+        </div>
+      ) : (
+        <div class="behance-grid">
+          {items.map((item: any) => (
+            <a href={`/portafolio/${item.slug}`} class="behance-card">
+              <div class="behance-card-image">
+                {item.coverImageUrl ? (
+                  <img src={item.coverImageUrl} alt={item.title} loading="lazy" />
+                ) : (
+                  <div class="behance-card-placeholder">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v14.25a.75.75 0 01-.75.75H3.75A.75.75 0 013 18V3.75A.75.75 0 013.75 3z"/>
+                    </svg>
+                  </div>
+                )}
+                {item.tags?.length > 0 && (
+                  <div class="behance-card-overlay">
+                    <span class="behance-category-badge">{item.tags[0].name}</span>
+                  </div>
+                )}
+              </div>
+              <div class="behance-card-body">
+                {item.tags?.length > 0 && (
+                  <div class="behance-card-tags">
+                    {item.tags.slice(0, 3).map((t: any) => (
+                      <span class="behance-tag">{t.name}</span>
+                    ))}
+                  </div>
+                )}
+                <p class="behance-card-title">{item.title}</p>
+                {item.subtitle && <p class="behance-card-subtitle">{item.subtitle}</p>}
+                {item.user && (
+                  <div class="behance-card-meta">
+                    <span>{item.user.firstName} {item.user.lastName}</span>
+                    {item.user.profession && <><span style="color:var(--border)">•</span><span>{item.user.profession}</span></>}
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <!-- Pagination -->
+      {lastPage > 1 && (
+        <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:3rem">
+          {page > 1 && (
+            <a
+              href={`/explorar?${tag ? `tag=${encodeURIComponent(tag)}&` : ''}page=${page - 1}`}
+              style="padding:0.5rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;font-size:0.875rem"
+            >
+              ← Anterior
+            </a>
+          )}
+          <span style="padding:0.5rem 1rem;color:var(--text-secondary);font-size:0.875rem">
+            Página {page} de {lastPage}
+          </span>
+          {page < lastPage && (
+            <a
+              href={`/explorar?${tag ? `tag=${encodeURIComponent(tag)}&` : ''}page=${page + 1}`}
+              style="padding:0.5rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;font-size:0.875rem"
+            >
+              Próxima →
+            </a>
+          )}
+        </div>
+      )}
+    </main>
+    <Footer />
+  </body>
+</html>

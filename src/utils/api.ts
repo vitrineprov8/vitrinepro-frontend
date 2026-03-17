@@ -194,39 +194,21 @@ export interface FullProfile {
 export interface Tag {
   id: string;
   name: string;
+  slug?: string;
 }
 
-export interface Article {
+export interface PortfolioFile {
   id: string;
-  slug: string;
-  title: string;
-  subtitle?: string;
-  content?: any;
-  conclusion?: string;
-  coverImageUrl?: string;
-  readTime?: number;
-  status?: 'DRAFT' | 'PUBLISHED';
-  tags: Tag[];
-  publishedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  lastPage: number;
-}
-
-export interface ProjectImage {
-  id: string;
-  imageUrl: string;
+  fileUrl: string;
+  fileType: 'IMAGE' | 'PDF';
+  mimeType?: string;
   caption?: string;
+  originalFilename?: string;
+  fileSize?: number;
   order: number;
 }
 
-export interface Project {
+export interface PortfolioItem {
   id: string;
   slug: string;
   title: string;
@@ -238,13 +220,28 @@ export interface Project {
   year?: number;
   duration?: string;
   role?: string;
-  projectStatus?: 'ONGOING' | 'COMPLETED' | 'PAUSED' | 'CANCELLED';
+  projectStatus?: 'ONGOING' | 'COMPLETED' | 'PAUSED' | 'CANCELLED' | null;
   status?: 'DRAFT' | 'PUBLISHED';
   externalUrl?: string;
   tags: Tag[];
-  images: ProjectImage[];
+  files: PortfolioFile[];
   createdAt?: string;
   updatedAt?: string;
+  author?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+    profession?: string;
+    username?: string;
+  };
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  lastPage: number;
 }
 
 export interface CV {
@@ -332,99 +329,60 @@ export async function getPublicProfile(username: string): Promise<FullProfile> {
   return fetchAPI<FullProfile>(`/profile/${username}`);
 }
 
-// ─── ARTICLES ─────────────────────────────────────────────────────────────────
+// ─── PORTFOLIO ────────────────────────────────────────────────────────────────
 
-export async function getArticles(params?: {
-  page?: number; limit?: number; status?: string; tagId?: string; userId?: string;
-}): Promise<PaginatedResponse<Article>> {
-  const qs = new URLSearchParams();
-  if (params?.page) qs.set('page', String(params.page));
-  if (params?.limit) qs.set('limit', String(params.limit));
-  if (params?.status) qs.set('status', params.status);
-  if (params?.tagId) qs.set('tagId', params.tagId);
-  if (params?.userId) qs.set('userId', params.userId);
-  const query = qs.toString() ? `?${qs}` : '';
-  return fetchAPI<PaginatedResponse<Article>>(`/articles${query}`);
-}
-
-export async function getArticle(slug: string): Promise<Article> {
-  return fetchAPI<Article>(`/articles/${slug}`);
-}
-
-export async function createArticle(data: {
-  title: string; subtitle?: string; content?: any;
-  conclusion?: string; tagIds?: string[]; status?: string;
-}): Promise<Article> {
-  return fetchAPI<Article>('/articles', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export async function updateArticle(id: string, data: Partial<Article> & { tagIds?: string[] }): Promise<Article> {
-  return fetchAPI<Article>(`/articles/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
-}
-
-export async function deleteArticle(id: string): Promise<void> {
-  return fetchAPI<void>(`/articles/${id}`, { method: 'DELETE' });
-}
-
-export async function uploadArticleCover(id: string, file: File): Promise<Article> {
-  const fd = new FormData();
-  fd.append('file', file);
-  return fetchAPIFormData<Article>(`/articles/${id}/cover`, fd);
-}
-
-// ─── PROJECTS ─────────────────────────────────────────────────────────────────
-
-export async function getProjects(params?: {
-  page?: number; limit?: number; status?: string; userId?: string;
-}): Promise<PaginatedResponse<Project>> {
+export async function getPortfolioItems(params?: {
+  page?: number; limit?: number; status?: string; userId?: string; tag?: string;
+}): Promise<PaginatedResponse<PortfolioItem>> {
   const qs = new URLSearchParams();
   if (params?.page) qs.set('page', String(params.page));
   if (params?.limit) qs.set('limit', String(params.limit));
   if (params?.status) qs.set('status', params.status);
   if (params?.userId) qs.set('userId', params.userId);
+  if (params?.tag) qs.set('tag', params.tag);
   const query = qs.toString() ? `?${qs}` : '';
-  return fetchAPI<PaginatedResponse<Project>>(`/projects${query}`);
+  return fetchAPI<PaginatedResponse<PortfolioItem>>(`/portfolio${query}`);
 }
 
-export async function getProject(slug: string): Promise<Project> {
-  return fetchAPI<Project>(`/projects/${slug}`);
+export async function getPortfolioItem(slug: string): Promise<PortfolioItem> {
+  return fetchAPI<PortfolioItem>(`/portfolio/${slug}`);
 }
 
-export async function createProject(data: {
+export async function createPortfolioItem(data: {
   title: string; description: string; subtitle?: string; content?: any;
   clientName?: string; year?: number; duration?: string; role?: string;
   projectStatus?: string; status?: string; externalUrl?: string; tagIds?: string[];
-}): Promise<Project> {
-  return fetchAPI<Project>('/projects', { method: 'POST', body: JSON.stringify(data) });
+}): Promise<PortfolioItem> {
+  return fetchAPI<PortfolioItem>('/portfolio', { method: 'POST', body: JSON.stringify(data) });
 }
 
-export async function updateProject(id: string, data: Partial<Project> & { tagIds?: string[] }): Promise<Project> {
-  return fetchAPI<Project>(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export async function updatePortfolioItem(id: string, data: Partial<PortfolioItem> & { tagIds?: string[] }): Promise<PortfolioItem> {
+  return fetchAPI<PortfolioItem>(`/portfolio/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 }
 
-export async function deleteProject(id: string): Promise<void> {
-  return fetchAPI<void>(`/projects/${id}`, { method: 'DELETE' });
+export async function deletePortfolioItem(id: string): Promise<void> {
+  return fetchAPI<void>(`/portfolio/${id}`, { method: 'DELETE' });
 }
 
-export async function uploadProjectCover(id: string, file: File): Promise<Project> {
+export async function uploadPortfolioCover(id: string, file: File): Promise<PortfolioItem> {
   const fd = new FormData();
   fd.append('file', file);
-  return fetchAPIFormData<Project>(`/projects/${id}/cover`, fd);
+  return fetchAPIFormData<PortfolioItem>(`/portfolio/${id}/cover`, fd);
 }
 
-export async function addProjectImage(id: string, file: File, caption?: string): Promise<ProjectImage> {
+export async function addPortfolioFile(id: string, file: File, caption?: string): Promise<PortfolioFile> {
   const fd = new FormData();
   fd.append('file', file);
   if (caption) fd.append('caption', caption);
-  return fetchAPIFormData<ProjectImage>(`/projects/${id}/images`, fd);
+  return fetchAPIFormData<PortfolioFile>(`/portfolio/${id}/files`, fd);
 }
 
-export async function deleteProjectImage(projectId: string, imageId: string): Promise<void> {
-  return fetchAPI<void>(`/projects/${projectId}/images/${imageId}`, { method: 'DELETE' });
+export async function deletePortfolioFile(portfolioId: string, fileId: string): Promise<void> {
+  return fetchAPI<void>(`/portfolio/${portfolioId}/files/${fileId}`, { method: 'DELETE' });
 }
 
-export async function reorderProjectImages(projectId: string, orders: { id: string; order: number }[]): Promise<Project> {
-  return fetchAPI<Project>(`/projects/${projectId}/images/reorder`, {
+export async function reorderPortfolioFiles(portfolioId: string, orders: { id: string; order: number }[]): Promise<void> {
+  return fetchAPI<void>(`/portfolio/${portfolioId}/files/reorder`, {
     method: 'PATCH', body: JSON.stringify({ orders }),
   });
 }

@@ -73,13 +73,20 @@
           <div class="db-form-group">
             <label class="db-label">Usuário <span>(URL do perfil)</span></label>
             <div class="db-input-prefix">
-              <span class="db-input-prefix-text">vitrinepro.com/perfil/</span>
-              <input v-model="form.username" class="db-input" placeholder="seuusuario" />
+              <span class="db-input-prefix-text">https://www.v8pro.com.br/perfil/{{ form.username }}</span>
+              <!-- <input v-model="form.username" class="db-input" placeholder="seuusuario" /> -->
             </div>
           </div>
           <div class="db-form-group">
             <label class="db-label">Profissão</label>
             <input v-model="form.profession" class="db-input" placeholder="Ex: Desenvolvedor Full Stack" />
+          </div>
+          <div class="db-form-group">
+            <label class="db-label">Email</label>
+            <div class="db-input-prefix">
+              <span class="db-input-prefix-text">{{ email }}</span>
+              <!-- <input v-model="form.username" class="db-input" placeholder="seuusuario" /> -->
+            </div>
           </div>
         </div>
       </div>
@@ -157,6 +164,7 @@ const showBannerCrop = ref(false);
 const cropSrc = ref('');
 let pendingAvatar: File | null = null;
 let pendingBanner: File | null = null;
+const email = ref('');
 
 const form = ref({
   firstName: '',
@@ -290,6 +298,7 @@ onMounted(async () => {
   try {
     const profile = await getFullProfile();
     fillForm(profile);
+    email.value = profile.email;
   } catch {
     toast.value?.show('Erro ao carregar perfil', 'error');
   } finally {

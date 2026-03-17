@@ -2188,9 +2188,9 @@
 .project-wrap { background-color: #fafafa; }
 .project-hero {
   width: 100%;
-  height: 70vh;
-  min-height: 500px;
-  max-height: 800px;
+  height: 38vh;
+  min-height: 220px;
+  max-height: 420px;
   overflow: hidden;
   background-color: var(--bg-dark);
 }
@@ -2530,7 +2530,7 @@
   font-size: var(--text-4xl);
   font-weight: 700;
   color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 4px 16px rgba(0,0,0,0.6);
   margin: 0;
 }
 .behance-profession { font-size: var(--text-xl); color: var(--primary); font-weight: 600; margin: 0; }
@@ -2545,20 +2545,20 @@
 .behance-location svg { flex-shrink: 0; }
 .behance-socials { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm); flex-wrap: wrap; }
 .behance-social-btn {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
-  transition: all var(--transition-fast);
-  background: rgba(255,255,255,0.1);
+  transition: color var(--transition-fast);
+  background: transparent;
 }
-.behance-social-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
-.behance-social-btn svg { width: 16px; height: 16px; }
+.behance-social-btn:hover { color: white; }
+.behance-social-btn svg { width: 15px; height: 15px; }
 .behance-profile-actions { display: flex; gap: var(--spacing-md); padding-top: var(--spacing-lg); flex-shrink: 0; }
 
 /* ─── BEHANCE CONTENT ─────────────────────────────────────────────────────── */
@@ -2955,8 +2955,7 @@
   .article-meta-bar { flex-direction: column; align-items: flex-start; }
   .article-author-card { flex-direction: column; align-items: center; text-align: center; }
   .article-author-avatar-lg { width: 90px; height: 90px; font-size: var(--text-3xl); }
-  .project-hero { height: 50vh; min-height: 280px; }
-  .project-title-hero { font-size: var(--text-3xl); }
+  .project-hero { height: 30vh; min-height: 180px; max-height: 300px; }
   .project-header-wrap, .project-content-wrap { padding: 0 var(--spacing-lg); }
   .behance-profile-header {
     flex-direction: column;

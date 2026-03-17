@@ -15,6 +15,7 @@ const staticPages = [
   { url: '/privacidade', priority: '0.3', changefreq: 'yearly' },
   { url: '/termos',      priority: '0.3', changefreq: 'yearly' },
   { url: '/cookies',     priority: '0.3', changefreq: 'yearly' },
+  { url: '/explorar',   priority: '0.8', changefreq: 'daily' },
 ];
 
 function escapeXml(str: string): string {
@@ -67,55 +68,32 @@ export const GET: APIRoute = async () => {
     entries.push(urlEntry(`${SITE}${p.url}`, undefined, p.changefreq, p.priority));
   }
 
-  // Fetch all published articles (paginated)
-  // Note: list endpoint uses `author` field (not `user`) with `username`
-  const articles = await fetchAllPages('/articles?status=PUBLISHED');
-  for (const a of articles) {
-    if (a.slug) {
+  // Fetch all published portfolio items (paginated)
+  const portfolioItems = await fetchAllPages('/portfolio?status=PUBLISHED');
+  for (const item of portfolioItems) {
+    if (item.slug) {
       entries.push(urlEntry(
-        `${SITE}/artigo/${a.slug}`,
-        a.updatedAt || a.publishedAt || a.createdAt,
+        `${SITE}/portafolio/${item.slug}`,
+        item.updatedAt || item.createdAt,
         'monthly',
         '0.8',
       ));
     }
   }
 
-  // Fetch all published projects (paginated)
-  const projects = await fetchAllPages('/projects?status=PUBLISHED');
-  for (const p of projects) {
-    if (p.slug) {
-      entries.push(urlEntry(
-        `${SITE}/projeto/${p.slug}`,
-        p.updatedAt || p.createdAt,
-        'monthly',
-        '0.8',
-      ));
-    }
-  }
-
-  // Collect unique profile usernames from both articles and projects
-  // List endpoint returns `author` object with `username` field
+  // Collect unique profile usernames from portfolio items
   const seenUsers = new Set<string>();
   const profileDates = new Map<string, string>();
 
-  for (const a of articles) {
-    const username = a.author?.username;
-    if (username && !seenUsers.has(username)) {
-      seenUsers.add(username);
-      profileDates.set(username, a.updatedAt || a.createdAt);
-    }
-  }
-  for (const p of projects) {
-    const username = p.author?.username;
+  for (const item of portfolioItems) {
+    const username = item.author?.username ?? item.user?.username;
     if (username) {
+      const candidate = item.updatedAt || item.createdAt;
       if (!seenUsers.has(username)) {
         seenUsers.add(username);
-        profileDates.set(username, p.updatedAt || p.createdAt);
+        profileDates.set(username, candidate);
       } else {
-        // Update date if project is more recent
         const existing = profileDates.get(username) ?? '';
-        const candidate = p.updatedAt || p.createdAt;
         if (candidate > existing) profileDates.set(username, candidate);
       }
     }

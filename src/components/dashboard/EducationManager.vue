@@ -17,28 +17,30 @@
             <label class="db-label">Tipo</label>
             <select v-model="formData.type" class="db-select" required>
               <option value="">Selecione</option>
-              <option value="UNIVERSITY">Universidade / Graduação</option>
-              <option value="COURSE">Curso</option>
-              <option value="DIPLOMA">Diploma</option>
+              <option value="GRADUATE">Graduação</option>
+              <option value="POST_GRADUATE">Pós-Graduação</option>
+              <option value="MASTER">Mestrado</option>
+              <option value="DOCTORATE">Doutorado</option>
               <option value="CERTIFICATION">Certificação</option>
+              <option value="COURSE">Curso</option>
             </select>
           </div>
-          <div class="db-form-group">
+          <!-- <div class="db-form-group">
             <label class="db-label">Ordem <span>(exibição)</span></label>
             <input v-model.number="formData.order" type="number" class="db-input" min="0" placeholder="0" />
-          </div>
+          </div> -->
         </div>
         <div class="db-form-group">
           <label class="db-label">Instituição</label>
-          <input v-model="formData.institution" class="db-input" placeholder="Nome da instituição" required />
+          <input v-model="formData.institution" class="db-input" placeholder="Nome da instituição" required maxlength="40" />
         </div>
         <div class="db-form-group">
           <label class="db-label">Título / Curso</label>
-          <input v-model="formData.title" class="db-input" placeholder="Ex: Bacharelado em Ciência da Computação" required />
+          <input v-model="formData.title" class="db-input" placeholder="Ex: Bacharelado em Ciência da Computação" required maxlength="40" />
         </div>
         <div class="db-form-group">
           <label class="db-label">Área de estudo <span>(opcional)</span></label>
-          <input v-model="formData.fieldOfStudy" class="db-input" placeholder="Ex: Engenharia de Software" />
+          <input v-model="formData.fieldOfStudy" class="db-input" placeholder="Ex: Engenharia de Software" maxlength="40" />
         </div>
         <div class="db-form-row">
           <div class="db-form-group">
@@ -52,7 +54,7 @@
         </div>
         <div class="db-form-group">
           <label class="db-label">Descrição <span>(opcional)</span></label>
-          <textarea v-model="formData.description" class="db-textarea" rows="3" placeholder="Atividades, conquistas, observações..." />
+          <textarea v-model="formData.description" class="db-textarea" rows="3" placeholder="Atividades, conquistas, observações..." maxlength="100" />
         </div>
         <div v-if="editTarget" class="db-form-group">
           <label class="db-label">Certificado <span>(opcional, PDF ou imagem)</span></label>

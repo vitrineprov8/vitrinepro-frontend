@@ -9,8 +9,7 @@ const { slug: username } = Astro.params;
 const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
 let profile: any = null;
-let articles: any[] = [];
-let projects: any[] = [];
+let portfolioItems: any[] = [];
 let cvList: any[] = [];
 let education: any[] = [];
 let notFound = false;
@@ -22,17 +21,15 @@ try {
   } else if (profileRes.ok) {
     profile = await profileRes.json();
 
-    const [artsRes, projsRes, cvsRes, edusRes] = await Promise.allSettled([
-      fetch(`${BACKEND}/articles?userId=${profile.id}&status=PUBLISHED&limit=20`).then(r => r.ok ? r.json() : { data: [] }),
-      fetch(`${BACKEND}/projects?userId=${profile.id}&status=PUBLISHED&limit=20`).then(r => r.ok ? r.json() : { data: [] }),
+    const [portfolioRes, cvsRes, edusRes] = await Promise.allSettled([
+      fetch(`${BACKEND}/portfolio?userId=${profile.id}&status=PUBLISHED&limit=20`).then(r => r.ok ? r.json() : { data: [] }),
       fetch(`${BACKEND}/cv/public/${profile.id}`).then(r => r.ok ? r.json() : []),
       fetch(`${BACKEND}/education/public/${profile.id}`).then(r => r.ok ? r.json() : []),
     ]);
 
-    articles  = artsRes.status  === 'fulfilled' ? (artsRes.value?.data  ?? []) : [];
-    projects  = projsRes.status === 'fulfilled' ? (projsRes.value?.data ?? []) : [];
-    cvList    = cvsRes.status   === 'fulfilled' ? (cvsRes.value         ?? []) : [];
-    education = edusRes.status  === 'fulfilled' ? (edusRes.value        ?? []) : [];
+    portfolioItems = portfolioRes.status === 'fulfilled' ? (portfolioRes.value?.data ?? []) : [];
+    cvList         = cvsRes.status        === 'fulfilled' ? (cvsRes.value            ?? []) : [];
+    education      = edusRes.status       === 'fulfilled' ? (edusRes.value           ?? []) : [];
   } else {
     notFound = true;
   }
@@ -128,8 +125,7 @@ const personSchema = profile ? {
         <PublicProfilePage
           client:load
           profile={profile}
-          articles={articles}
-          projects={projects}
+          portfolioItems={portfolioItems}
           cvList={cvList}
           education={education}
         />

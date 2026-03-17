@@ -1,0 +1,22 @@
+---
+export const prerender = false;
+import PortfolioEditor from '../../../components/dashboard/PortfolioEditor.vue';
+const { id } = Astro.params;
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar Item | Dashboard VitrinePro</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style is:global>
+      @import '../../../styles/global.css';
+      @import '../../../styles/dashboard.css';
+    </style>
+  </head>
+  <body>
+    <PortfolioEditor client:load portfolioId={id} />
+  </body>
+</html>

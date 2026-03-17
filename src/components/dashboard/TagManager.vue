@@ -4,7 +4,7 @@
     <ConfirmDialog
       :visible="!!deleteTarget"
       title="Excluir tag"
-      :message="`Excluir a tag &quot;${deleteTarget?.name}&quot;? Ela será removida de todos os artigos e projetos.`"
+      :message="`Excluir a tag &quot;${deleteTarget?.name}&quot;? Ela será removida de todos os itens do portfólio.`"
       confirm-label="Excluir tag"
       :loading="deleting"
       @confirm="confirmDelete"
@@ -14,7 +14,7 @@
     <div class="db-section-header">
       <div>
         <h1 class="db-section-title">Tags</h1>
-        <p class="db-section-subtitle">Gerencie as tags usadas em artigos e projetos</p>
+        <p class="db-section-subtitle">Gerencie as tags usadas no seu portfólio</p>
       </div>
     </div>
 
@@ -22,7 +22,7 @@
     <div class="db-card" style="margin-bottom: var(--spacing-lg);">
       <div class="db-card-title">Criar nova tag</div>
       <form @submit.prevent="create" style="display: flex; gap: var(--spacing-sm); max-width: 400px;">
-        <input v-model="newName" class="db-input" placeholder="Nome da tag" required maxlength="50" style="flex: 1;" />
+        <input v-model="newName" class="db-input" placeholder="Nome da tag" required maxlength="20" style="flex: 1;" />
         <button type="submit" class="btn btn-primary" :disabled="creating || !newName.trim()">
           <span v-if="creating" class="spinner spinner-sm" />
           {{ creating ? '' : 'Criar' }}

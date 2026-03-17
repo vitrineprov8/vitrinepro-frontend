@@ -43,10 +43,11 @@
       </div>
 
       <!-- Actions -->
-      <div v-if="profile.website" class="behance-profile-actions">
-        <a :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary">
+      <div class="behance-profile-actions">
+        <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary">
           Entrar em Contato
         </a>
+        <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
       </div>
     </div>
 
@@ -54,18 +55,32 @@
     <div class="behance-content">
       <nav class="behance-tabs-nav">
         <button
-          v-for="tab in tabs"
-          :key="tab.value"
           class="behance-tab-btn"
-          :class="{ active: activeTab === tab.value }"
-          @click="activeTab = tab.value"
+          :class="{ active: activeTab === 'portfolio' && selectedTagId === null }"
+          @click="activeTab = 'portfolio'; selectedTagId = null"
         >
-          {{ tab.label }}
-          <span v-if="tab.count != null" class="behance-tab-count">{{ tab.count }}</span>
+          Todos
+          <span class="behance-tab-count">{{ portfolioItems.length }}</span>
+        </button>
+        <button
+          v-for="tag in uniqueTags"
+          :key="tag.id"
+          class="behance-tab-btn"
+          :class="{ active: activeTab === 'portfolio' && selectedTagId === tag.id }"
+          @click="activeTab = 'portfolio'; selectedTagId = tag.id"
+        >
+          {{ tag.name }}
+        </button>
+        <button
+          class="behance-tab-btn"
+          :class="{ active: activeTab === 'about' }"
+          @click="activeTab = 'about'"
+        >
+          Sobre
         </button>
       </nav>
 
-      <!-- Grid view: Todos / Artigos / Projetos -->
+      <!-- Grid view: portfolio items -->
       <div v-if="activeTab !== 'about'">
         <div v-if="visibleItems.length === 0" class="empty-state" style="padding:var(--spacing-4xl) 0">
           <p class="empty-state-title">Nenhum conteúdo publicado ainda</p>
@@ -74,7 +89,7 @@
           <a
             v-for="item in visibleItems"
             :key="item.id"
-            :href="item.href"
+            :href="`/portafolio/${item.slug}`"
             class="behance-card"
           >
             <div class="behance-card-image">
@@ -84,8 +99,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v14.25a.75.75 0 01-.75.75H3.75A.75.75 0 013 18V3.75A.75.75 0 013.75 3z"/>
                 </svg>
               </div>
-              <div class="behance-card-overlay">
-                <span class="behance-category-badge">{{ item.type }}</span>
+              <div v-if="item.tags?.length" class="behance-card-overlay">
+                <span class="behance-category-badge">{{ item.tags[0].name }}</span>
               </div>
             </div>
             <div class="behance-card-body">
@@ -95,9 +110,9 @@
               <p class="behance-card-title">{{ item.title }}</p>
               <p v-if="item.subtitle" class="behance-card-subtitle">{{ item.subtitle }}</p>
               <div class="behance-card-meta">
-                <span v-if="item.meta1">{{ item.meta1 }}</span>
-                <span v-if="item.meta1 && item.meta2" style="color:var(--border)">•</span>
-                <span v-if="item.meta2">{{ item.meta2 }}</span>
+                <span v-if="item.year">{{ item.year }}</span>
+                <span v-if="item.year && item.projectStatus" style="color:var(--border)">•</span>
+                <span v-if="item.projectStatus">{{ statusLabel(item.projectStatus) }}</span>
               </div>
             </div>
           </a>
@@ -230,9 +245,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import ShareButton from '../ui/ShareButton.vue';
 
-interface Tag { id: string; name: string; }
+interface Tag { id: string; name: string; slug?: string; }
 interface SocialLinks {
   linkedin?: string; github?: string; twitter?: string; instagram?: string;
   facebook?: string; youtube?: string; tiktok?: string;
@@ -240,17 +256,12 @@ interface SocialLinks {
 interface FullProfile {
   id: string; firstName: string; lastName: string; username?: string;
   profession?: string; bio?: string; phone?: string; website?: string;
-  location?: string; avatarUrl?: string; bannerUrl?: string;
+  location?: string; avatarUrl?: string; bannerUrl?: string; email?: string;
   socialLinks?: SocialLinks; createdAt?: string;
 }
-interface Article {
+interface PortfolioItem {
   id: string; slug: string; title: string; subtitle?: string;
-  coverImageUrl?: string; readTime?: number; publishedAt?: string;
-  createdAt?: string; tags: Tag[];
-}
-interface Project {
-  id: string; slug: string; title: string; subtitle?: string;
-  coverImageUrl?: string; year?: number; projectStatus?: string;
+  coverImageUrl?: string; year?: string; projectStatus?: string;
   clientName?: string; tags: Tag[];
 }
 interface CV { id: string; label: string; fileUrl: string; createdAt?: string; }
@@ -262,55 +273,43 @@ interface Education {
 
 const props = defineProps<{
   profile: FullProfile;
-  articles: Article[];
-  projects: Project[];
+  portfolioItems: PortfolioItem[];
   cvList: CV[];
   education: Education[];
 }>();
 
-const activeTab = ref<'all' | 'articles' | 'projects' | 'about'>('all');
+const activeTab = ref<'portfolio' | 'about'>('portfolio');
+const selectedTagId = ref<string | null>(null);
 
-const tabs = computed(() => [
-  { label: 'Todos', value: 'all', count: null },
-  { label: 'Artigos', value: 'articles', count: props.articles.length || null },
-  { label: 'Projetos', value: 'projects', count: props.projects.length || null },
-  { label: 'Sobre', value: 'about', count: null },
-]);
+const profileUrl = ref('');
+onMounted(() => { profileUrl.value = window.location.href; });
 
-// Merged grid items
-interface GridItem {
-  id: string; href: string; type: string; title: string; subtitle?: string;
-  coverImageUrl?: string; tags: Tag[]; meta1?: string; meta2?: string;
-}
-
-const allItems = computed((): GridItem[] => {
-  const arts: GridItem[] = props.articles.map(a => ({
-    id: `a-${a.id}`, href: `/artigo/${a.slug}`, type: 'Artigo',
-    title: a.title, subtitle: a.subtitle, coverImageUrl: a.coverImageUrl, tags: a.tags,
-    meta1: formatDate(a.publishedAt || a.createdAt),
-    meta2: a.readTime ? `${a.readTime} min` : undefined,
-  }));
-  const projs: GridItem[] = props.projects.map(p => ({
-    id: `p-${p.id}`, href: `/projeto/${p.slug}`, type: 'Projeto',
-    title: p.title, subtitle: p.subtitle, coverImageUrl: p.coverImageUrl, tags: p.tags,
-    meta1: p.year ? String(p.year) : undefined,
-    meta2: p.projectStatus ? statusLabel(p.projectStatus) : undefined,
-  }));
-  return [...arts, ...projs];
+// Collect unique tags from all portfolio items
+const uniqueTags = computed((): Tag[] => {
+  const seen = new Map<string, Tag>();
+  for (const item of props.portfolioItems) {
+    for (const tag of item.tags ?? []) {
+      if (!seen.has(tag.id)) seen.set(tag.id, tag);
+    }
+  }
+  return [...seen.values()];
 });
 
-const visibleItems = computed((): GridItem[] => {
-  if (activeTab.value === 'all') return allItems.value;
-  if (activeTab.value === 'articles')
-    return allItems.value.filter(i => i.type === 'Artigo');
-  if (activeTab.value === 'projects')
-    return allItems.value.filter(i => i.type === 'Projeto');
-  return [];
+const visibleItems = computed((): PortfolioItem[] => {
+  if (selectedTagId.value === null) return props.portfolioItems;
+  return props.portfolioItems.filter(item =>
+    item.tags?.some(t => t.id === selectedTagId.value)
+  );
 });
 
 const fullName = computed(() =>
   `${props.profile.firstName ?? ''} ${props.profile.lastName ?? ''}`.trim()
 );
+
+function formatDate(d?: string) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 const initials = computed(() =>
   `${props.profile.firstName?.[0] ?? ''}${props.profile.lastName?.[0] ?? ''}`.toUpperCase()
@@ -348,11 +347,6 @@ const activeSocials = computed(() => {
       icon: socialIconMap[key] ?? '',
     }));
 });
-
-function formatDate(d?: string) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 function formatEduDate(start: string, end?: string) {
   const fmt = (d: string) => {
