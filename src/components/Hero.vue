@@ -34,9 +34,9 @@
             <a href="/signup" :class="[$style.btnPrimary, 'btn', 'btn-accent', 'btn-lg']">
               Criar Meu Portfólio Gratuito
             </a>
-            <a href="#exemplos" :class="[$style.btnSecondary, 'btn', 'btn-outline', 'btn-lg']">
+           <!--  <a href="#exemplos" :class="[$style.btnSecondary, 'btn', 'btn-outline', 'btn-lg']">
               Ver Exemplos
-            </a>
+            </a> -->
           </div>
 
           <!-- <div :class="$style.stats">

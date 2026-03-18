@@ -34,10 +34,6 @@
           <span v-if="item.role" class="portfolio-meta-chip">
             <span class="portfolio-meta-chip-label">Papel</span>{{ item.role }}
           </span>
-          <StatusBadge v-if="item.projectStatus" :status="item.projectStatus" />
-          <a v-if="item.externalUrl" :href="item.externalUrl" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
-            Ver Projeto →
-          </a>
         </div>
 
         <!-- Author mini-bar -->
