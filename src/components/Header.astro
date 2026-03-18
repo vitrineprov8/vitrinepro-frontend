@@ -6,7 +6,7 @@ import HeaderActions from './HeaderActions.vue';
   <div class="container">
     <nav class="nav">
       <a href="/" class="logo">
-        <img src="logo.png" alt="Logo VitrinePro" class="logo-image"  width="140" height="40" />
+        <img src="/logo.png" alt="Logo VitrinePro" class="logo-image"  width="140" height="40" />
       </a>
 
       <button class="menu-toggle" aria-label="Abrir menu" id="menu-toggle">
@@ -22,11 +22,11 @@ import HeaderActions from './HeaderActions.vue';
   </div>
 </header>
 
-<style>
+<style is:global>
   .header {
     position: sticky;
     top: 0;
-    z-index: var(--z-sticky);
+    z-index: 9999;
     background-color: var(--bg-primary);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);

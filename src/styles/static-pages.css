@@ -479,6 +479,96 @@
   margin: 0 0 var(--spacing-xl);
 }
 
+/* ─── HELP CONTACT FORM ──────────────────────────────────────────────────── */
+.help-contact-section {
+  margin-top: var(--spacing-3xl);
+  border-top: 1px solid var(--border);
+  padding-top: var(--spacing-3xl);
+}
+
+.help-contact-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-3xl);
+}
+
+.help-contact-inner h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.help-contact-inner > p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-2xl);
+  line-height: 1.6;
+}
+
+.help-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.help-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.help-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.help-form-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.help-form-input,
+.help-form-textarea {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.help-form-input:focus,
+.help-form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.help-form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.help-form-submit {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
 /* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .static-page-header h1 {
@@ -495,6 +585,14 @@
 
   .help-guides-grid {
     grid-template-columns: 1fr;
+  }
+
+  .help-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .help-contact-inner {
+    padding: var(--spacing-2xl);
   }
 
   .faq-cta,

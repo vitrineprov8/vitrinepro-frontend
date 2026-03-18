@@ -70,6 +70,9 @@ const organizationSchema = {
     <!-- Organization JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 
+    <!-- Slot for extra head content (custom meta, JSON-LD, etc.) -->
+    <slot name="head" />
+
     <style is:global>
       @import '../styles/global.css';
     </style>

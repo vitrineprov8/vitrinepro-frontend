@@ -179,6 +179,7 @@ export interface FullProfile {
   location?: string;
   avatarUrl?: string;
   bannerUrl?: string;
+  bannerColor?: string;
   socialLinks: {
     linkedin?: string;
     github?: string;
@@ -308,6 +309,7 @@ export async function getFullProfile(): Promise<FullProfile> {
 export async function updateProfile(data: {
   username?: string; profession?: string; bio?: string;
   phone?: string; website?: string; location?: string;
+  bannerColor?: string;
   socialLinks?: Partial<FullProfile['socialLinks']>;
 }): Promise<FullProfile> {
   return fetchAPI<FullProfile>('/profile', { method: 'PATCH', body: JSON.stringify(data) });

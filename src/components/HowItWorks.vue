@@ -24,6 +24,27 @@
           Começar Agora - É Grátis
         </a>
       </div>
+
+      <!-- Eye-catching CTA Banner -->
+      <div :class="$style.ctaBanner">
+        <div :class="$style.ctaBannerGlow"></div>
+        <div :class="$style.ctaBannerContent">
+          <span :class="$style.ctaBannerBadge">✦ Tudo em um lugar</span>
+          <h2 :class="$style.ctaBannerTitle">Centralize Toda Sua Experiência</h2>
+          <p :class="$style.ctaBannerText">
+            É comum ter sua experiência profissional dispersa em documentos, planilhas e memórias.
+            Com VitrinePro, você reúne tudo em um único lugar, pronto para impressionar o mundo.
+          </p>
+          <div :class="$style.ctaBannerActions">
+            <a href="/signup" :class="$style.ctaBannerBtn">
+              Criar Portfólio Gratuito
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -150,6 +171,98 @@ const steps: Step[] = [
   margin-top: var(--spacing-3xl);
 }
 
+/* ── Eye-catching CTA Banner ─────────────────────────── */
+.ctaBanner {
+  position: relative;
+  margin-top: var(--spacing-4xl);
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 40%, #ec4899 100%);
+  padding: 4rem 3rem;
+  text-align: center;
+}
+
+.ctaBannerGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.ctaBannerContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.ctaBannerBadge {
+  display: inline-block;
+  background: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 0.3rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ctaBannerTitle {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.ctaBannerText {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: rgba(255,255,255,0.85);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ctaBannerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.ctaBannerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  color: #4f46e5;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ctaBannerBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+}
+
+.ctaBannerNote {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.65);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .steps {
@@ -185,6 +298,9 @@ const steps: Step[] = [
 }
 
 @media (max-width: 640px) {
+  .ctaBanner { padding: 2.5rem 1.5rem; }
+  .ctaBannerTitle { font-size: 1.6rem; }
+
   .howItWorks {
     padding: var(--spacing-3xl) 0;
   }

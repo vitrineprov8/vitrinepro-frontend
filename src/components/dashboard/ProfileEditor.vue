@@ -9,14 +9,6 @@
       @confirm="onAvatarCropConfirm"
       @cancel="showAvatarCrop = false"
     />
-    <ImageAdjustModal
-      :visible="showBannerCrop"
-      :image-src="cropSrc"
-      :aspect-ratio="3"
-      title="Ajustar imagem de capa"
-      @confirm="onBannerCropConfirm"
-      @cancel="showBannerCrop = false"
-    />
 
     <div class="db-section-header">
       <div>
@@ -34,19 +26,9 @@
     <form v-else @submit.prevent="save">
       <!-- Cover & Avatar -->
       <div class="db-card" style="margin-bottom: var(--spacing-lg); padding: 0;">
-        <!-- Banner -->
-        <div class="profile-banner-upload" @click="bannerInput?.click()">
-          <img v-if="bannerPreview || form.bannerUrl" :src="bannerPreview || form.bannerUrl" alt="Banner" />
-          <div v-else style="width:100%; height:100%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);" />
-          <div class="profile-banner-upload-overlay">
-            <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" /></svg>
-            Alterar capa
-          </div>
-          <input ref="bannerInput" type="file" accept="image/*" style="display:none" @change="onBannerChange" />
-        </div>
-
-        <!-- Avatar -->
-        <div style="position: relative; padding: 0 var(--spacing-xl) var(--spacing-xl); margin-top: -40px;">
+        <!-- Banner color preview -->
+        <div class="profile-banner-color-preview" :style="bannerPreviewStyle">
+          <!-- Avatar overlapping banner bottom -->
           <div class="profile-avatar-upload" @click="avatarInput?.click()">
             <img v-if="avatarPreview || form.avatarUrl" :src="avatarPreview || form.avatarUrl" alt="Avatar" />
             <span v-else>{{ initials }}</span>
@@ -54,6 +36,27 @@
               <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" /></svg>
             </div>
             <input ref="avatarInput" type="file" accept="image/*" style="display:none" @change="onAvatarChange" />
+          </div>
+        </div>
+        <div style="padding: 0 var(--spacing-xl) var(--spacing-xl); margin-top: 44px;">
+          <div class="db-form-group" style="margin-bottom: 0;">
+            <label class="db-label">Cor do banner</label>
+            <div class="banner-color-picker">
+              <button
+                v-for="c in bannerColorPresets"
+                :key="c"
+                type="button"
+                class="banner-color-swatch"
+                :style="{ background: c }"
+                :class="{ active: form.bannerColor === c }"
+                @click="form.bannerColor = c"
+                :title="c"
+              />
+              <label class="banner-color-custom" title="Cor personalizada">
+                <input type="color" v-model="form.bannerColor" style="opacity:0;position:absolute;width:0;height:0;" />
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/></svg>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -148,7 +151,7 @@ import { ref, computed, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
 import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
-import { getFullProfile, updateProfile, uploadAvatar, uploadBanner } from '../../utils/api';
+import { getFullProfile, updateProfile, uploadAvatar } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
 
 const toast = ref<InstanceType<typeof Toast>>();
@@ -156,15 +159,25 @@ const loading = ref(true);
 const saving = ref(false);
 
 const avatarInput = ref<HTMLInputElement>();
-const bannerInput = ref<HTMLInputElement>();
 const avatarPreview = ref('');
-const bannerPreview = ref('');
 const showAvatarCrop = ref(false);
-const showBannerCrop = ref(false);
 const cropSrc = ref('');
 let pendingAvatar: File | null = null;
-let pendingBanner: File | null = null;
 const email = ref('');
+
+const bannerColorPresets = [
+  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+  'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+  'linear-gradient(135deg, #ec4899 0%, #f97316 100%)',
+  'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+  'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+  'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+];
+
+const bannerPreviewStyle = computed(() => {
+  if (form.value.bannerColor) return { background: form.value.bannerColor };
+  return { background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)' };
+});
 
 const form = ref({
   firstName: '',
@@ -176,7 +189,7 @@ const form = ref({
   website: '',
   location: '',
   avatarUrl: '',
-  bannerUrl: '',
+  bannerColor: '',
   socialLinks: {
     linkedin: '', github: '', twitter: '',
     instagram: '', facebook: '', youtube: '', tiktok: '',
@@ -214,23 +227,6 @@ function onAvatarCropConfirm(blob: Blob) {
   cropSrc.value = '';
 }
 
-function onBannerChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  cropSrc.value = URL.createObjectURL(file);
-  showBannerCrop.value = true;
-  (e.target as HTMLInputElement).value = '';
-}
-
-function onBannerCropConfirm(blob: Blob) {
-  if (bannerPreview.value) URL.revokeObjectURL(bannerPreview.value);
-  bannerPreview.value = URL.createObjectURL(blob);
-  pendingBanner = new File([blob], 'banner.jpg', { type: blob.type });
-  showBannerCrop.value = false;
-  URL.revokeObjectURL(cropSrc.value);
-  cropSrc.value = '';
-}
-
 function formatPhone(e: Event) {
   const raw = (e.target as HTMLInputElement).value.replace(/[^\d+\s\-()]/g, '');
   form.value.phone = raw.slice(0, 20);
@@ -246,7 +242,7 @@ function fillForm(p: FullProfile) {
   form.value.website = p.website ?? '';
   form.value.location = p.location ?? '';
   form.value.avatarUrl = p.avatarUrl ?? '';
-  form.value.bannerUrl = p.bannerUrl ?? '';
+  form.value.bannerColor = (p as any).bannerColor ?? '';
   form.value.socialLinks = {
     linkedin:  p.socialLinks?.linkedin  ?? '',
     github:    p.socialLinks?.github    ?? '',
@@ -259,24 +255,14 @@ function fillForm(p: FullProfile) {
 }
 
 async function save() {
+  if (saving.value) return;
   saving.value = true;
   try {
-    // Upload images first if changed
     if (pendingAvatar) {
       const updated = await uploadAvatar(pendingAvatar);
-      form.value.avatarUrl = updated.avatarUrl ?? '';
-      // Keep avatarPreview (blob URL) showing the freshly uploaded image.
-      // It will be revoked the next time the user picks a new avatar.
+      if (updated.avatarUrl) form.value.avatarUrl = updated.avatarUrl;
       pendingAvatar = null;
     }
-    if (pendingBanner) {
-      const updated = await uploadBanner(pendingBanner);
-      form.value.bannerUrl = updated.bannerUrl ?? '';
-      // Keep bannerPreview (blob URL) showing the freshly uploaded image.
-      // Avoids browser-cache returning the old image from the same remote URL.
-      pendingBanner = null;
-    }
-    // Save profile data
     await updateProfile({
       username: form.value.username || undefined,
       profession: form.value.profession || undefined,
@@ -284,6 +270,7 @@ async function save() {
       phone: form.value.phone || undefined,
       website: form.value.website || undefined,
       location: form.value.location || undefined,
+      bannerColor: form.value.bannerColor || undefined,
       socialLinks: form.value.socialLinks,
     });
     toast.value?.show('Perfil atualizado com sucesso!', 'success');
@@ -306,3 +293,44 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.profile-banner-color-preview {
+  width: 100%;
+  height: 100px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  position: relative;
+}
+.banner-color-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 8px;
+}
+.banner-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.banner-color-swatch:hover { transform: scale(1.12); }
+.banner-color-swatch.active { border-color: var(--text-primary); transform: scale(1.12); }
+.banner-color-custom {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px dashed var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  position: relative;
+  transition: border-color 0.15s;
+}
+.banner-color-custom:hover { border-color: var(--primary); color: var(--primary); }
+</style>

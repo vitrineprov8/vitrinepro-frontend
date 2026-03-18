@@ -55,7 +55,7 @@
     </main>
 
     <!-- Bottom nav mobile -->
-    <nav class="db-bottom-nav">
+    <nav class="db-bottom-nav" :class="{ 'keyboard-open': keyboardOpen }">
       <div class="db-bottom-nav-inner">
         <a v-for="item in mobileNavItems" :key="item.href"
           :href="item.href"
@@ -71,13 +71,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue';
 import { isAuthenticated, logout } from '../../utils/auth';
 import { getFullProfile } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
 
 const user = ref<FullProfile | null>(null);
 provide('currentUser', user);
+
+// Hide bottom nav when virtual keyboard is open
+const keyboardOpen = ref(false);
+let vpResizeHandler: (() => void) | null = null;
 
 const initials = computed(() => {
   if (!user.value) return '';
@@ -102,6 +106,12 @@ const mobileNavItems = [
   navItems[4], // Currículos
 ];
 
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined' && window.visualViewport && vpResizeHandler) {
+    window.visualViewport.removeEventListener('resize', vpResizeHandler);
+  }
+});
+
 function isActive(href: string) {
   if (typeof window === 'undefined') return false;
   if (href === '/dashboard') return window.location.pathname === '/dashboard';
@@ -113,6 +123,15 @@ function handleLogout() {
 }
 
 onMounted(async () => {
+  // Detect virtual keyboard via visualViewport API
+  if (typeof window !== 'undefined' && window.visualViewport) {
+    vpResizeHandler = () => {
+      const ratio = window.visualViewport!.height / window.innerHeight;
+      keyboardOpen.value = ratio < 0.75;
+    };
+    window.visualViewport.addEventListener('resize', vpResizeHandler);
+  }
+
   if (!isAuthenticated()) {
     const redirect = encodeURIComponent(window.location.pathname);
     window.location.href = `/login?redirect=${redirect}`;

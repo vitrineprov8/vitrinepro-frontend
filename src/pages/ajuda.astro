@@ -7,29 +7,29 @@ const guides = [
   {
     icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>`,
     title: 'Configurar seu perfil',
-    desc: 'Aprenda a personalizar seu perfil público com foto, bio, localização e links de redes sociais.',
+    desc: 'Personalize seu perfil público com foto, bio, cor do banner, localização e redes sociais.',
     steps: [
       'Acesse o Painel e clique em "Perfil" no menu lateral.',
       'Faça upload da sua foto de perfil (avatar) — recomendamos uma imagem quadrada de pelo menos 400×400px.',
-      'Adicione uma imagem de banner (proporção 3:1) para personalizar o topo do seu perfil.',
+      'Escolha a cor do banner na seção de cor — selecione um dos gradientes predefinidos ou use uma cor personalizada.',
       'Preencha seus dados: nome, profissão, bio, localização, site e telefone.',
-      'Adicione links para suas redes sociais na seção "Redes Sociais".',
-      'Clique em "Salvar" para publicar as alterações.',
+      'Adicione links para suas redes sociais na seção "Redes Sociais" — elas aparecerão no seu perfil público.',
+      'Clique em "Salvar alterações" para publicar as mudanças.',
     ]
   },
   {
     icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v14.25a.75.75 0 01-.75.75H3.75A.75.75 0 013 18V3.75A.75.75 0 013.75 3z"/>`,
-    title: 'Criar um projeto',
+    title: 'Criar um item de portfólio',
     desc: 'Passo a passo para publicar seu primeiro projeto com imagens, descrição e detalhes.',
     steps: [
-      'Acesse o Painel → "Projetos" → "Novo Projeto".',
-      'Preencha o Título (obrigatório) e a Descrição (obrigatória).',
+      'Acesse o Painel → "Portfólio" → "Novo Item".',
+      'Preencha o Título (obrigatório) e a Descrição resumida (obrigatória — aparece nos cards do perfil).',
       'Opcionalmente adicione Subtítulo e Conteúdo detalhado com o editor rich-text.',
       'Na barra lateral, adicione uma imagem de capa (proporção 16:9).',
-      'Selecione as Tags relevantes para o projeto.',
-      'Preencha os detalhes: cliente, ano, duração, seu papel e link externo.',
+      'Selecione as Tags relevantes para categorizar o item no perfil público.',
+      'Preencha os detalhes opcionais: cliente, ano, duração, seu papel e link externo.',
       'Clique em "Salvar rascunho" para guardar sem publicar, ou "Publicar" para tornar público.',
-      'Após salvar, a seção "Galeria de imagens" fica disponível — adicione imagens e organize-as arrastando.',
+      'Após salvar, adicione imagens à galeria e organize-as arrastando.',
     ]
   },
   {
@@ -43,7 +43,6 @@ const guides = [
       'Adicione uma imagem de capa (16:9) pela barra lateral.',
       'Opcionalmente, adicione Subtítulo, Conclusão e Tags.',
       'Clique em "Salvar rascunho" para salvar ou "Publicar" para tornar público.',
-      'O sistema salva rascunhos automaticamente a cada 30 segundos.',
     ]
   },
   {
@@ -55,8 +54,8 @@ const guides = [
       'Clique em "Adicionar Currículo".',
       'Digite um nome para identificar o arquivo (ex: "CV Português 2026").',
       'Selecione o arquivo PDF do seu computador.',
-      'Clique em "Salvar". O currículo aparecerá na aba "Sobre" do seu perfil.',
-      'Você pode ter múltiplos currículos e marcar os ativos.',
+      'Clique em "Salvar". O currículo aparecerá na aba "Sobre" do seu perfil público.',
+      'Você pode ter múltiplos currículos cadastrados.',
     ]
   },
 ];
@@ -98,14 +97,46 @@ const guides = [
           ))}
         </div>
 
-        <div class="help-more">
-          <div class="help-more-inner">
+        <!-- Contact form -->
+        <div class="help-contact-section">
+          <div class="help-contact-inner">
             <h3>Não encontrou o que precisava?</h3>
-            <p>Consulte as perguntas frequentes ou entre em contato direto com nossa equipe.</p>
-            <div class="faq-cta-actions">
-              <a href="/faq" class="btn btn-primary">Ver FAQ</a>
-              <a href="/contato" class="btn btn-secondary">Falar com Suporte</a>
-            </div>
+            <p>Envie sua dúvida diretamente para nossa equipe e responderemos o mais breve possível.</p>
+            <form
+              class="help-contact-form"
+              action="https://formsubmit.co/vitrineprov8@gmail.com"
+              method="POST"
+            >
+              <input type="hidden" name="_subject" value="Suporte VitrinePro - Central de Ajuda" />
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_next" value="https://v8pro.com.br/ajuda?enviado=1" />
+
+              <div class="help-form-row">
+                <div class="help-form-group">
+                  <label class="help-form-label">Seu nome</label>
+                  <input type="text" name="nome" class="help-form-input" placeholder="Nome completo" required />
+                </div>
+                <div class="help-form-group">
+                  <label class="help-form-label">Seu e-mail</label>
+                  <input type="email" name="email" class="help-form-input" placeholder="voce@email.com" required />
+                </div>
+              </div>
+              <div class="help-form-group">
+                <label class="help-form-label">Assunto</label>
+                <input type="text" name="assunto" class="help-form-input" placeholder="Resumo da sua dúvida" required />
+              </div>
+              <div class="help-form-group">
+                <label class="help-form-label">Mensagem</label>
+                <textarea name="mensagem" class="help-form-textarea" rows="5" placeholder="Descreva sua dúvida ou problema em detalhes..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary help-form-submit">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+                </svg>
+                Enviar mensagem
+              </button>
+            </form>
           </div>
         </div>
 

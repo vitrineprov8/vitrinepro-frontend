@@ -111,7 +111,6 @@
         </div>
 
         <!-- Lightbox -->
-        <Teleport to="body">
           <div v-if="lightboxOpen" class="gallery-lightbox" @click.self="closeLightbox">
             <button class="lightbox-close" @click="closeLightbox" aria-label="Fechar">
               <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -128,7 +127,6 @@
               <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
             </button>
           </div>
-        </Teleport>
 
         <!-- CTA box -->
         <div v-if="authorUsername" class="project-cta-box">

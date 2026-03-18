@@ -1,33 +1,18 @@
 <template>
   <div>
     <!-- ── BANNER ─────────────────────────────────────────────────────── -->
-    <div class="behance-banner">
-      <img v-if="profile.bannerUrl" :src="profile.bannerUrl" alt="Banner" class="behance-banner-img" />
-      <div v-else class="behance-banner-gradient" />
-      <div class="behance-banner-overlay" />
-    </div>
+    <div class="behance-banner" :style="bannerStyle"></div>
 
     <!-- ── PROFILE HEADER ─────────────────────────────────────────────── -->
     <div class="behance-profile-header">
-      <!-- Avatar -->
-      <div class="behance-avatar">
-        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="fullName" />
-        <span v-else>{{ initials }}</span>
-      </div>
-
-      <!-- Info -->
-      <div class="behance-profile-info">
-        <h1 class="behance-name">{{ fullName }}</h1>
-        <p v-if="profile.profession" class="behance-profession">{{ profile.profession }}</p>
-        <span v-if="profile.location" class="behance-location">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
-          </svg>
-          {{ profile.location }}
-        </span>
-        <!-- Social icons row -->
-        <div v-if="activeSocials.length" class="behance-socials">
+      <!-- Avatar + mobile socials row -->
+      <div class="behance-avatar-col">
+        <div class="behance-avatar">
+          <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="fullName" />
+          <span v-else>{{ initials }}</span>
+        </div>
+        <!-- Social icons mobile: next to avatar (opposite side) -->
+        <div v-if="activeSocials.length" class="behance-banner-socials-mobile">
           <a
             v-for="net in activeSocials"
             :key="net.key"
@@ -42,12 +27,40 @@
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="behance-profile-actions">
-        <a v-if="profile.website" :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary">
-          Entrar em Contato
-        </a>
-        <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
+      <!-- Info -->
+      <div class="behance-profile-info">
+        <!-- Name row: name + social icons + share on same line (desktop) -->
+        <div class="behance-name-row">
+          <h1 class="behance-name">{{ fullName }}</h1>
+          <div v-if="activeSocials.length" class="behance-socials-inline">
+            <a
+              v-for="net in activeSocials"
+              :key="net.key"
+              :href="net.url"
+              target="_blank"
+              rel="noopener"
+              :title="net.label"
+              class="behance-social-btn-inline"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
+            </a>
+          </div>
+          <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
+        </div>
+        <p v-if="profile.profession" class="behance-profession">{{ profile.profession }}</p>
+        <span v-if="profile.location" class="behance-location">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+          </svg>
+          {{ profile.location }}
+        </span>
+        <!-- Actions -->
+        <div v-if="profile.website" class="behance-profile-actions">
+          <a :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+            Entrar em Contato
+          </a>
+        </div>
       </div>
     </div>
 
@@ -82,8 +95,11 @@
 
       <!-- Grid view: portfolio items -->
       <div v-if="activeTab !== 'about'">
-        <div v-if="visibleItems.length === 0" class="empty-state" style="padding:var(--spacing-4xl) 0">
+        <div v-if="visibleItems.length === 0 && portfolioItems.length === 0" class="empty-state" style="padding:var(--spacing-4xl) 0">
           <p class="empty-state-title">Nenhum conteúdo publicado ainda</p>
+        </div>
+        <div v-else-if="visibleItems.length === 0" class="empty-state" style="padding:var(--spacing-4xl) 0">
+          <p class="empty-state-title">Nenhum item com essa tag</p>
         </div>
         <div v-else class="behance-grid">
           <a
@@ -109,6 +125,7 @@
               </div>
               <p class="behance-card-title">{{ item.title }}</p>
               <p v-if="item.subtitle" class="behance-card-subtitle">{{ item.subtitle }}</p>
+              <p v-if="item.description" class="behance-card-description">{{ item.description }}</p>
               <div class="behance-card-meta">
                 <span v-if="item.year">{{ item.year }}</span>
                 <span v-if="item.year && item.projectStatus" style="color:var(--border)">•</span>
@@ -256,11 +273,11 @@ interface SocialLinks {
 interface FullProfile {
   id: string; firstName: string; lastName: string; username?: string;
   profession?: string; bio?: string; phone?: string; website?: string;
-  location?: string; avatarUrl?: string; bannerUrl?: string; email?: string;
+  location?: string; avatarUrl?: string; bannerUrl?: string; bannerColor?: string; email?: string;
   socialLinks?: SocialLinks; createdAt?: string;
 }
 interface PortfolioItem {
-  id: string; slug: string; title: string; subtitle?: string;
+  id: string; slug: string; title: string; subtitle?: string; description?: string;
   coverImageUrl?: string; year?: string; projectStatus?: string;
   clientName?: string; tags: Tag[];
 }
@@ -278,11 +295,21 @@ const props = defineProps<{
   education: Education[];
 }>();
 
-const activeTab = ref<'portfolio' | 'about'>('portfolio');
+const activeTab = ref<'portfolio' | 'about'>(
+  props.portfolioItems.length === 0 ? 'about' : 'portfolio'
+);
 const selectedTagId = ref<string | null>(null);
 
 const profileUrl = ref('');
 onMounted(() => { profileUrl.value = window.location.href; });
+
+// Banner background: use bannerColor if set, else logo gradient
+const bannerStyle = computed(() => {
+  if (props.profile.bannerColor) {
+    return { background: props.profile.bannerColor };
+  }
+  return {}; // CSS class handles default gradient
+});
 
 // Collect unique tags from all portfolio items
 const uniqueTags = computed((): Tag[] => {
