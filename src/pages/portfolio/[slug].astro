@@ -33,7 +33,7 @@ const authorUsername = item?.user?.username ?? null;
 const title = item ? `${item.title} | VitrinePro` : 'Item não encontrado | VitrinePro';
 const description = item?.subtitle || item?.description || 'Veja este item no VitrinePro';
 const ogImage = item?.coverImageUrl || `${SITE}/og-default.png`;
-const canonicalUrl = `${SITE}/portafolio/${slug}`;
+const canonicalUrl = `${SITE}/portfolio/${slug}`;
 
 const allImages = [
   ...(item?.coverImageUrl ? [item.coverImageUrl] : []),

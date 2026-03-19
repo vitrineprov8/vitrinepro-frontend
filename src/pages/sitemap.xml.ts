@@ -73,7 +73,7 @@ export const GET: APIRoute = async () => {
   for (const item of portfolioItems) {
     if (item.slug) {
       entries.push(urlEntry(
-        `${SITE}/portafolio/${item.slug}`,
+        `${SITE}/portfolio/${item.slug}`,
         item.updatedAt || item.createdAt,
         'monthly',
         '0.8',

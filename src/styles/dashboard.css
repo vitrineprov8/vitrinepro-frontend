@@ -2627,6 +2627,7 @@
   padding: 0 var(--spacing-2xl) var(--spacing-4xl);
 }
 .behance-tabs-nav {
+  overflow-x: auto;
   display: flex;
   border-bottom: 2px solid var(--border);
   margin-bottom: var(--spacing-xl);

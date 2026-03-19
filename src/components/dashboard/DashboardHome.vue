@@ -59,7 +59,7 @@
             <div class="db-list-actions">
               <a
                 v-if="item.status === 'PUBLISHED'"
-                :href="`/portafolio/${item.slug}`"
+                :href="`/portfolio/${item.slug}`"
                 target="_blank"
                 class="btn btn-ghost btn-sm"
                 title="Ver publicado"

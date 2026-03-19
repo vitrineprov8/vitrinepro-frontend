@@ -105,7 +105,7 @@
           <a
             v-for="item in visibleItems"
             :key="item.id"
-            :href="`/portafolio/${item.slug}`"
+            :href="`/portfolio/${item.slug}`"
             class="behance-card"
           >
             <div class="behance-card-image">
