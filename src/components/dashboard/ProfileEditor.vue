@@ -76,7 +76,7 @@
           <div class="db-form-group">
             <label class="db-label">Usuário <span>(URL do perfil)</span></label>
             <div class="db-input-prefix">
-              <span class="db-input-prefix-text">https://www.v8pro.com.br/perfil/{{ form.username }}</span>
+              <span class="db-url-user">https://www.v8pro.com.br/perfil/{{ form.username }}</span>
               <!-- <input v-model="form.username" class="db-input" placeholder="seuusuario" /> -->
             </div>
           </div>
@@ -87,8 +87,7 @@
           <div class="db-form-group">
             <label class="db-label">Email</label>
             <div class="db-input-prefix">
-              <span class="db-input-prefix-text">{{ email }}</span>
-              <!-- <input v-model="form.username" class="db-input" placeholder="seuusuario" /> -->
+              <span class="db-url-user">{{ email }}</span>
             </div>
           </div>
         </div>
