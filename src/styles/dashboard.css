@@ -2489,7 +2489,7 @@
 /* ─── BEHANCE PROFILE BANNER ──────────────────────────────────────────────── */
 .behance-banner {
   position: relative;
-  height: 150px;
+  height: 100px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   overflow: hidden;
 }
@@ -2499,6 +2499,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 .behance-socials-inline {
   display: flex;
@@ -2632,6 +2633,7 @@
   border-bottom: 2px solid var(--border);
   margin-bottom: var(--spacing-xl);
 }
+.behance-tabs-nav::-webkit-scrollbar { display: none; }
 .behance-tab-btn {
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--text-base);
@@ -3018,7 +3020,7 @@
   .project-hero { height: 30vh; min-height: 180px; max-height: 300px; }
   .project-header-wrap, .project-content-wrap { padding: 0 var(--spacing-lg); }
   /* Mobile: banner is always logo gradient, no user image */
-  .behance-banner { height: 150px; }
+  .behance-banner { height: 80px; }
   .behance-socials-inline { display: none; }
   .behance-profile-header {
     flex-direction: column;

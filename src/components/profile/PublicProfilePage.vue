@@ -44,8 +44,8 @@
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
             </a>
+            <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
           </div>
-          <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
         </div>
         <p v-if="profile.profession" class="behance-profession">{{ profile.profession }}</p>
         <span v-if="profile.location" class="behance-location">
@@ -57,9 +57,13 @@
         </span>
         <!-- Actions -->
         <div v-if="profile.website" class="behance-profile-actions">
-          <a :href="profile.website" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
-            Entrar em Contato
-          </a>
+          <button
+            class="behance-tab-btn"
+            :class="{ active: activeTab === 'about' }"
+            @click="activeTab = 'about'"
+          >
+            Sobre
+          </button>
         </div>
       </div>
     </div>
@@ -83,13 +87,6 @@
           @click="activeTab = 'portfolio'; selectedTagId = tag.id"
         >
           {{ tag.name }}
-        </button>
-        <button
-          class="behance-tab-btn"
-          :class="{ active: activeTab === 'about' }"
-          @click="activeTab = 'about'"
-        >
-          Sobre
         </button>
       </nav>
 

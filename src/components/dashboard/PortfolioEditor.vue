@@ -37,11 +37,11 @@
         <p v-if="errors.title" class="field-error-msg">O título é obrigatório.</p>
         <input v-model="form.subtitle" class="db-input editor-subtitle-input" maxlength="40" placeholder="Subtítulo (opcional)" />
 
-        <div class="db-form-group">
+        <!-- <div class="db-form-group">
           <label class="db-label">Descrição <span>(resumo curto)</span> <span class="required-star">*</span></label>
           <textarea v-model="form.description" class="db-textarea" maxlength="200" :class="{ 'input-error': errors.description }" rows="3" placeholder="Descreva brevemente o item..." @input="errors.description = false" />
           <p v-if="errors.description" class="field-error-msg">A descrição é obrigatória.</p>
-        </div>
+        </div> -->
 
         <div>
           <label class="db-label" style="margin-bottom: var(--spacing-xs); display: block;">Conteúdo detalhado <span>(opcional)</span></label>
@@ -157,7 +157,7 @@ const toast = ref<InstanceType<typeof Toast>>();
 const loading = ref(!!props.portfolioId);
 const saving = ref(false);
 const uploadingFile = ref(false);
-const errors = ref({ title: false, description: false });
+const errors = ref({ title: false });
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
@@ -171,7 +171,6 @@ const portfolioId = ref<string | undefined>(undefined);
 const form = ref({
   title: '',
   subtitle: '',
-  description: '',
   content: null as any,
   status: 'DRAFT' as 'DRAFT' | 'PUBLISHED',
   projectStatus: '' as string,
@@ -298,9 +297,8 @@ function updateCaption(fileId: string, caption: string) {
 
 async function persist(status: 'DRAFT' | 'PUBLISHED') {
   errors.value.title = !form.value.title.trim();
-  errors.value.description = !form.value.description.trim();
-  if (errors.value.title || errors.value.description) {
-    toast.value?.show('Preencha os campos obrigatórios', 'warning');
+  if (errors.value.title) {
+    toast.value?.show('Preencha o campo obrigatório', 'warning');
     return;
   }
   if (saving.value) return;
@@ -310,7 +308,6 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
     const payload = {
       title: form.value.title,
       subtitle: form.value.subtitle || undefined,
-      description: form.value.description,
       content: form.value.content,
       projectStatus: form.value.projectStatus || undefined,
       clientName: form.value.clientName || undefined,
@@ -372,7 +369,6 @@ onMounted(async () => {
             portfolioId.value = item.id;
             form.value.title = item.title;
             form.value.subtitle = item.subtitle ?? '';
-            form.value.description = item.description;
             form.value.content = item.content;
             form.value.status = item.status ?? 'DRAFT';
             form.value.projectStatus = item.projectStatus ?? '';
