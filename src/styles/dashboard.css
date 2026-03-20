@@ -2601,6 +2601,10 @@
   transition: color var(--transition-fast), background var(--transition-fast);
   background: rgba(255,255,255,0.15);
 }
+.behance-social-btn-share {
+  margin-top: 9px;
+  margin-left: 5px;
+}
 .behance-social-btn:hover { color: white; background: rgba(255,255,255,0.28); }
 .behance-social-btn svg { width: 16px; height: 16px; }
 .behance-profile-actions {

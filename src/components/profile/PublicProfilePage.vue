@@ -25,7 +25,9 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" v-html="net.icon" />
           </a>
         </div>
+        <ShareButton class="behance-social-btn-share" :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
       </div>
+      
 
       <!-- Info -->
       <div class="behance-profile-info">
