@@ -46,7 +46,6 @@
             </a>
             <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
           </div>
-          <ShareButton :url="profileUrl" :title="`Perfil de ${fullName} no VitrinePro`" />
         </div>
         <p v-if="profile.profession" class="behance-profession">{{ profile.profession }}</p>
         <span v-if="profile.location" class="behance-location">
@@ -57,7 +56,7 @@
           {{ profile.location }}
         </span>
         <!-- Actions -->
-        <div v-if="profile.website" class="behance-profile-actions">
+        <div  class="behance-profile-actions">
           <button
             class="behance-tab-btn"
             :class="{ active: activeTab === 'about' }"
