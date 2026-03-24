@@ -2,12 +2,10 @@ import { defineConfig } from 'astro/config';
 import vue from '@astrojs/vue';
 import vercel from '@astrojs/vercel';
 
-import partytown from '@astrojs/partytown';
-
 // https://astro.build/config
 export default defineConfig({
   site: 'https://v8pro.com.br',
-  integrations: [vue(), partytown()],
+  integrations: [vue()],
   adapter: vercel(),
   server: {
     port: 4321
