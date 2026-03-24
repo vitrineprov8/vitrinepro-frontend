@@ -9,13 +9,8 @@ const PAGE_LIMIT = 20; // backend max is 20
 // Static pages
 const staticPages = [
   { url: '/',            priority: '1.0', changefreq: 'weekly' },
-  { url: '/faq',         priority: '0.7', changefreq: 'monthly' },
-  { url: '/contato',     priority: '0.6', changefreq: 'yearly' },
-  { url: '/ajuda',       priority: '0.6', changefreq: 'monthly' },
   { url: '/privacidade', priority: '0.3', changefreq: 'yearly' },
   { url: '/termos',      priority: '0.3', changefreq: 'yearly' },
-  { url: '/cookies',     priority: '0.3', changefreq: 'yearly' },
-  { url: '/explorar',   priority: '0.8', changefreq: 'daily' },
 ];
 
 function escapeXml(str: string): string {
