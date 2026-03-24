@@ -98,7 +98,7 @@
         <div class="db-card-title">Carta de apresentação​</div>
         <div class="db-form-group">
           <label class="db-label">Apresentação <span>(aparece no perfil público)</span></label>
-          <textarea v-model="form.bio" maxlength="800" class="db-textarea" rows="4" placeholder="Conte um pouco sobre você, sua experiência e o que você faz..." />
+          <textarea v-model="form.bio" maxlength="5000" class="db-textarea" rows="4" placeholder="Conte um pouco sobre você, sua experiência e o que você faz..." />
         </div>
       </div>
 
