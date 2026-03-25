@@ -2304,7 +2304,7 @@
 .project-content-inner {
   max-width: 900px;
   margin: 0 auto;
-  padding: var(--spacing-4xl) 0;
+  padding: var(--spacing-md) 0;
 }
 .project-overview-text {
   font-size: var(--text-xl);
@@ -2476,14 +2476,14 @@
 }
 
 .project-cta-box {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  padding: var(--spacing-3xl);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 40%, #ec4899 100%);
+  padding: var(--spacing-md);
   border-radius: var(--radius-2xl);
   text-align: center;
   color: white;
   margin-top: var(--spacing-4xl);
 }
-.project-cta-box h3 { font-size: var(--text-3xl); font-weight: 700; margin: 0 0 var(--spacing-md); }
+.project-cta-box h3 { font-size: var(--text-3xl); font-weight: 700; margin: 0 0 var(--spacing-md); color: white; }
 .project-cta-box p { font-size: var(--text-lg); margin: 0 0 var(--spacing-xl); opacity: 0.95; }
 
 /* ─── BEHANCE PROFILE BANNER ──────────────────────────────────────────────── */

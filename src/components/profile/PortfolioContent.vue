@@ -35,19 +35,6 @@
             <span class="portfolio-meta-chip-label">Papel</span>{{ item.role }}
           </span>
         </div>
-
-        <!-- Author mini-bar -->
-        <a v-if="authorUsername" :href="`/perfil/${authorUsername}`" class="portfolio-author-bar">
-          <div class="portfolio-author-avatar">
-            <img v-if="authorAvatar" :src="authorAvatar" :alt="authorName" />
-            <span v-else>{{ authorInitials }}</span>
-          </div>
-          <div class="portfolio-author-info">
-            <span class="portfolio-author-name">{{ authorName }}</span>
-            <span v-if="authorProfession" class="portfolio-author-profession">{{ authorProfession }}</span>
-          </div>
-          <svg class="portfolio-author-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-        </a>
       </div>
     </div>
 
@@ -132,7 +119,17 @@
         <div v-if="authorUsername" class="project-cta-box">
           <h3>Gostou deste item?</h3>
           <p>Veja o perfil completo e entre em contato para saber mais.</p>
-          <a :href="`/perfil/${authorUsername}`" class="btn-white">Ver Perfil Completo</a>
+          <a v-if="authorUsername" :href="`/perfil/${authorUsername}`" class="portfolio-author-bar">
+            <div class="portfolio-author-avatar">
+              <img v-if="authorAvatar" :src="authorAvatar" :alt="authorName" />
+              <span v-else>{{ authorInitials }}</span>
+            </div>
+            <div class="portfolio-author-info">
+              <span class="portfolio-author-name">{{ authorName }}</span>
+              <span v-if="authorProfession" class="portfolio-author-profession">{{ authorProfession }}</span>
+            </div>
+            <svg class="portfolio-author-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </a>
         </div>
       </div>
     </div>
@@ -142,7 +139,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import TiptapRenderer from './TiptapRenderer.vue';
-import StatusBadge from '../ui/StatusBadge.vue';
 import ShareButton from '../ui/ShareButton.vue';
 
 interface Tag { id: string; name: string; }
@@ -263,7 +259,7 @@ const authorProfession = computed(() => props.item.user?.profession ?? null);
 <style scoped>
 /* ── Compact portfolio header ─────────────────────────── */
 .portfolio-header {
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 1.75rem 0 1.5rem;
   display: flex;

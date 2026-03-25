@@ -33,7 +33,7 @@
     <div v-else class="editor-layout">
       <!-- Main -->
       <div class="editor-main">
-        <input v-model="form.title" class="db-input editor-title-input" maxlength="40" :class="{ 'input-error': errors.title }" placeholder="Título do item *" @input="errors.title = false" />
+        <input v-model="form.title" class="db-input editor-title-input" maxlength="200" :class="{ 'input-error': errors.title }" placeholder="Título do item *" @input="errors.title = false" />
         <p v-if="errors.title" class="field-error-msg">O título é obrigatório.</p>
         <input v-model="form.subtitle" class="db-input editor-subtitle-input" maxlength="40" placeholder="Subtítulo (opcional)" />
 
