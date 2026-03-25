@@ -3,14 +3,14 @@
 
     <!-- Hero -->
     <div class="search-page-hero">
-      <h1 class="search-page-title">Descubra talentos criativos</h1>
+      <h1 class="search-page-title">Descubra talentos</h1>
       <p class="search-page-subtitle">Encontre profissionais, projetos e especialidades no VitrinePro</p>
     </div>
 
     <!-- CTA banner -->
     <div class="search-cta-banner">
       <div class="search-cta-content">
-        <strong>Você é um profissional criativo?</strong>
+        <strong>Mostre seu talento para o mundo</strong>
         <p>Crie seu portfólio grátis e seja descoberto por recrutadores e clientes ao redor do Brasil.</p>
       </div>
       <a href="/signup" class="search-cta-btn">Criar perfil grátis →</a>

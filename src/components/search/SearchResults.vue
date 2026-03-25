@@ -123,6 +123,7 @@
         <ProfileCard
           v-if="item.kind === 'profile'"
           :item="item"
+          :layout="layout"
         />
         <BehanceCard
           v-else

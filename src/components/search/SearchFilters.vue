@@ -3,9 +3,18 @@
     <div v-if="visible" class="search-filters-overlay" @click="$emit('close')"></div>
 
     <!-- Drawer -->
-    <div v-if="visible" class="search-filters-drawer">
-      <!-- Mobile drag handle -->
-      <div class="search-filters-handle"></div>
+    <div
+      v-if="visible"
+      class="search-filters-drawer"
+      :style="drawerTransform"
+    >
+      <!-- Mobile drag handle — arrastra aquí para cerrar -->
+      <div
+        class="search-filters-handle"
+        @touchstart.passive="onTouchStart"
+        @touchmove.prevent="onTouchMove"
+        @touchend.passive="onTouchEnd"
+      ></div>
 
       <!-- Header -->
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -114,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface FilterState {
   sortBy: string;
@@ -152,6 +161,41 @@ watch(
   (v) => { local.value = { ...v }; },
   { deep: true }
 );
+
+// ── Drag-to-dismiss (mobile bottom sheet) ────────────────────────────────
+// Only activates on the handle bar at the top. Dragging down ≥80px closes.
+const dragStartY = ref(0);
+const dragDelta  = ref(0);
+
+const drawerTransform = computed(() => {
+  if (dragDelta.value > 0) {
+    return {
+      transform: `translateY(${dragDelta.value}px)`,
+      transition: 'none',
+    };
+  }
+  return {};
+});
+
+function onTouchStart(e: TouchEvent) {
+  dragStartY.value = e.touches[0].clientY;
+  dragDelta.value  = 0;
+}
+
+function onTouchMove(e: TouchEvent) {
+  const delta = e.touches[0].clientY - dragStartY.value;
+  if (delta > 0) dragDelta.value = delta;
+}
+
+function onTouchEnd() {
+  if (dragDelta.value >= 80) {
+    dragDelta.value = 0;
+    emit('close');
+  } else {
+    // Snap back with animation
+    dragDelta.value = 0;
+  }
+}
 
 function toggleTag(id: string) {
   const idx = local.value.tagIds.indexOf(id);
