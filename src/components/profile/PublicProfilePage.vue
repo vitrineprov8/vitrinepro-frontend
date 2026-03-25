@@ -72,7 +72,12 @@
 
     <!-- ── CONTENT TABS ────────────────────────────────────────────────── -->
     <div class="behance-content">
-      <nav class="behance-tabs-nav">
+      <nav
+        ref="tabsNavRef"
+        class="behance-tabs-nav"
+        :class="{ 'is-dragging': isDragging }"
+        @mousedown="onDragStart"
+      >
         <button
           class="behance-tab-btn"
           :class="{ active: activeTab === 'portfolio' && selectedTagId === null }"
@@ -261,7 +266,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ShareButton from '../ui/ShareButton.vue';
 
 interface Tag { id: string; name: string; slug?: string; }
@@ -301,6 +306,43 @@ const selectedTagId = ref<string | null>(null);
 
 const profileUrl = ref('');
 onMounted(() => { profileUrl.value = window.location.href; });
+
+// ── Drag-to-scroll on .behance-tabs-nav ────────────────────────────────────
+const tabsNavRef = ref<HTMLElement | null>(null);
+const isDragging = ref(false);
+let dragStartX = 0;
+let dragScrollLeft = 0;
+
+function onDragStart(e: MouseEvent) {
+  const el = tabsNavRef.value;
+  if (!el) return;
+  isDragging.value = true;
+  dragStartX = e.pageX - el.offsetLeft;
+  dragScrollLeft = el.scrollLeft;
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('mouseup', onDragEnd);
+}
+
+function onDragMove(e: MouseEvent) {
+  if (!isDragging.value) return;
+  const el = tabsNavRef.value;
+  if (!el) return;
+  const x = e.pageX - el.offsetLeft;
+  const walk = x - dragStartX;
+  el.scrollLeft = dragScrollLeft - walk;
+}
+
+function onDragEnd() {
+  isDragging.value = false;
+  window.removeEventListener('mousemove', onDragMove);
+  window.removeEventListener('mouseup', onDragEnd);
+}
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', onDragMove);
+  window.removeEventListener('mouseup', onDragEnd);
+});
+// ────────────────────────────────────────────────────────────────────────────
 
 // Banner background: use bannerColor if set, else logo gradient
 const bannerStyle = computed(() => {
@@ -398,3 +440,18 @@ function eduTypeLabel(type: string) {
   return m[type] ?? type;
 }
 </script>
+
+<style scoped>
+/* Drag-to-scroll cursor feedback */
+.behance-tabs-nav {
+  cursor: grab;
+  user-select: none;
+}
+.behance-tabs-nav.is-dragging {
+  cursor: grabbing;
+}
+/* Prevent accidental button clicks on mouse-up after a drag */
+.behance-tabs-nav.is-dragging > * {
+  pointer-events: none;
+}
+</style>
