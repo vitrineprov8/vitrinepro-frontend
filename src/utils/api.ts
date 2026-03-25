@@ -472,6 +472,111 @@ export async function uploadContentImage(file: File): Promise<{ url: string }> {
   return fetchAPIFormData<{ url: string }>('/uploads/image', fd);
 }
 
+// ─── SEARCH ───────────────────────────────────────────────────────────────────
+
+export interface SearchParams {
+  q?: string;
+  type?: 'all' | 'professional' | 'specialty' | 'project';
+  page?: number;
+  limit?: number;
+  sortBy?: 'relevance' | 'date' | 'year';
+  sortOrder?: 'ASC' | 'DESC';
+  city?: string;
+  hasImage?: boolean;
+  projectStatus?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  tagId?: string;
+}
+
+/** Portfolio item shape returned by the search endpoint (includes author as `user`). */
+export interface SearchPortfolioItem {
+  kind: 'portfolio';
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  coverImageUrl?: string;
+  year?: string | number;
+  projectStatus?: string;
+  tags: Tag[];
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username?: string;
+    avatarUrl?: string;
+    profession?: string;
+    location?: string;
+  };
+}
+
+/** Profile shape returned by the search endpoint for Professional/Especialidade searches. */
+export interface SearchProfileItem {
+  kind: 'profile';
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  profession?: string;
+  location?: string;
+  avatarUrl?: string;
+  bannerColor?: string;
+  bio?: string;
+  phone?: string;
+  website?: string;
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
+  projectCount: number;
+}
+
+/** Union of all item shapes the search endpoint can return. */
+export type SearchItem = SearchPortfolioItem | SearchProfileItem;
+
+export interface SearchResult {
+  data: SearchItem[];
+  total: number;
+  page: number;
+  lastPage: number;
+  cities: string[];
+  availableTags: { id: string; name: string }[];
+}
+
+export interface AutocompleteSuggestion {
+  label: string;
+  value: string;
+  type: 'professional' | 'specialty' | 'tag' | 'project';
+}
+
+export async function searchPortfolio(params: SearchParams): Promise<SearchResult> {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, String(v));
+  });
+  const BACKEND = getBackendUrl();
+  const res = await fetch(`${BACKEND}/search?${qs.toString()}`);
+  if (!res.ok) throw new Error('Search failed');
+  return res.json();
+}
+
+export async function searchAutocomplete(q: string, type?: string): Promise<AutocompleteSuggestion[]> {
+  if (!q || q.length < 2) return [];
+  const qs = new URLSearchParams({ q });
+  if (type && type !== 'all') qs.set('type', type);
+  const BACKEND = getBackendUrl();
+  const res = await fetch(`${BACKEND}/search/autocomplete?${qs.toString()}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
 // ─── ERROR MESSAGES ───────────────────────────────────────────────────────────
 
 /**
