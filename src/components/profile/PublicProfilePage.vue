@@ -312,11 +312,12 @@ const tabsNavRef = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 let dragStartX = 0;
 let dragScrollLeft = 0;
+let hasMoved = false;
 
 function onDragStart(e: MouseEvent) {
   const el = tabsNavRef.value;
   if (!el) return;
-  isDragging.value = true;
+  hasMoved = false;
   dragStartX = e.pageX - el.offsetLeft;
   dragScrollLeft = el.scrollLeft;
   window.addEventListener('mousemove', onDragMove);
@@ -324,16 +325,19 @@ function onDragStart(e: MouseEvent) {
 }
 
 function onDragMove(e: MouseEvent) {
-  if (!isDragging.value) return;
   const el = tabsNavRef.value;
   if (!el) return;
   const x = e.pageX - el.offsetLeft;
   const walk = x - dragStartX;
+  if (!hasMoved && Math.abs(walk) < 5) return;
+  hasMoved = true;
+  isDragging.value = true;
   el.scrollLeft = dragScrollLeft - walk;
 }
 
 function onDragEnd() {
   isDragging.value = false;
+  hasMoved = false;
   window.removeEventListener('mousemove', onDragMove);
   window.removeEventListener('mouseup', onDragEnd);
 }
