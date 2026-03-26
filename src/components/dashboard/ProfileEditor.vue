@@ -123,7 +123,11 @@
           </div>
           <div class="db-form-group full">
             <label class="db-label">Localização</label>
-            <input v-model="form.location" class="db-input" placeholder="Ex: São Paulo, SP – Brasil" />
+            <CitySelect
+              ref="citySelectRef"
+              v-model="form.location"
+              placeholder="Buscar cidade..."
+            />
           </div>
         </div>
       </div>
@@ -150,10 +154,12 @@ import { ref, computed, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
 import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
+import CitySelect from '../ui/CitySelect.vue';
 import { getFullProfile, updateProfile, uploadAvatar } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
 
 const toast = ref<InstanceType<typeof Toast>>();
+const citySelectRef = ref<InstanceType<typeof CitySelect>>();
 const loading = ref(true);
 const saving = ref(false);
 
@@ -255,6 +261,10 @@ function fillForm(p: FullProfile) {
 
 async function save() {
   if (saving.value) return;
+  if (citySelectRef.value && !citySelectRef.value.isValid) {
+    toast.value?.show('Selecione uma cidade válida da lista antes de salvar.', 'error');
+    return;
+  }
   saving.value = true;
   try {
     if (pendingAvatar) {
