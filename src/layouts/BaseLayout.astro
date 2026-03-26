@@ -1,5 +1,6 @@
 ---
 import GoogleAnalytics from '@components/GoogleAnalytics.astro';
+import ClarityScript from '../components/ClarityScript.astro';
 
 const SITE = 'https://v8pro.com.br';
 
@@ -72,6 +73,9 @@ const organizationSchema = {
 
     <!-- Organization JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+
+    <!-- Microsoft Clarity -->
+    <ClarityScript />
 
     <!-- Slot for extra head content (custom meta, JSON-LD, etc.) -->
     <slot name="head" />

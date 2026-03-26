@@ -1,20 +1,7 @@
 ---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import EducationManager from '../../components/dashboard/EducationManager.vue';
 ---
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formação | Dashboard VitrinePro</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <style is:global>
-      @import '../../styles/global.css';
-      @import '../../styles/dashboard.css';
-    </style>
-  </head>
-  <body>
-    <EducationManager client:load />
-  </body>
-</html>
+<DashboardLayout title="Formação | Dashboard VitrinePro">
+  <EducationManager client:load />
+</DashboardLayout>
