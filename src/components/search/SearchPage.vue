@@ -1,13 +1,11 @@
 <template>
   <div class="search-page-wrap">
 
-    <!-- Hero -->
-    <div class="search-page-hero">
+<!--     <div class="search-page-hero">
       <h1 class="search-page-title">Descubra talentos</h1>
       <p class="search-page-subtitle">Encontre profissionais, projetos e especialidades no VitrinePro</p>
     </div>
 
-    <!-- CTA banner -->
     <div class="search-cta-banner">
       <div class="search-cta-content">
         <strong>Mostre seu talento para o mundo</strong>
@@ -15,7 +13,7 @@
       </div>
       <a href="/signup" class="search-cta-btn">Criar perfil grátis →</a>
     </div>
-
+ -->
     <!-- Search box -->
     <SearchBox
       :initial-query="currentQuery"

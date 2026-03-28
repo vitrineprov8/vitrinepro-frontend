@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Hero from '../components/Hero.vue';
+import HeroSearch from '../components/HeroSearch.vue';
 import WhyChoose from '../components/WhyChoose.vue';
 import HowItWorks from '../components/HowItWorks.vue';
 import FeaturedSection from '../components/FeaturedSection.vue';
@@ -17,10 +17,10 @@ import FeaturedSection from '../components/FeaturedSection.vue';
   <Header />
 
   <main>
-    <Hero client:load />
+    <HeroSearch client:load />
+    <FeaturedSection client:visible />
     <HowItWorks client:visible />
     <WhyChoose client:visible />
-    <FeaturedSection client:visible />
   </main>
 
   <Footer />
