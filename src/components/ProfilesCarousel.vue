@@ -105,30 +105,6 @@ function onMouseMove(e: MouseEvent) {
   el.scrollLeft = dragScrollLeft - walk;
 }
 
-// ── Intersection observer (peek animation — fires once) ───────────────────────
-let observer: IntersectionObserver | null = null;
-
-function setupObserver(el: HTMLElement) {
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // peek: scroll right ~3 cards, then back to start
-          setTimeout(() => {
-            el.scrollTo({ left: 600, behavior: 'smooth' });
-            setTimeout(() => {
-              el.scrollTo({ left: 0, behavior: 'smooth' });
-            }, 1200);
-          }, 400);
-          observer?.unobserve(el);
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
-  observer.observe(el);
-}
-
 onMounted(async () => {
   try {
     const result = await searchPortfolio({ q: '', type: 'professional', sortBy: 'relevance', limit: 12 });
@@ -149,8 +125,6 @@ onMounted(async () => {
     el.addEventListener('mouseleave', onMouseLeave);
     el.addEventListener('mouseup', onMouseUp);
     el.addEventListener('mousemove', onMouseMove);
-
-    setupObserver(el);
   });
 });
 
@@ -162,8 +136,6 @@ onBeforeUnmount(() => {
     el.removeEventListener('mouseup', onMouseUp);
     el.removeEventListener('mousemove', onMouseMove);
   }
-  observer?.disconnect();
-  observer = null;
 });
 </script>
 
