@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import Hero from '../components/Hero.vue';
 import WhyChoose from '../components/WhyChoose.vue';
 import HowItWorks from '../components/HowItWorks.vue';
+import FeaturedSection from '../components/FeaturedSection.vue';
 ---
 
 <BaseLayout
@@ -19,7 +20,7 @@ import HowItWorks from '../components/HowItWorks.vue';
     <Hero client:load />
     <HowItWorks client:visible />
     <WhyChoose client:visible />
-    <!-- <Testimonials client:visible /> -->
+    <FeaturedSection client:visible />
   </main>
 
   <Footer />
