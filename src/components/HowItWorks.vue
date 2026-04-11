@@ -25,26 +25,6 @@
         </a>
       </div>
 
-      <!-- Eye-catching CTA Banner -->
-      <div :class="$style.ctaBanner">
-        <div :class="$style.ctaBannerGlow"></div>
-        <div :class="$style.ctaBannerContent">
-          <span :class="$style.ctaBannerBadge">✦ Tudo em um lugar</span>
-          <h2 :class="$style.ctaBannerTitle">Centralize Toda Sua Experiência</h2>
-          <p :class="$style.ctaBannerText">
-            É comum ter sua experiência profissional dispersa em documentos, planilhas e memórias.
-            Com VitrinePro, você reúne tudo em um único lugar, pronto para impressionar o mundo.
-          </p>
-          <div :class="$style.ctaBannerActions">
-            <a href="/signup" :class="$style.ctaBannerBtn">
-              Criar Portfólio Gratuito
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 </template>
@@ -69,7 +49,7 @@ const steps: Step[] = [
   },
   {
     id: 3,
-    title: 'Compartilhe seu link',
+    title: 'Apareça na Vitrine',
     description: 'Seu portfólio profissional está pronto para ser compartilhado com o mundo.'
   }
 ];
@@ -87,16 +67,19 @@ const steps: Step[] = [
 }
 
 .title {
-  font-size: var(--text-4xl);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--spacing-sm);
 }
 
 .subtitle {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   color: var(--text-secondary);
   line-height: var(--leading-relaxed);
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .steps {
@@ -177,7 +160,7 @@ const steps: Step[] = [
   margin-top: var(--spacing-4xl);
   border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 40%, #ec4899 100%);
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #7c3aed 100%);
   padding: 4rem 3rem;
   text-align: center;
 }
@@ -244,7 +227,7 @@ const steps: Step[] = [
   align-items: center;
   gap: 0.5rem;
   background: #ffffff;
-  color: #4f46e5;
+  color: #1e40af;
   font-weight: 700;
   font-size: 1rem;
   padding: 0.875rem 2rem;
@@ -303,14 +286,6 @@ const steps: Step[] = [
 
   .howItWorks {
     padding: var(--spacing-3xl) 0;
-  }
-
-  .title {
-    font-size: var(--text-3xl);
-  }
-
-  .subtitle {
-    font-size: var(--text-lg);
   }
 
   .step {

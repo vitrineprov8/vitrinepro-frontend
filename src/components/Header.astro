@@ -15,13 +15,6 @@ import HeaderActions from './HeaderActions.vue';
 
       <div class="nav-menu" id="nav-menu">
         <div class="nav-actions">
-          <a href="/buscar" class="header-search-link" aria-label="Buscar">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/>
-            </svg>
-            <span>Buscar</span>
-          </a>
           <HeaderActions client:load />
         </div>
       </div>
@@ -143,24 +136,6 @@ import HeaderActions from './HeaderActions.vue';
     gap: var(--spacing-md);
   }
 
-  .header-search-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    padding: var(--spacing-sm) var(--spacing-md);
-    text-decoration: none;
-    transition: color var(--transition-fast), background var(--transition-fast);
-    font-size: var(--text-base);
-    white-space: nowrap;
-    border-radius: var(--radius-md);
-  }
-  .header-search-link:hover {
-    color: var(--primary);
-    background: var(--bg-secondary);
-  }
-
   .btn-login {
     color: var(--text-primary);
     font-weight: 600;
@@ -226,11 +201,6 @@ import HeaderActions from './HeaderActions.vue';
       padding: var(--spacing-md);
     }
 
-    .header-search-link {
-      width: 100%;
-      justify-content: center;
-      padding: var(--spacing-md);
-    }
   }
 </style>
 
