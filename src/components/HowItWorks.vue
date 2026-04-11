@@ -250,7 +250,7 @@ const steps: Step[] = [
 @media (max-width: 1024px) {
   .steps {
     flex-direction: column;
-    gap: var(--spacing-3xl);
+    gap: var(--spacing-xl);
   }
 
   .connector {
@@ -260,47 +260,51 @@ const steps: Step[] = [
   .step {
     flex-direction: row;
     text-align: left;
-    gap: var(--spacing-lg);
-  }
-
-  .stepNumber {
-    width: 60px;
-    height: 60px;
-    font-size: var(--text-2xl);
-    margin-bottom: 0;
-  }
-
-  .stepContent {
-    align-items: flex-start;
-  }
-
-  .stepDescription {
-    margin-left: 0;
-    margin-right: 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .ctaBanner { padding: 2.5rem 1.5rem; }
-  .ctaBannerTitle { font-size: 1.6rem; }
-
-  .howItWorks {
-    padding: var(--spacing-3xl) 0;
-  }
-
-  .step {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .stepContent {
+    gap: var(--spacing-md);
     align-items: center;
   }
 
   .stepNumber {
-    width: 60px;
-    height: 60px;
-    margin-bottom: var(--spacing-md);
+    width: 52px;
+    height: 52px;
+    font-size: var(--text-xl);
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .stepContent {
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .stepTitle {
+    font-size: var(--text-lg);
+  }
+
+  .stepDescription {
+    font-size: var(--text-sm);
+    margin-left: 0;
+    margin-right: 0;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .howItWorks {
+    padding: var(--spacing-2xl) 0;
+  }
+
+  .header {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .steps {
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .cta {
+    margin-top: var(--spacing-xl);
   }
 }
 </style>
