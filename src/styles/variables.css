@@ -94,4 +94,7 @@
   /* Container */
   --container-max: 1280px;
   --container-padding: var(--spacing-lg);
+
+  /* Header */
+  --header-height: 73px;
 }

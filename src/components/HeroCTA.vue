@@ -5,7 +5,7 @@
 
         <div :class="$style.titleCol">
           <h2 :class="$style.headline">
-            Pare de depender só do<br>seu currículo. 
+            Pare de depender só do seu currículo.
           </h2>
           <p :class="$style.subtext">
             Coloque na vitrine suas habilidades, experiências e oferte seus serviços
@@ -36,6 +36,7 @@
 .heroCta {
   background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
   padding: var(--spacing-2xl) 0;
+  overflow: hidden;
 }
 
 .grid {
@@ -129,13 +130,13 @@
 
 @media (max-width: 767px) {
   .heroCta {
-    padding: 40px 0;
+    padding: var(--spacing-xl) 0;
   }
 
   .grid {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 24px;
+    gap: var(--spacing-lg);
   }
 
   .ctaCol {
@@ -143,11 +144,17 @@
   }
 
   .btnWrap {
-    width: 100%;
+    width: auto;
+    display: inline-flex;
+  }
+
+  .btnPulse {
+    display: none;
   }
 
   .btn {
-    width: 100%;
+    width: auto;
+    white-space: normal;
     justify-content: center;
   }
 }
