@@ -20,11 +20,12 @@ import ShowcaseSection from '@components/ShowcaseSection.vue';
   <Header />
 
   <main>
-    <HeroBrand client:load />
-    <HeroCTA client:load />
-    <BenefitsSection client:load />
+    <HeroBrand client:visible />
+    <HeroCTA client:visible />
+    <BenefitsSection client:visible />
     <HowItWorks client:visible />
     <ShowcaseSection client:visible />
+
 <!--     <FeaturedSection client:visible />
     <HowItWorks client:visible />
     <WhyChoose client:visible /> -->
