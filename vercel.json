@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.v8pro.com.br" }],
+      "destination": "https://v8pro.com.br/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*).html",
