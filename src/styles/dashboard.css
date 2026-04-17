@@ -3825,9 +3825,10 @@
 }
 
 @media (max-width: 480px) {
-  .pp-services-grid { grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
-  .pp-mini-about-card { display: none; } /* muito apertado em telas pequenas */
+  /* 1 coluna em telas muito pequenas — todos os cards com largura total */
+  .pp-services-grid { grid-template-columns: 1fr; gap: var(--spacing-md); }
+  .pp-mini-about-card { display: flex; } /* sempre visível */
   .pp-service-body { padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md); }
-  /* Em 480px, destaque ocupa só 1 col */
-  .pp-service-card--featured { grid-column: span 2; }
+  .pp-service-card--featured { grid-column: span 1; flex-direction: column; }
+  .pp-service-card--featured .pp-service-img { width: 100%; aspect-ratio: 16 / 9; }
 }
