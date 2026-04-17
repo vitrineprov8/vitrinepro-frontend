@@ -42,11 +42,33 @@
         <a :href="`/perfil/${user?.username || ''}`" target="_blank" class="btn btn-secondary btn-sm" style="margin-bottom: var(--spacing-sm); display: flex; justify-content: center;" v-if="user?.username">
           Ver meu perfil
         </a>
+
+        <!-- Visibility toggle -->
+        <button
+          class="db-visibility-toggle"
+          :class="{ 'db-visibility-hidden': profileHidden }"
+          :disabled="togglingVisibility"
+          @click="toggleVisibility"
+          :title="profileHidden ? 'Perfil oculto — clique para tornar público' : 'Perfil público — clique para ocultar'"
+        >
+          <svg v-if="profileHidden" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+          </svg>
+          <svg v-else width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          </svg>
+          <span v-if="togglingVisibility" class="spinner spinner-sm" style="margin-left: 4px;"></span>
+          <span v-else>{{ profileHidden ? 'Perfil oculto' : 'Ocultar Perfil' }}</span>
+        </button>
+
         <button class="db-logout-btn" @click="handleLogout">
           <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>
           Sair da conta
         </button>
       </div>
+
+      <Toast ref="layoutToastRef" />
     </aside>
 
     <!-- Main content -->
@@ -73,11 +95,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue';
 import { isAuthenticated, logout } from '../../utils/auth';
-import { getFullProfile } from '../../utils/api';
+import { getFullProfile, updateProfile } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
+import Toast from '../ui/Toast.vue';
 
 const user = ref<FullProfile | null>(null);
 provide('currentUser', user);
+
+const togglingVisibility = ref(false);
+const layoutToastRef = ref<InstanceType<typeof Toast> | null>(null);
+
+const profileHidden = computed(() => user.value?.isVisible === false);
 
 // Hide bottom nav when virtual keyboard is open
 const keyboardOpen = ref(false);
@@ -118,6 +146,24 @@ function isActive(href: string) {
   return window.location.pathname.startsWith(href);
 }
 
+async function toggleVisibility() {
+  if (togglingVisibility.value) return;
+  togglingVisibility.value = true;
+  try {
+    const newVisible = profileHidden.value; // if currently hidden, make visible
+    const updated = await updateProfile({ isVisible: newVisible });
+    user.value = updated;
+    layoutToastRef.value?.show(
+      newVisible ? 'Perfil agora está público.' : 'Perfil ocultado com sucesso.',
+      'success'
+    );
+  } catch {
+    layoutToastRef.value?.show('Erro ao alterar visibilidade. Tente novamente.', 'error');
+  } finally {
+    togglingVisibility.value = false;
+  }
+}
+
 function handleLogout() {
   if (confirm('Tem certeza que deseja sair?')) logout();
 }
@@ -146,3 +192,39 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.db-visibility-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.db-visibility-toggle:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.db-visibility-toggle.db-visibility-hidden {
+  color: #f59e0b;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+.db-visibility-toggle.db-visibility-hidden:hover:not(:disabled) {
+  background: #fef3c7;
+}
+.db-visibility-toggle:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+</style>

@@ -28,3 +28,9 @@ dist/
 Thumbs.db
 
 .vercel/
+
+# Playwright
+tests/.auth/
+.env.test
+playwright-report/
+test-results/

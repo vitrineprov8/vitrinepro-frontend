@@ -3,7 +3,7 @@
     <p style="color: var(--text-secondary); margin: 0; line-height: var(--leading-relaxed);">{{ message }}</p>
     <template #footer>
       <button class="btn btn-secondary" @click="$emit('cancel')" :disabled="loading">Cancelar</button>
-      <button class="btn btn-danger" @click="$emit('confirm')" :disabled="loading">
+      <button class="btn btn-danger" data-testid="confirm-ok-btn" @click="$emit('confirm')" :disabled="loading">
         <span v-if="loading" class="spinner spinner-sm" />
         {{ loading ? 'Aguarde...' : (confirmLabel || 'Excluir') }}
       </button>

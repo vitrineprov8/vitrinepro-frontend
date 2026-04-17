@@ -180,6 +180,7 @@ export interface FullProfile {
   avatarUrl?: string;
   bannerUrl?: string;
   bannerColor?: string;
+  isVisible?: boolean;
   socialLinks: {
     linkedin?: string;
     github?: string;
@@ -228,6 +229,13 @@ export interface PortfolioItem {
   files: PortfolioFile[];
   createdAt?: string;
   updatedAt?: string;
+  // Service fields
+  isService?: boolean;
+  serviceType?: string | null;
+  actionButton?: string | null;
+  servicePrice?: number | null;
+  publicationDurationDays?: number | null;
+  isFeatured?: boolean;
   author?: {
     id: string;
     firstName: string;
@@ -255,7 +263,7 @@ export interface CV {
 
 export interface Education {
   id: string;
-  type: 'UNIVERSITY' | 'COURSE' | 'DIPLOMA' | 'CERTIFICATION';
+  type: 'GRADUATE' | 'POST_GRADUATE' | 'MASTER' | 'DOCTORATE' | 'CERTIFICATION' | 'COURSE';
   institution: string;
   title: string;
   fieldOfStudy?: string;
@@ -307,9 +315,11 @@ export async function getFullProfile(): Promise<FullProfile> {
 }
 
 export async function updateProfile(data: {
-  username?: string; profession?: string; bio?: string;
-  phone?: string; website?: string; location?: string;
-  bannerColor?: string;
+  firstName?: string; lastName?: string;
+  username?: string; profession?: string | null; bio?: string | null;
+  phone?: string | null; website?: string | null; location?: string | null;
+  bannerColor?: string | null;
+  isVisible?: boolean;
   socialLinks?: Partial<FullProfile['socialLinks']>;
 }): Promise<FullProfile> {
   return fetchAPI<FullProfile>('/profile', { method: 'PATCH', body: JSON.stringify(data) });
@@ -351,9 +361,11 @@ export async function getPortfolioItem(slug: string): Promise<PortfolioItem> {
 }
 
 export async function createPortfolioItem(data: {
-  title: string; description: string; subtitle?: string; content?: any;
+  title: string; description?: string; subtitle?: string; content?: any;
   clientName?: string; year?: number; duration?: string; role?: string;
   projectStatus?: string; status?: string; externalUrl?: string; tagIds?: string[];
+  isService?: boolean; serviceType?: string | null; actionButton?: string | null;
+  servicePrice?: number | null; publicationDurationDays?: number | null;
 }): Promise<PortfolioItem> {
   return fetchAPI<PortfolioItem>('/portfolio', { method: 'POST', body: JSON.stringify(data) });
 }
@@ -500,6 +512,10 @@ export interface SearchPortfolioItem {
   coverImageUrl?: string;
   year?: string | number;
   projectStatus?: string;
+  isService?: boolean;
+  serviceType?: string | null;
+  actionButton?: string | null;
+  servicePrice?: number | null;
   tags: Tag[];
   user?: {
     id: string;

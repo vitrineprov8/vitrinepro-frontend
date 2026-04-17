@@ -1,40 +1,58 @@
 <template>
   <div class="search-page-wrap">
 
-<!--     <div class="search-page-hero">
-      <h1 class="search-page-title">Descubra talentos</h1>
-      <p class="search-page-subtitle">Encontre profissionais, projetos e especialidades no VitrinePro</p>
-    </div>
-
-    <div class="search-cta-banner">
-      <div class="search-cta-content">
-        <strong>Mostre seu talento para o mundo</strong>
-        <p>Crie seu portfólio grátis e seja descoberto por recrutadores e clientes ao redor do Brasil.</p>
-      </div>
-      <a href="/signup" class="search-cta-btn">Criar perfil grátis →</a>
-    </div>
- -->
-    <!-- Search box -->
+    <!-- Hero search header -->
     <SearchBox
       :initial-query="currentQuery"
-      :initial-type="currentType"
       @search="onSearch"
     />
 
+    <!-- Filter tabs — shown after first search -->
+    <div v-if="hasSearched" class="search-filter-tabs-bar">
+      <div class="search-filter-tabs">
+        <button
+          v-for="tab in filterTabs"
+          :key="tab.value"
+          :data-testid="`filter-${tab.value === 'all' ? 'todas' : tab.value === 'specialty' ? 'especialidades' : tab.value === 'project' ? 'projetos' : 'servicos'}`"
+          class="search-filter-tab"
+          :class="{ active: activeTab === tab.value }"
+          @click="activeTab = tab.value"
+        >
+          <span class="search-filter-tab-icon">{{ tab.icon }}</span>
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <div class="search-results-meta" v-if="filteredResults.length > 0 || total > 0">
+        <span class="search-results-count">
+          {{ filteredResults.length }} resultado{{ filteredResults.length !== 1 ? 's' : '' }}<span v-if="currentQuery"> para "<strong>{{ currentQuery }}</strong>"</span>
+        </span>
+        <button
+          class="search-action-btn"
+          :class="{ active: filtersActive }"
+          @click="showFilters = true"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M7 12h10M11 20h2"/>
+          </svg>
+          Filtros
+          <span v-if="filtersActive" class="search-filter-badge">•</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Results -->
-    <div style="margin-top: var(--spacing-xl);">
+    <div v-if="hasSearched" data-testid="results-container" class="search-results-section">
       <SearchResults
-        :items="results"
-        :total="total"
+        :items="filteredResults"
+        :total="filteredResults.length"
         :loading="loading"
         :loading-more="loadingMore"
         :page="currentPage"
         :last-page="lastPage"
         :query="currentQuery"
-        :filters-active="hasActiveFilters"
         :has-searched="hasSearched"
         @load-more="loadMore"
-        @open-filters="showFilters = true"
       />
     </div>
 
@@ -54,7 +72,7 @@ import { ref, computed, onMounted } from 'vue';
 import SearchBox from './SearchBox.vue';
 import SearchResults from './SearchResults.vue';
 import SearchFilters from './SearchFilters.vue';
-import { searchPortfolio, type SearchParams, type SearchItem } from '../../utils/api';
+import { searchPortfolio, type SearchParams, type SearchItem, type SearchPortfolioItem } from '../../utils/api';
 
 interface FilterState {
   sortBy: string;
@@ -66,6 +84,13 @@ interface FilterState {
   tagIds: string[];
 }
 
+const filterTabs = [
+  { label: 'TODAS', value: 'all', icon: '📁' },
+  { label: 'Especialidades', value: 'specialty', icon: '★' },
+  { label: 'Projetos', value: 'project', icon: '📂' },
+  { label: 'Serviços', value: 'service', icon: '🔧' },
+];
+
 const results = ref<SearchItem[]>([]);
 const total = ref(0);
 const currentPage = ref(1);
@@ -76,9 +101,9 @@ const hasSearched = ref(false);
 const cities = ref<string[]>([]);
 const availableTags = ref<{ id: string; name: string }[]>([]);
 const showFilters = ref(false);
+const activeTab = ref('all');
 
 const currentQuery = ref('');
-const currentType = ref('all');
 
 const filters = ref<FilterState>({
   sortBy: 'relevance',
@@ -90,7 +115,7 @@ const filters = ref<FilterState>({
   tagIds: [],
 });
 
-const hasActiveFilters = computed(() => {
+const filtersActive = computed(() => {
   const f = filters.value;
   return (
     f.city !== '' ||
@@ -102,13 +127,40 @@ const hasActiveFilters = computed(() => {
   );
 });
 
+// Client-side tab filtering
+const filteredResults = computed<SearchItem[]>(() => {
+  if (activeTab.value === 'all') return results.value;
+
+  if (activeTab.value === 'specialty') {
+    return results.value.filter(item => item.kind === 'profile');
+  }
+
+  if (activeTab.value === 'service') {
+    return results.value.filter(item => {
+      if (item.kind !== 'portfolio') return false;
+      const p = item as SearchPortfolioItem & { isService?: boolean; serviceType?: string };
+      return p.isService === true || (p.serviceType != null && p.serviceType !== '');
+    });
+  }
+
+  if (activeTab.value === 'project') {
+    return results.value.filter(item => {
+      if (item.kind !== 'portfolio') return false;
+      const p = item as SearchPortfolioItem & { isService?: boolean; serviceType?: string };
+      return !p.isService && (p.serviceType == null || p.serviceType === '');
+    });
+  }
+
+  return results.value;
+});
+
 function buildParams(page = 1): SearchParams {
   const f = filters.value;
   const params: SearchParams = {
     q: currentQuery.value,
-    type: currentType.value as SearchParams['type'],
+    type: 'all',
     page,
-    limit: 12,
+    limit: 20,
   };
 
   if (f.sortBy === 'date_desc') {
@@ -143,6 +195,7 @@ async function doSearch() {
   hasSearched.value = true;
   currentPage.value = 1;
   results.value = [];
+  activeTab.value = 'all';
   try {
     const res = await searchPortfolio(buildParams(1));
     results.value = res.data;
@@ -174,9 +227,8 @@ async function loadMore() {
   }
 }
 
-function onSearch({ q, type }: { q: string; type: string }) {
+function onSearch({ q }: { q: string }) {
   currentQuery.value = q;
-  currentType.value = type;
   doSearch();
 }
 
@@ -190,8 +242,6 @@ function updateURL() {
   const url = new URL(window.location.href);
   if (currentQuery.value) url.searchParams.set('q', currentQuery.value);
   else url.searchParams.delete('q');
-  if (currentType.value && currentType.value !== 'all') url.searchParams.set('type', currentType.value);
-  else url.searchParams.delete('type');
   window.history.replaceState({}, '', url.toString());
 }
 
@@ -199,11 +249,12 @@ onMounted(() => {
   if (typeof window !== 'undefined') {
     const url = new URL(window.location.href);
     const q = url.searchParams.get('q');
-    const type = url.searchParams.get('type');
-    if (q) currentQuery.value = q;
-    if (type) currentType.value = type;
+    if (q) {
+      currentQuery.value = q;
+      // Only auto-search if there's a pre-filled query from URL
+      doSearch();
+    }
+    // No auto-search on blank load — user must click "Buscar"
   }
-  // Siempre buscar al montar — sin query muestra los más recientes
-  doSearch();
 });
 </script>

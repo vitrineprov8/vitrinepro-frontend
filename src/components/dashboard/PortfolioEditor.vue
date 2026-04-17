@@ -20,8 +20,8 @@
         <StatusBadge :status="form.status" />
       </div>
       <div class="editor-toolbar-actions">
-        <button class="btn btn-secondary" @click="persist('DRAFT')" :disabled="saving">Salvar rascunho</button>
-        <button class="btn btn-primary" @click="persist('PUBLISHED')" :disabled="saving">
+        <button class="btn btn-secondary" data-testid="draft-btn" @click="persist('DRAFT')" :disabled="saving">Salvar rascunho</button>
+        <button class="btn btn-primary" data-testid="publish-btn" @click="persist('PUBLISHED')" :disabled="saving">
           <span v-if="saving" class="spinner spinner-sm" />
           {{ portfolioId ? 'Atualizar' : 'Publicar' }}
         </button>
@@ -33,7 +33,7 @@
     <div v-else class="editor-layout">
       <!-- Main -->
       <div class="editor-main">
-        <input v-model="form.title" class="db-input editor-title-input" maxlength="200" :class="{ 'input-error': errors.title }" placeholder="Título do item *" @input="errors.title = false" />
+        <input v-model="form.title" data-testid="title-input" class="db-input editor-title-input" maxlength="200" :class="{ 'input-error': errors.title }" placeholder="Título do item *" @input="errors.title = false" />
         <p v-if="errors.title" class="field-error-msg">O título é obrigatório.</p>
         <input v-model="form.subtitle" class="db-input editor-subtitle-input" maxlength="40" placeholder="Subtítulo (opcional)" />
 
@@ -64,6 +64,83 @@
           <p v-if="!portfolioId && pendingFiles.length > 0" style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: var(--spacing-xs);">
             Os arquivos serão enviados ao salvar o item.
           </p>
+        </div>
+
+        <!-- Ofertar Serviço -->
+        <div class="service-section">
+          <div class="service-section-header" data-testid="service-toggle" @click="form.isService = !form.isService">
+            <div class="service-section-header-content">
+              <div class="service-section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
+                </svg>
+                Ofertar Serviço
+              </div>
+              <div class="service-section-subtitle">Ative para transformar esta publicação em um serviço</div>
+            </div>
+            <label class="toggle-switch" @click.stop>
+              <input type="checkbox" v-model="form.isService" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div v-if="form.isService" class="service-section-body">
+            <div class="service-fields-grid">
+              <div class="db-form-group">
+                <label class="db-label">Tipo de Serviço</label>
+                <select v-model="form.serviceType" class="db-select">
+                  <option value="">Selecione...</option>
+                  <option value="Agendamento">Agendamento</option>
+                  <option value="Orçamento">Orçamento</option>
+                  <option value="Projeto">Projeto</option>
+                  <option value="Venda Unitária">Venda Unitária</option>
+                  <option value="Venda Pacote">Venda Pacote</option>
+                </select>
+              </div>
+
+              <div class="db-form-group">
+                <label class="db-label">Botão de Ação</label>
+                <select v-model="form.actionButton" class="db-select">
+                  <option value="">Selecione...</option>
+                  <option value="EU QUERO">EU QUERO</option>
+                  <option value="AGENDAR">AGENDAR</option>
+                  <option value="SAIBA MAIS">SAIBA MAIS</option>
+                  <option value="CONVERSAR">CONVERSAR</option>
+                  <option value="WHATSAPP">WHATSAPP</option>
+                  <option value="VEJA SITE">VEJA SITE</option>
+                </select>
+              </div>
+
+              <div class="db-form-group">
+                <label class="db-label">Mostrar Oferta (preço)</label>
+                <input
+                  v-model.number="form.servicePrice"
+                  class="db-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0,00"
+                />
+              </div>
+
+              <div class="db-form-group">
+                <label class="db-label">Duração da Publicação</label>
+                <input
+                  v-model.number="form.publicationDurationDays"
+                  data-testid="duration-input"
+                  class="db-input"
+                  type="number"
+                  min="1"
+                  max="30"
+                  placeholder="ex: 30"
+                  :class="{ 'input-error': durationError }"
+                  @input="durationError = false"
+                />
+                <p v-if="durationError" data-testid="duration-error" class="field-error-msg">A duração máxima é 30 dias.</p>
+                <span v-else class="db-input-hint">Máximo 30 dias</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -158,6 +235,7 @@ const loading = ref(!!props.portfolioId);
 const saving = ref(false);
 const uploadingFile = ref(false);
 const errors = ref({ title: false });
+const durationError = ref(false);
 
 const coverInput = ref<HTMLInputElement>();
 const coverPreview = ref('');
@@ -182,6 +260,12 @@ const form = ref({
   tagIds: [] as string[],
   coverImageUrl: '',
   slug: '',
+  // Service fields
+  isService: false,
+  serviceType: '' as string,
+  actionButton: '' as string,
+  servicePrice: undefined as number | undefined,
+  publicationDurationDays: undefined as number | undefined,
 });
 
 const allTags = ref<Tag[]>([]);
@@ -301,6 +385,12 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
     toast.value?.show('Preencha o campo obrigatório', 'warning');
     return;
   }
+  if (form.value.isService && form.value.publicationDurationDays != null && form.value.publicationDurationDays > 30) {
+    durationError.value = true;
+    toast.value?.show('A duração máxima é 30 dias.', 'error');
+    return;
+  }
+  durationError.value = false;
   if (saving.value) return;
   saving.value = true;
   form.value.status = status;
@@ -317,6 +407,12 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
       externalUrl: form.value.externalUrl || undefined,
       tagIds: form.value.tagIds,
       status,
+      // Service fields
+      isService: form.value.isService,
+      serviceType: form.value.isService ? (form.value.serviceType || null) : null,
+      actionButton: form.value.isService ? (form.value.actionButton || null) : null,
+      servicePrice: form.value.isService ? (form.value.servicePrice ?? null) : null,
+      publicationDurationDays: form.value.isService ? (form.value.publicationDurationDays ?? null) : null,
     };
 
     if (portfolioId.value) {
@@ -381,6 +477,12 @@ onMounted(async () => {
             form.value.coverImageUrl = item.coverImageUrl ?? '';
             form.value.slug = item.slug;
             gallery.value = [...(item.files ?? [])].sort((a, b) => a.order - b.order);
+            // Service fields
+            form.value.isService = item.isService ?? false;
+            form.value.serviceType = item.serviceType ?? '';
+            form.value.actionButton = item.actionButton ?? '';
+            form.value.servicePrice = item.servicePrice ?? undefined;
+            form.value.publicationDurationDays = item.publicationDurationDays ?? undefined;
           })
         : Promise.resolve(),
     ]);

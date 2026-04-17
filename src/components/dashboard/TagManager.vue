@@ -22,8 +22,8 @@
     <div class="db-card" style="margin-bottom: var(--spacing-lg);">
       <div class="db-card-title">Criar nova tag</div>
       <form @submit.prevent="create" style="display: flex; gap: var(--spacing-sm); max-width: 400px;">
-        <input v-model="newName" class="db-input" placeholder="Nome da tag" required maxlength="20" style="flex: 1;" />
-        <button type="submit" class="btn btn-primary" :disabled="creating || !newName.trim()">
+        <input v-model="newName" data-testid="tag-input" class="db-input" placeholder="Nome da tag" required maxlength="20" style="flex: 1;" />
+        <button type="submit" data-testid="tag-save-btn" class="btn btn-primary" :disabled="creating || !newName.trim()">
           <span v-if="creating" class="spinner spinner-sm" />
           {{ creating ? '' : 'Criar' }}
         </button>
@@ -43,12 +43,14 @@
         <div
           v-for="tag in tags"
           :key="tag.id"
+          data-testid="tag-item"
           class="tag-pill"
           style="gap: var(--spacing-sm);"
         >
           {{ tag.name }}
           <button
             type="button"
+            data-testid="tag-delete-btn"
             class="tag-pill-remove"
             @click="deleteTarget = tag"
             title="Excluir tag"

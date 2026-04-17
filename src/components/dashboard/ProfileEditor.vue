@@ -15,7 +15,7 @@
         <h1 class="db-section-title">Meu Perfil</h1>
         <p class="db-section-subtitle">Edite suas informações públicas</p>
       </div>
-      <button class="btn btn-primary" @click="save" :disabled="saving">
+      <button class="btn btn-primary" data-testid="save-profile-btn" @click="save" :disabled="saving">
         <span v-if="saving" class="spinner spinner-sm" />
         {{ saving ? 'Salvando...' : 'Salvar alterações' }}
       </button>
@@ -82,7 +82,7 @@
           </div>
           <div class="db-form-group">
             <label class="db-label">Profissão</label>
-            <input v-model="form.profession" class="db-input" placeholder="Ex: Desenvolvedor Full Stack" />
+            <input v-model="form.profession" data-testid="profession-input" class="db-input" placeholder="Ex: Desenvolvedor Full Stack" />
           </div>
           <div class="db-form-group">
             <label class="db-label">Email</label>
@@ -110,6 +110,7 @@
             <label class="db-label">Telefone</label>
             <input
               v-model="form.phone"
+              data-testid="phone-input"
               class="db-input"
               placeholder="+55 11 99999-9999"
               type="tel"
@@ -272,16 +273,19 @@ async function save() {
       if (updated.avatarUrl) form.value.avatarUrl = updated.avatarUrl;
       pendingAvatar = null;
     }
-    await updateProfile({
+    const updated = await updateProfile({
+      firstName: form.value.firstName || undefined,
+      lastName: form.value.lastName || undefined,
       username: form.value.username || undefined,
-      profession: form.value.profession || undefined,
-      bio: form.value.bio || undefined,
-      phone: form.value.phone || undefined,
-      website: form.value.website || undefined,
-      location: form.value.location || undefined,
-      bannerColor: form.value.bannerColor || undefined,
+      profession: form.value.profession,
+      bio: form.value.bio,
+      phone: form.value.phone,
+      website: form.value.website,
+      location: form.value.location,
+      bannerColor: form.value.bannerColor,
       socialLinks: form.value.socialLinks,
     });
+    fillForm(updated);
     toast.value?.show('Perfil atualizado com sucesso!', 'success');
   } catch (e: any) {
     toast.value?.show(e?.message || 'Erro ao salvar perfil', 'error');

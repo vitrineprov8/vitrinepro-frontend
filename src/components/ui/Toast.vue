@@ -5,6 +5,7 @@
         <div
           v-for="toast in toasts"
           :key="toast.id"
+          data-testid="toast"
           class="toast"
           :class="`toast-${toast.type}`"
         >

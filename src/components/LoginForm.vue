@@ -48,6 +48,7 @@ async function handleSubmit() {
       <input
         id="email"
         v-model="email"
+        data-testid="email-input"
         type="email"
         class="form-input"
         placeholder="seu@email.com"
@@ -62,6 +63,7 @@ async function handleSubmit() {
       <input
         id="password"
         v-model="password"
+        data-testid="password-input"
         type="password"
         class="form-input"
         placeholder="••••••••"
@@ -73,6 +75,7 @@ async function handleSubmit() {
 
     <button
       type="submit"
+      data-testid="login-btn"
       class="form-submit"
       :disabled="isLoading"
       :class="{ 'btn-loading': isLoading }"
