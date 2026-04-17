@@ -232,6 +232,13 @@
   color: var(--primary);
 }
 
+.db-bottom-nav-logout {
+  color: var(--danger, #ef4444);
+}
+.db-bottom-nav-logout:hover {
+  color: #dc2626;
+}
+
 .db-bottom-nav-item svg {
   width: 22px;
   height: 22px;
