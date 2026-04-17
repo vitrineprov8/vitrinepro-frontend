@@ -7,8 +7,8 @@
       @search="onSearch"
     />
 
-    <!-- Filter tabs — shown after first search -->
-    <div v-if="hasSearched" class="search-filter-tabs-bar">
+    <!-- Filter tabs — always visible -->
+    <div class="search-filter-tabs-bar">
       <div class="search-filter-tabs">
         <button
           v-for="tab in filterTabs"
@@ -16,14 +16,14 @@
           :data-testid="`filter-${tab.value === 'all' ? 'todas' : tab.value === 'specialty' ? 'especialidades' : tab.value === 'project' ? 'projetos' : 'servicos'}`"
           class="search-filter-tab"
           :class="{ active: activeTab === tab.value }"
-          @click="activeTab = tab.value"
+          @click="onTabClick(tab.value)"
         >
           <span class="search-filter-tab-icon">{{ tab.icon }}</span>
           {{ tab.label }}
         </button>
       </div>
 
-      <div class="search-results-meta" v-if="filteredResults.length > 0 || total > 0">
+      <div class="search-results-meta" v-if="hasSearched && (filteredResults.length > 0 || total > 0)">
         <span class="search-results-count">
           {{ filteredResults.length }} resultado{{ filteredResults.length !== 1 ? 's' : '' }}<span v-if="currentQuery"> para "<strong>{{ currentQuery }}</strong>"</span>
         </span>
@@ -39,6 +39,12 @@
           <span v-if="filtersActive" class="search-filter-badge">•</span>
         </button>
       </div>
+    </div>
+
+    <!-- Pre-search state: logo + call to action -->
+    <div v-if="!hasSearched" class="search-presearch-state">
+      <div class="search-presearch-logo">VitrinePro</div>
+      <p class="search-presearch-hint">Busque acima por profissionais, projetos e serviços</p>
     </div>
 
     <!-- Results -->
@@ -82,6 +88,13 @@ interface FilterState {
   dateFrom: string;
   dateTo: string;
   tagIds: string[];
+}
+
+// Service detection: matches isService flag OR any "servico/serviços" tag variant
+const SERVICE_TAG_NAMES = new Set(['serviços', 'servicos', 'serviço', 'servico']);
+function isServiceItem(p: SearchPortfolioItem): boolean {
+  if (p.isService === true) return true;
+  return p.tags?.some(t => SERVICE_TAG_NAMES.has(t.name.toLowerCase())) ?? false;
 }
 
 const filterTabs = [
@@ -138,16 +151,16 @@ const filteredResults = computed<SearchItem[]>(() => {
   if (activeTab.value === 'service') {
     return results.value.filter(item => {
       if (item.kind !== 'portfolio') return false;
-      const p = item as SearchPortfolioItem & { isService?: boolean; serviceType?: string };
-      return p.isService === true || (p.serviceType != null && p.serviceType !== '');
+      const p = item as SearchPortfolioItem;
+      return isServiceItem(p);
     });
   }
 
   if (activeTab.value === 'project') {
     return results.value.filter(item => {
       if (item.kind !== 'portfolio') return false;
-      const p = item as SearchPortfolioItem & { isService?: boolean; serviceType?: string };
-      return !p.isService && (p.serviceType == null || p.serviceType === '');
+      const p = item as SearchPortfolioItem;
+      return !isServiceItem(p);
     });
   }
 
@@ -156,12 +169,23 @@ const filteredResults = computed<SearchItem[]>(() => {
 
 function buildParams(page = 1): SearchParams {
   const f = filters.value;
+
+  // Map active tab to backend type parameter so results are scoped correctly
+  let type: SearchParams['type'] = 'all';
+  if (activeTab.value === 'specialty') type = 'professional';
+  else if (activeTab.value === 'service' || activeTab.value === 'project') type = 'project';
+
   const params: SearchParams = {
     q: currentQuery.value,
-    type: 'all',
+    type,
     page,
     limit: 20,
   };
+
+  // When on service tab, let the backend filter to isService=true items only
+  if (activeTab.value === 'service') {
+    params.isService = true;
+  }
 
   if (f.sortBy === 'date_desc') {
     params.sortBy = 'date';
@@ -195,7 +219,6 @@ async function doSearch() {
   hasSearched.value = true;
   currentPage.value = 1;
   results.value = [];
-  activeTab.value = 'all';
   try {
     const res = await searchPortfolio(buildParams(1));
     results.value = res.data;
@@ -227,6 +250,13 @@ async function loadMore() {
   }
 }
 
+function onTabClick(tab: string) {
+  if (activeTab.value === tab) return;
+  activeTab.value = tab;
+  // Always re-fetch: each tab sends a different `type`/`isService` to the backend
+  doSearch();
+}
+
 function onSearch({ q }: { q: string }) {
   currentQuery.value = q;
   doSearch();
@@ -251,7 +281,6 @@ onMounted(() => {
     const q = url.searchParams.get('q');
     if (q) {
       currentQuery.value = q;
-      // Only auto-search if there's a pre-filled query from URL
       doSearch();
     }
     // No auto-search on blank load — user must click "Buscar"

@@ -607,6 +607,34 @@
   50% { opacity: 0.5; }
 }
 
+/* ── Pre-search state (logo + hint before first search) ──────────────────── */
+.search-presearch-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 100px;
+  text-align: center;
+}
+
+.search-presearch-logo {
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  font-weight: 900;
+  color: #2563EB;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 16px;
+  opacity: 0.18;
+  user-select: none;
+}
+
+.search-presearch-hint {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  margin: 0;
+  font-weight: 400;
+}
+
 /* ── Empty state ──────────────────────────────────────────────────────────── */
 .search-empty-state {
   text-align: center;

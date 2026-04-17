@@ -213,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
@@ -224,7 +224,7 @@ import type { PendingFile } from './PortfolioGallery.vue';
 import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import {
   getPortfolioItem, createPortfolioItem, updatePortfolioItem, uploadPortfolioCover,
-  getTags, addPortfolioFile, deletePortfolioFile, reorderPortfolioFiles,
+  getTags, createTag, addPortfolioFile, deletePortfolioFile, reorderPortfolioFiles,
 } from '../../utils/api';
 import type { Tag, PortfolioFile } from '../../utils/api';
 
@@ -272,6 +272,35 @@ const allTags = ref<Tag[]>([]);
 const gallery = ref<PortfolioFile[]>([]);
 const pendingFiles = ref<PendingFile[]>([]);
 let pendingIdCounter = 0;
+
+const SERVICOS_TAG = 'Serviços';
+
+watch(() => form.value.isService, async (isService) => {
+  if (isService) {
+    let tag = allTags.value.find(t => t.name.toLowerCase() === SERVICOS_TAG.toLowerCase());
+    if (!tag) {
+      try {
+        tag = await createTag(SERVICOS_TAG);
+        allTags.value.push(tag);
+      } catch {
+        // Tag may already exist on backend — refresh list
+        try {
+          const refreshed = await getTags();
+          allTags.value = refreshed;
+          tag = allTags.value.find(t => t.name.toLowerCase() === SERVICOS_TAG.toLowerCase());
+        } catch { /* ignore */ }
+      }
+    }
+    if (tag && !form.value.tagIds.includes(tag.id)) {
+      form.value.tagIds = [...form.value.tagIds, tag.id];
+    }
+  } else {
+    const tag = allTags.value.find(t => t.name.toLowerCase() === SERVICOS_TAG.toLowerCase());
+    if (tag) {
+      form.value.tagIds = form.value.tagIds.filter(id => id !== tag.id);
+    }
+  }
+});
 
 function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];

@@ -496,6 +496,7 @@ export interface SearchParams {
   city?: string;
   hasImage?: boolean;
   projectStatus?: string;
+  isService?: boolean;
   dateFrom?: string;
   dateTo?: string;
   tagId?: string;
