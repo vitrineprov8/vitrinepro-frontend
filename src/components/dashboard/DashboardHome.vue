@@ -264,6 +264,9 @@ const currentStep = ref(0);
 const stepValue = ref('');
 const stepInputRef = ref<HTMLInputElement | null>(null);
 const citySelectValue = ref('');
+/** Passos confirmados manualmente (save/skip) nesta sessão — garante segmento verde
+ *  mesmo quando a resposta do backend demora ou não reflete imediatamente o campo. */
+const visitedSteps = ref<Set<number>>(new Set());
 
 const toastRef = ref<InstanceType<typeof Toast> | null>(null);
 // Prevents the completion modal from appearing if the profile was already
@@ -347,7 +350,7 @@ const wizardComplete = computed(() => steps.every((_, idx) => stepComplete(idx))
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function stepComplete(idx: number): boolean {
-  return completedSteps.value[idx] ?? false;
+  return (completedSteps.value[idx] ?? false) || visitedSteps.value.has(idx);
 }
 
 function firstIncompleteStep(): number {
@@ -396,6 +399,8 @@ async function saveAndAdvance() {
     if (step.save) {
       await step.save();
     }
+    // Garante segmento verde mesmo se a resposta do backend não tiver reflexo imediato
+    visitedSteps.value = new Set(visitedSteps.value).add(currentStep.value);
     advanceToNext();
   } catch {
     toastRef.value?.show('Erro ao salvar. Tente novamente.', 'error');
@@ -405,6 +410,8 @@ async function saveAndAdvance() {
 }
 
 function skipStep() {
+  // Marca como visitado para que o segmento fique verde (passo foi pulado conscientemente)
+  visitedSteps.value = new Set(visitedSteps.value).add(currentStep.value);
   advanceToNext();
 }
 
@@ -415,7 +422,7 @@ function advanceToNext() {
     next++;
   }
   if (next >= steps.length) {
-    // All complete — check wizardComplete
+    // Todos os passos concluídos (save + navegacionais reais)
     if (wizardComplete.value) {
       showCompletionModal.value = true;
     }
@@ -666,15 +673,15 @@ watch(wizardComplete, (done) => {
 .dh-shortcuts-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 .dh-shortcut {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-md);
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-xs);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   text-decoration: none;
@@ -686,11 +693,12 @@ watch(wizardComplete, (done) => {
   background: #eff6ff;
   border-color: var(--primary);
 }
-.dh-shortcut-icon { font-size: 24px; }
+.dh-shortcut-icon { font-size: 20px; line-height: 1; }
 .dh-shortcut-label {
   font-size: var(--text-sm);
   font-weight: 500;
   text-align: center;
+  line-height: 1.2;
 }
 
 /* ── Publications empty state ────────────────────────────────────────────── */

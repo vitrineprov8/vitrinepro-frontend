@@ -272,6 +272,8 @@ function updateURL() {
   const url = new URL(window.location.href);
   if (currentQuery.value) url.searchParams.set('q', currentQuery.value);
   else url.searchParams.delete('q');
+  if (activeTab.value && activeTab.value !== 'all') url.searchParams.set('tab', activeTab.value);
+  else url.searchParams.delete('tab');
   window.history.replaceState({}, '', url.toString());
 }
 
@@ -279,11 +281,12 @@ onMounted(() => {
   if (typeof window !== 'undefined') {
     const url = new URL(window.location.href);
     const q = url.searchParams.get('q');
-    if (q) {
-      currentQuery.value = q;
-      doSearch();
-    }
-    // No auto-search on blank load — user must click "Buscar"
+    const tab = url.searchParams.get('tab');
+    if (q) currentQuery.value = q;
+    if (tab && filterTabs.some(t => t.value === tab)) activeTab.value = tab;
+    // Auto-search só se veio com algum parâmetro (ex: da home pela pill de
+    // especialidade). Sem parâmetros, fica no pre-search state.
+    if (q || tab) doSearch();
   }
 });
 </script>

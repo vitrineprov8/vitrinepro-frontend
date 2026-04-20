@@ -151,7 +151,7 @@ onMounted(() => {
    ══════════════════════════════════════════════════════════════════════════ */
 
 .benefits {
-  padding: var(--spacing-4xl) 0;
+  padding: var(--spacing-xl) 0 var(--spacing-2xl);
   background-color: var(--bg-secondary);
 }
 

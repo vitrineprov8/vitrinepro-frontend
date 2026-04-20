@@ -1,7 +1,22 @@
 <template>
   <div class="pp-root">
     <!-- ── BANNER ─────────────────────────────────────────────────────────── -->
-    <div class="behance-banner" :style="bannerStyle"></div>
+    <div class="behance-banner" :style="bannerStyle">
+      <!-- WhatsApp CTA (desktop) — top-right del banner -->
+      <a
+        v-if="whatsappTarget.channel === 'whatsapp'"
+        :href="whatsappTarget.href"
+        :target="whatsappTarget.target"
+        :rel="whatsappTarget.rel"
+        class="pp-whatsapp-banner-btn"
+        aria-label="Conversar no WhatsApp"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+        <span>Conversar no WhatsApp</span>
+      </a>
+    </div>
 
     <!-- ── PROFILE HEADER ─────────────────────────────────────────────────── -->
     <div class="behance-profile-header">
@@ -56,21 +71,6 @@
           </svg>
           {{ profile.location }}
         </span>
-        <!-- WhatsApp CTA (desktop) -->
-        <div v-if="whatsappUrl" class="behance-profile-actions">
-          <a
-            :href="whatsappUrl"
-            target="_blank"
-            rel="noopener"
-            class="pp-whatsapp-btn"
-            aria-label="Conversar no WhatsApp"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-            </svg>
-            Conversar no WhatsApp
-          </a>
-        </div>
       </div>
     </div>
 
@@ -155,20 +155,21 @@
                 </span>
               </div>
             </div>
-            <button
-              class="pp-saber-mais-btn"
-              :style="saberMaisStyle"
-              @click="activeTab = 'about'"
+            <a
+              :href="miniAboutTarget.href"
+              :target="miniAboutTarget.target"
+              :rel="miniAboutTarget.rel"
+              class="pp-cta-btn"
+              :style="ctaStyle"
             >
               SABER MAIS
-            </button>
+            </a>
           </div>
 
           <!-- Service cards -->
-          <a
+          <div
             v-for="item in serviceItems"
             :key="item.id"
-            :href="`/portfolio/${item.slug}`"
             class="pp-service-card"
             :class="{ 'pp-service-card--featured': item.id === featuredServiceId }"
           >
@@ -177,30 +178,39 @@
               <span class="pp-service-badge">Serviços</span>
               <span v-if="item.id === featuredServiceId" class="pp-service-hot-badge">🔥 MAIS CONTRATADO</span>
             </div>
-            <!-- Cover image -->
-            <div class="pp-service-img">
+            <!-- Cover image (link to detail) -->
+            <a :href="`/portfolio/${item.slug}`" class="pp-service-img">
               <img v-if="item.coverImageUrl" :src="item.coverImageUrl" :alt="item.title" loading="lazy" />
               <div v-else class="pp-service-img-placeholder">
                 <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v14.25a.75.75 0 01-.75.75H3.75A.75.75 0 013 18V3.75A.75.75 0 013.75 3z"/>
                 </svg>
               </div>
-            </div>
+            </a>
             <!-- Card body -->
             <div class="pp-service-body">
-              <p class="pp-service-title">{{ item.title }}</p>
-              <p v-if="item.subtitle || item.description" class="pp-service-desc">
-                {{ item.subtitle || item.description }}
-              </p>
+              <a :href="`/portfolio/${item.slug}`" class="pp-service-link">
+                <p class="pp-service-title">{{ item.title }}</p>
+                <p v-if="item.subtitle || item.description" class="pp-service-desc">
+                  {{ item.subtitle || item.description }}
+                </p>
+              </a>
               <p v-if="item.servicePrice" class="pp-service-price" :class="{ 'pp-service-price--featured': item.id === featuredServiceId }">
                 {{ formatPrice(item.servicePrice) }}
                 <span v-if="item.serviceType" class="pp-service-price-unit">/{{ item.serviceType }}</span>
               </p>
-              <button class="pp-contratar-btn" :style="saberMaisStyle" :class="{ 'pp-contratar-btn--featured': item.id === featuredServiceId }">
-                {{ item.actionButton || (item.id === featuredServiceId ? 'CONTRATAR AGORA' : 'CONTRATAR') }}
-              </button>
+              <a
+                :href="serviceTarget(item).href"
+                :target="serviceTarget(item).target"
+                :rel="serviceTarget(item).rel"
+                class="pp-cta-btn"
+                :style="ctaStyle"
+                :class="{ 'pp-cta-btn--featured': item.id === featuredServiceId }"
+              >
+                {{ labelForAction(item.actionButton) }}
+              </a>
             </div>
-          </a>
+          </div>
         </div>
       </div>
 
@@ -372,10 +382,10 @@
 
     <!-- ── MOBILE WHATSAPP STICKY (barra full-width) ───────────────────────── -->
     <a
-      v-if="whatsappUrl"
-      :href="whatsappUrl"
-      target="_blank"
-      rel="noopener"
+      v-if="whatsappTarget.channel === 'whatsapp'"
+      :href="whatsappTarget.href"
+      :target="whatsappTarget.target"
+      :rel="whatsappTarget.rel"
       class="pp-whatsapp-sticky"
       aria-label="Conversar no WhatsApp"
     >
@@ -391,6 +401,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ShareButton from '../ui/ShareButton.vue';
 import BehanceCard from '../ui/BehanceCard.vue';
+import { buildContactAction, labelForAction, type ContactTarget } from '../../utils/contactAction';
 
 interface Tag { id: string; name: string; slug?: string; }
 interface SocialLinks {
@@ -509,18 +520,23 @@ const professionBadgeStyle = computed(() => ({
   color: 'white',
 }));
 
-// WhatsApp usa sempre verde padrão — não a cor do banner
-const saberMaisStyle = computed(() => ({
+// Estilo padrão dos CTAs (usa cor do banner/accent)
+const ctaStyle = computed(() => ({
   background: accentColor.value,
 }));
 
-// ── WhatsApp URL ──────────────────────────────────────────────────────────
-const whatsappUrl = computed(() => {
-  const phone = props.profile.phone;
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, '');
-  return `https://wa.me/55${digits}`;
-});
+// ── Contact targets (util padronizado) ────────────────────────────────────
+const whatsappTarget = computed<ContactTarget>(() =>
+  buildContactAction('SAIBA_MAIS', props.profile)
+);
+
+const miniAboutTarget = computed<ContactTarget>(() =>
+  buildContactAction('SAIBA_MAIS', props.profile)
+);
+
+function serviceTarget(item: PortfolioItem): ContactTarget {
+  return buildContactAction(item.actionButton ?? 'SAIBA_MAIS', props.profile);
+}
 
 // ── Tags for portfolio filter ─────────────────────────────────────────────
 const uniqueTags = computed((): Tag[] => {

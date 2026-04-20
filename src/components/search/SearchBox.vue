@@ -1,8 +1,7 @@
 <template>
   <div class="search-hero">
     <div class="search-hero-content">
-      <h1 class="search-hero-title">Encontre profissionais<br>e serviços perto de você</h1>
-      <p class="search-hero-subtitle">Conecte-se com os melhores talentos do Brasil</p>
+      <h1 class="search-hero-title">Encontre profissionais e serviços perto de você</h1>
 
       <!-- Search input row -->
       <div class="search-hero-form">

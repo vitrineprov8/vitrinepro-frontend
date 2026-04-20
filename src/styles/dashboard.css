@@ -316,6 +316,28 @@
   border-bottom: 1px solid var(--border-light);
 }
 
+button.db-card-title-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.db-card-chevron {
+  transition: transform var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.db-card-chevron.is-open {
+  transform: rotate(180deg);
+}
+
 /* ─── STAT CARDS (Dashboard Home) ────────────────────────────────────────────── */
 
 .db-stats-grid {
@@ -943,7 +965,7 @@
 }
 
 .tiptap-content {
-  min-height: 300px;
+  min-height: 180px;
   max-height: 600px;
   overflow-y: auto;
 }
@@ -959,9 +981,9 @@
 
 /* ProseMirror styles */
 .ProseMirror {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
   outline: none;
-  min-height: 300px;
+  min-height: 180px;
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--text-primary);
@@ -1106,12 +1128,12 @@
 }
 
 .editor-title-input {
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
   border: none;
   border-bottom: 2px solid var(--border-light);
   border-radius: 0;
-  padding: 0 0 var(--spacing-sm);
+  padding: 0 0 var(--spacing-xs);
   width: 100%;
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -1138,8 +1160,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0;
 }
 
 .editor-toolbar-actions {
@@ -3337,12 +3360,16 @@
 }
 .pp-social-icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-/* ── WhatsApp CTA (desktop) — CTA principal de lead ──────────────────────── */
-.pp-whatsapp-btn {
-  display: flex;
+/* ── WhatsApp CTA absolute top-right del banner (desktop) ─────────────────── */
+.pp-whatsapp-banner-btn {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-lg);
+  z-index: 5;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 28px;
+  gap: 8px;
+  padding: 10px 18px;
   border-radius: 100px;
   background: #22c55e;
   color: white;
@@ -3350,23 +3377,13 @@
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
-  margin-left: auto;
-  align-self: flex-end;
-  margin-bottom: 2px;
-  box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+  box-shadow: 0 4px 14px rgba(34,197,94,0.38);
   transition: opacity var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-  flex-shrink: 0;
 }
-.pp-whatsapp-btn:hover {
-  opacity: 0.92;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(34,197,94,0.45);
-}
-/* When inside the profile actions row, reset the flex-row-specific margins */
-.behance-profile-actions .pp-whatsapp-btn {
-  margin-left: 0;
-  align-self: center;
-  margin-bottom: 0;
+.pp-whatsapp-banner-btn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(34,197,94,0.48);
 }
 
 /* ── STATS STRIP ─────────────────────────────────────────────────────────── */
@@ -3507,20 +3524,32 @@
   font-size: 11px;
   color: var(--text-secondary);
 }
-.pp-saber-mais-btn {
+/* ── Unified CTA button (mini-about + service cards) ───────────────────────── */
+.pp-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 10px;
+  padding: 10px 16px;
   border: none;
   border-radius: var(--radius-lg);
   background: var(--primary);
   color: white;
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.5px;
+  text-decoration: none;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  margin-top: auto;
 }
-.pp-saber-mais-btn:hover { opacity: 0.88; }
+.pp-cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.pp-cta-btn--featured {
+  padding: 14px 28px;
+  font-size: var(--text-base);
+  border-radius: 100px;
+}
 
 /* ── Service card ─────────────────────────────────────────────────────────── */
 .pp-service-card {
@@ -3661,26 +3690,13 @@
   color: var(--text-secondary);
   margin-left: 2px;
 }
-.pp-contratar-btn {
-  margin-top: auto;
-  padding: 10px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-  pointer-events: none; /* parent <a> handles navigation */
+/* Service link wrapping title+desc (non-CTA area) */
+.pp-service-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
-.pp-contratar-btn--featured {
-  padding: 14px 28px;
-  font-size: var(--text-base);
-  border-radius: 100px;
-}
-.pp-service-card:hover .pp-contratar-btn { opacity: 0.88; }
+.pp-service-link:hover .pp-service-title { color: var(--primary); }
 
 /* ── Portfolio tab ────────────────────────────────────────────────────────── */
 .pp-portfolio-grid { display: grid; }
@@ -3750,8 +3766,8 @@
   .pp-hero-info { padding-top: 40px; gap: 5px; }
   .pp-name { font-size: clamp(1.1rem, 5vw, 1.5rem); }
 
-  /* Esconde WhatsApp desktop, mostra sticky */
-  .pp-whatsapp-btn { display: none; }
+  /* Esconde WhatsApp desktop (banner), mostra sticky */
+  .pp-whatsapp-banner-btn { display: none; }
 
   /* Hero inner padding mobile */
   .pp-hero-inner { padding: 0 16px 20px; }

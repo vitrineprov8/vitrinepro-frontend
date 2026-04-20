@@ -1,14 +1,6 @@
 <template>
   <DashboardLayout>
     <Toast ref="toast" />
-    <ImageAdjustModal
-      :visible="showCropModal"
-      :image-src="cropSrc"
-      :aspect-ratio="16 / 9"
-      title="Ajustar imagem de capa"
-      @confirm="onCropConfirm"
-      @cancel="showCropModal = false"
-    />
 
     <div class="editor-toolbar">
       <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
@@ -146,29 +138,31 @@
 
       <!-- Sidebar -->
       <aside class="editor-sidebar">
-        <!-- Cover -->
-        <div class="db-card">
-          <div class="db-card-title">Imagem de capa</div>
-          <div class="img-upload" @click="coverInput?.click()">
-            <img v-if="coverPreview || form.coverImageUrl" :src="coverPreview || form.coverImageUrl" class="img-upload-preview" alt="Capa" />
-            <div v-else class="img-upload-placeholder">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-              <span>Clique para adicionar capa</span>
-            </div>
-            <input ref="coverInput" type="file" accept="image/*" style="display:none" @change="onCoverChange" />
-          </div>
-        </div>
-
         <!-- Tags -->
         <div class="db-card">
           <div class="db-card-title">Tags</div>
           <TagSelect :available-tags="allTags" v-model:selected-ids="form.tagIds" @tag-created="onTagCreated" />
         </div>
 
-        <!-- Detalhes opcionais -->
+        <!-- Detalhes opcionais (colapsável) -->
         <div class="db-card">
-          <div class="db-card-title">Detalhes</div>
-          <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+          <button
+            type="button"
+            class="db-card-title db-card-title-toggle"
+            :aria-expanded="detailsOpen"
+            @click="detailsOpen = !detailsOpen"
+          >
+            Detalhes
+            <svg
+              class="db-card-chevron"
+              :class="{ 'is-open': detailsOpen }"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          <div v-show="detailsOpen" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
             <div class="db-form-group">
               <label class="db-label">Status do projeto</label>
               <select v-model="form.projectStatus" class="db-select">
@@ -221,9 +215,8 @@ import TiptapEditor from './TiptapEditor.vue';
 import TagSelect from '../ui/TagSelect.vue';
 import PortfolioGallery from './PortfolioGallery.vue';
 import type { PendingFile } from './PortfolioGallery.vue';
-import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import {
-  getPortfolioItem, createPortfolioItem, updatePortfolioItem, uploadPortfolioCover,
+  getPortfolioItem, createPortfolioItem, updatePortfolioItem,
   getTags, createTag, addPortfolioFile, deletePortfolioFile, reorderPortfolioFiles,
 } from '../../utils/api';
 import type { Tag, PortfolioFile } from '../../utils/api';
@@ -236,12 +229,7 @@ const saving = ref(false);
 const uploadingFile = ref(false);
 const errors = ref({ title: false });
 const durationError = ref(false);
-
-const coverInput = ref<HTMLInputElement>();
-const coverPreview = ref('');
-const showCropModal = ref(false);
-const cropSrc = ref('');
-let pendingCover: File | null = null;
+const detailsOpen = ref(false);
 
 // Real UUID (portfolioId prop may be a slug)
 const portfolioId = ref<string | undefined>(undefined);
@@ -301,23 +289,6 @@ watch(() => form.value.isService, async (isService) => {
     }
   }
 });
-
-function onCoverChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  cropSrc.value = URL.createObjectURL(file);
-  showCropModal.value = true;
-  (e.target as HTMLInputElement).value = '';
-}
-
-function onCropConfirm(blob: Blob) {
-  if (coverPreview.value) URL.revokeObjectURL(coverPreview.value);
-  coverPreview.value = URL.createObjectURL(blob);
-  pendingCover = new File([blob], 'cover.jpg', { type: blob.type });
-  showCropModal.value = false;
-  URL.revokeObjectURL(cropSrc.value);
-  cropSrc.value = '';
-}
 
 function onTagCreated(tag: Tag) { allTags.value.push(tag); }
 
@@ -468,10 +439,13 @@ async function persist(status: 'DRAFT' | 'PUBLISHED') {
       }
     }
 
-    if (pendingCover && portfolioId.value) {
-      const updated = await uploadPortfolioCover(portfolioId.value, pendingCover);
-      form.value.coverImageUrl = updated.coverImageUrl ?? '';
-      pendingCover = null;
+    // Atualizar coverImageUrl local a partir do servidor (o backend auto-sincroniza
+    // com a primeira IMAGEM da galeria em addFile/deleteFile/reorderFiles).
+    if (form.value.slug) {
+      try {
+        const fresh = await getPortfolioItem(form.value.slug);
+        form.value.coverImageUrl = fresh.coverImageUrl ?? '';
+      } catch { /* non-critical */ }
     }
 
     toast.value?.show(status === 'PUBLISHED' ? 'Item publicado!' : 'Rascunho salvo!', 'success');

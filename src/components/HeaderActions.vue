@@ -47,7 +47,7 @@ function handleLogout() {
     <!-- Usuário não autenticado -->
     <template v-else>
       <a href="/login" class="btn-login">Entrar</a>
-      <a href="/signup" class="btn btn-primary">Cadastre-se Grátis</a>
+      <a href="/signup" class="btn-signup">Cadastre-se Grátis</a>
     </template>
   </div>
 </template>
@@ -113,6 +113,23 @@ function handleLogout() {
   color: #dc2626;
 }
 
+.btn-signup {
+  background-color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 700;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-signup:hover {
+  background-color: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .header-actions {
@@ -123,7 +140,7 @@ function handleLogout() {
   .btn-login,
   .btn-dashboard,
   .btn-logout-link,
-  .btn {
+  .btn-signup {
     width: 100%;
     text-align: center;
     padding: var(--spacing-md);

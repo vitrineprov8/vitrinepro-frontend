@@ -42,7 +42,7 @@
 <style module>
 /* ── HeroBrand Section ───────────────────────────────────────────────────── */
 .heroBrand {
-  padding: var(--spacing-2xl) 0;
+  padding: var(--spacing-lg) 0 var(--spacing-md);
   background-color: var(--bg-primary);
   text-align: center;
 }
@@ -52,7 +52,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 /* ── Logo ────────────────────────────────────────────────────────────────── */
@@ -64,16 +64,16 @@
 
 .logoImg {
   display: block;
-  height: 52px;
+  height: 40px;
   width: auto;
 }
 
 /* ── Subtitle ────────────────────────────────────────────────────────────── */
 .subtitle {
-  font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));
+  font-size: clamp(var(--text-base), 2.2vw, var(--text-xl));
   font-weight: 400;
   color: var(--text-secondary);
-  line-height: var(--leading-relaxed);
+  line-height: var(--leading-normal);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -118,7 +118,7 @@
   }
 
   .logoImg {
-    height: 44px;
+    height: 36px;
   }
 }
 
