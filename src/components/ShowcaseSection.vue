@@ -189,7 +189,7 @@ onMounted(() => {
 .showcase {
   position: relative;
   overflow: hidden;
-  padding: var(--spacing-4xl) 0;
+  padding: var(--spacing-3xl) 0;
   background-color: var(--bg-secondary);
 }
 

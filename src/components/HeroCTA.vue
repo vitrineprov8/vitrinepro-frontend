@@ -35,7 +35,7 @@
 <style module>
 .heroCta {
   background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
-  padding: var(--spacing-lg) 0;
+  padding: var(--spacing-2xl) 0;
   overflow: hidden;
 }
 

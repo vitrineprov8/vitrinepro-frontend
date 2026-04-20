@@ -42,7 +42,7 @@
 <style module>
 /* ── HeroBrand Section ───────────────────────────────────────────────────── */
 .heroBrand {
-  padding: var(--spacing-lg) 0 var(--spacing-md);
+  padding: var(--spacing-xl) 0 var(--spacing-lg);
   background-color: var(--bg-primary);
   text-align: center;
 }
@@ -52,7 +52,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 /* ── Logo ────────────────────────────────────────────────────────────────── */
