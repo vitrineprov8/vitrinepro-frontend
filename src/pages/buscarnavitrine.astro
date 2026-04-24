@@ -3,7 +3,6 @@ export const prerender = false;
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SearchPage from '../components/search/SearchPage.vue';
-import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 
 const SITE = 'https://v8pro.com.br';
 const title = 'Buscar Profissionais | VitrinePro';
@@ -41,7 +40,6 @@ const canonicalUrl = `${SITE}/buscarnavitrine`;
       @import '../styles/dashboard.css';
       @import '../styles/search.css';
     </style>
-    <GoogleAnalytics measurementId={'G-G5CL10932J'} />
   </head>
   <body>
     <Header />

@@ -1,6 +1,6 @@
 ---
-import GoogleAnalytics from '@components/GoogleAnalytics.astro';
 import ClarityScript from '../components/ClarityScript.astro';
+import GoogleAnalyticsScript from '../components/GoogleAnalyticsScript.astro';
 
 const SITE = 'https://v8pro.com.br';
 
@@ -41,7 +41,6 @@ const organizationSchema = {
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <GoogleAnalytics measurementId={'G-G5CL10932J'} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
@@ -73,6 +72,9 @@ const organizationSchema = {
 
     <!-- Organization JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+
+    <!-- Google Analytics -->
+    <GoogleAnalyticsScript />
 
     <!-- Microsoft Clarity -->
     <ClarityScript />
