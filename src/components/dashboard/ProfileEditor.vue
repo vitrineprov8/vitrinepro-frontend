@@ -112,11 +112,15 @@
               v-model="form.phone"
               data-testid="phone-input"
               class="db-input"
-              placeholder="+55 11 99999-9999"
+              :class="{ 'db-input-error': phoneInvalid }"
+              placeholder="(11) 99999-9999"
               type="tel"
               maxlength="20"
               @input="formatPhone"
             />
+            <small v-if="phoneInvalid" class="db-field-error">
+              Telefone inválido. Use (DD) 9XXXX-XXXX ou (DD) XXXX-XXXX.
+            </small>
           </div>
           <div class="db-form-group">
             <label class="db-label">Website</label>
@@ -158,6 +162,7 @@ import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import CitySelect from '../ui/CitySelect.vue';
 import { getFullProfile, updateProfile, uploadAvatar } from '../../utils/api';
 import type { FullProfile } from '../../utils/api';
+import { formatBrazilPhone, isValidBrazilPhone } from '../../utils/phone';
 
 const toast = ref<InstanceType<typeof Toast>>();
 const citySelectRef = ref<InstanceType<typeof CitySelect>>();
@@ -234,9 +239,12 @@ function onAvatarCropConfirm(blob: Blob) {
 }
 
 function formatPhone(e: Event) {
-  const raw = (e.target as HTMLInputElement).value.replace(/[^\d+\s\-()]/g, '');
-  form.value.phone = raw.slice(0, 20);
+  form.value.phone = formatBrazilPhone((e.target as HTMLInputElement).value);
 }
+
+const phoneInvalid = computed(
+  () => !!form.value.phone && !isValidBrazilPhone(form.value.phone),
+);
 
 function fillForm(p: FullProfile) {
   form.value.firstName = p.firstName;
@@ -264,6 +272,10 @@ async function save() {
   if (saving.value) return;
   if (citySelectRef.value && !citySelectRef.value.isValid) {
     toast.value?.show('Selecione uma cidade válida da lista antes de salvar.', 'error');
+    return;
+  }
+  if (phoneInvalid.value) {
+    toast.value?.show('Informe um telefone brasileiro válido.', 'error');
     return;
   }
   saving.value = true;
@@ -308,6 +320,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.db-input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+.db-field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #ef4444;
+}
 .profile-banner-color-preview {
   width: 100%;
   height: 100px;

@@ -1,0 +1,8 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import VagaEditor from '../../../components/dashboard/VagaEditor.vue';
+---
+<DashboardLayout title="Nova vaga | Dashboard VitrinePro">
+  <VagaEditor client:load />
+</DashboardLayout>

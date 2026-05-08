@@ -9,6 +9,7 @@ const PAGE_LIMIT = 20; // backend max is 20
 // Static pages
 const staticPages = [
   { url: '/',            priority: '1.0', changefreq: 'weekly' },
+  { url: '/vagas',       priority: '0.8', changefreq: 'daily' },
   { url: '/privacidade', priority: '0.3', changefreq: 'yearly' },
   { url: '/termos',      priority: '0.3', changefreq: 'yearly' },
 ];
@@ -101,6 +102,19 @@ export const GET: APIRoute = async () => {
       'weekly',
       '0.9',
     ));
+  }
+
+  // Fetch all published vagas
+  const vagaItems = await fetchAllPages('/vagas?');
+  for (const v of vagaItems) {
+    if (v.slug) {
+      entries.push(urlEntry(
+        `${SITE}/vaga/${v.slug}`,
+        v.updatedAt || v.createdAt,
+        'daily',
+        '0.7',
+      ));
+    }
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

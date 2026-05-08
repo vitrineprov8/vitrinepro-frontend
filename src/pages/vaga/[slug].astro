@@ -1,0 +1,117 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import VagaDetail from '../../components/vagas/VagaDetail.vue';
+
+const SITE = 'https://v8pro.com.br';
+const { slug } = Astro.params;
+const BACKEND = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';
+
+let vaga: any = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${BACKEND}/vagas/${slug}`);
+  if (res.status === 404) {
+    notFound = true;
+  } else if (res.ok) {
+    vaga = await res.json();
+  } else {
+    notFound = true;
+  }
+} catch {
+  notFound = true;
+}
+
+const title = vaga ? `${vaga.title} | Vagas VitrinePro` : 'Vaga não encontrada | VitrinePro';
+const description = vaga
+  ? (vaga.description?.slice(0, 160) || 'Vaga aberta no VitrinePro')
+  : 'Vaga não encontrada';
+const canonicalUrl = `${SITE}/vaga/${slug}`;
+
+const employmentTypeMap: Record<string, string> = {
+  CLT: 'FULL_TIME',
+  PJ: 'CONTRACTOR',
+  FREELA: 'CONTRACTOR',
+  ESTAGIO: 'INTERN',
+};
+
+const jobPostingSchema = vaga
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'JobPosting',
+      title: vaga.title,
+      description: vaga.description,
+      datePosted: vaga.createdAt,
+      ...(vaga.deadline ? { validThrough: vaga.deadline } : {}),
+      ...(vaga.type && employmentTypeMap[vaga.type]
+        ? { employmentType: employmentTypeMap[vaga.type] }
+        : {}),
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: 'VitrinePro',
+        sameAs: SITE,
+      },
+      ...(vaga.location
+        ? {
+            jobLocation: {
+              '@type': 'Place',
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: vaga.location,
+                addressCountry: 'BR',
+              },
+            },
+          }
+        : {}),
+      ...(vaga.workMode === 'REMOTE' ? { jobLocationType: 'TELECOMMUTE' } : {}),
+      ...(vaga.salaryMin
+        ? {
+            baseSalary: {
+              '@type': 'MonetaryAmount',
+              currency: 'BRL',
+              value: {
+                '@type': 'QuantitativeValue',
+                minValue: Number(vaga.salaryMin),
+                ...(vaga.salaryMax ? { maxValue: Number(vaga.salaryMax) } : {}),
+                unitText: 'MONTH',
+              },
+            },
+          }
+        : {}),
+    }
+  : null;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonicalUrl}
+  ogType="website"
+>
+  <Fragment slot="head">
+    {jobPostingSchema && (
+      <script type="application/ld+json" set:html={JSON.stringify(jobPostingSchema)} />
+    )}
+  </Fragment>
+
+  <Header />
+  <main>
+    {notFound ? (
+      <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem">
+        <h1 style="font-size:1.5rem;color:var(--text-primary)">Vaga não encontrada</h1>
+        <p style="color:var(--text-secondary)">Esta vaga não existe ou já não está disponível.</p>
+        <a href="/vagas" class="btn btn-primary">Ver vagas abertas</a>
+      </div>
+    ) : (
+      <VagaDetail client:load vaga={vaga} />
+    )}
+  </main>
+  <Footer />
+
+  <style is:global>
+    @import '../../styles/dashboard.css';
+  </style>
+</BaseLayout>

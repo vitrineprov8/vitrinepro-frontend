@@ -594,6 +594,159 @@ export async function searchAutocomplete(q: string, type?: string): Promise<Auto
   return res.json();
 }
 
+// ─── VAGAS ────────────────────────────────────────────────────────────────────
+
+export type VagaStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+export type VagaType = 'CLT' | 'PJ' | 'FREELA' | 'ESTAGIO';
+export type VagaWorkMode = 'REMOTE' | 'HYBRID' | 'ONSITE';
+
+export interface Vaga {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  requirements?: string | null;
+  benefits?: string | null;
+  location?: string | null;
+  type?: VagaType | null;
+  workMode?: VagaWorkMode | null;
+  salaryMin?: number | string | null;
+  salaryMax?: number | string | null;
+  deadline?: string | null;
+  status: VagaStatus;
+  contactEmail?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type ApplicationStatus = 'PENDING' | 'REVIEWED' | 'ACCEPTED' | 'REJECTED';
+
+export interface VagaApplication {
+  id: string;
+  status: ApplicationStatus;
+  message?: string | null;
+  createdAt: string;
+  vaga?: {
+    id: string;
+    slug: string;
+    title: string;
+    status: VagaStatus;
+    location?: string | null;
+    type?: VagaType | null;
+    workMode?: VagaWorkMode | null;
+  } | null;
+}
+
+export interface VagaApplicationAdminView {
+  id: string;
+  status: ApplicationStatus;
+  message?: string | null;
+  snapshotFullName: string;
+  snapshotEmail: string;
+  snapshotPhone?: string | null;
+  snapshotLocation?: string | null;
+  createdAt: string;
+  cv: { id: string; label: string; fileUrl: string } | null;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username?: string;
+    avatarUrl?: string;
+  } | null;
+}
+
+export interface ApplyVagaPayload {
+  cvId?: string;
+  message?: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  location?: string;
+}
+
+export interface VagaPayload {
+  title: string;
+  description: string;
+  requirements?: string;
+  benefits?: string;
+  location?: string;
+  type?: VagaType;
+  workMode?: VagaWorkMode;
+  salaryMin?: number;
+  salaryMax?: number;
+  deadline?: string;
+  status?: VagaStatus;
+  contactEmail?: string;
+}
+
+export interface VagaListParams {
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: VagaStatus;
+  type?: VagaType;
+  workMode?: VagaWorkMode;
+}
+
+function buildVagasQuery(params?: VagaListParams): string {
+  if (!params) return '';
+  const qs = new URLSearchParams();
+  if (params.page) qs.set('page', String(params.page));
+  if (params.limit) qs.set('limit', String(params.limit));
+  if (params.q) qs.set('q', params.q);
+  if (params.status) qs.set('status', params.status);
+  if (params.type) qs.set('type', params.type);
+  if (params.workMode) qs.set('workMode', params.workMode);
+  return qs.toString() ? `?${qs.toString()}` : '';
+}
+
+export async function getPublicVagas(params?: VagaListParams): Promise<PaginatedResponse<Vaga>> {
+  return fetchAPI<PaginatedResponse<Vaga>>(`/vagas${buildVagasQuery(params)}`);
+}
+
+export async function getVagaBySlug(slug: string): Promise<Vaga> {
+  return fetchAPI<Vaga>(`/vagas/${slug}`);
+}
+
+export async function getAdminVagas(params?: VagaListParams): Promise<PaginatedResponse<Vaga>> {
+  return fetchAPI<PaginatedResponse<Vaga>>(`/vagas/admin/list${buildVagasQuery(params)}`);
+}
+
+export async function createVaga(data: VagaPayload): Promise<Vaga> {
+  return fetchAPI<Vaga>('/vagas', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateVaga(id: string, data: Partial<VagaPayload>): Promise<Vaga> {
+  return fetchAPI<Vaga>(`/vagas/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteVaga(id: string): Promise<void> {
+  return fetchAPI<void>(`/vagas/${id}`, { method: 'DELETE' });
+}
+
+export async function applyToVaga(slug: string, payload: ApplyVagaPayload): Promise<VagaApplication> {
+  return fetchAPI<VagaApplication>(`/vagas/${slug}/apply`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getMyApplications(): Promise<VagaApplication[]> {
+  return fetchAPI<VagaApplication[]>('/me/applications');
+}
+
+export async function getVagaApplications(vagaId: string): Promise<VagaApplicationAdminView[]> {
+  return fetchAPI<VagaApplicationAdminView[]>(`/vagas/${vagaId}/applications`);
+}
+
+export async function updateApplicationStatus(id: string, status: ApplicationStatus): Promise<VagaApplication> {
+  return fetchAPI<VagaApplication>(`/applications/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
 // ─── ERROR MESSAGES ───────────────────────────────────────────────────────────
 
 /**

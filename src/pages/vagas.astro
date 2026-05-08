@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import VagasList from '../components/vagas/VagasList.vue';
+
+const SITE = 'https://v8pro.com.br';
+const title = 'Vagas | VitrinePro';
+const description = 'Confira as vagas abertas no VitrinePro e candidate-se em poucos cliques.';
+const canonicalUrl = `${SITE}/vagas`;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonicalUrl}
+  ogType="website"
+>
+  <Header />
+  <main>
+    <VagasList client:load />
+  </main>
+  <Footer />
+
+  <style is:global>
+    @import '../styles/dashboard.css';
+  </style>
+</BaseLayout>

@@ -40,9 +40,10 @@ export function isAuthenticated(): boolean {
 /**
  * Interface para dados decodificados do JWT
  */
-interface JWTPayload {
+export interface JWTPayload {
   sub: string;
   email: string;
+  role?: 'USER' | 'ADMIN';
   iat: number;
   exp: number;
   [key: string]: any;
@@ -76,6 +77,13 @@ export function getUserFromToken(): JWTPayload | null {
   const token = getToken();
   if (!token) return null;
   return decodeToken(token);
+}
+
+/**
+ * Verifica se o usuário autenticado tem role ADMIN
+ */
+export function isAdmin(): boolean {
+  return getUserFromToken()?.role === 'ADMIN';
 }
 
 /**
