@@ -47,9 +47,16 @@
       <div v-else class="db-list">
         <div v-for="v in vagas" :key="v.id" class="db-list-item">
           <div class="db-list-info">
-            <div class="db-list-title">{{ v.title }}</div>
+            <div class="db-list-title">
+              {{ v.title }}
+              <span
+                class="vaga-source-pill"
+                :class="v.source === 'GUPY' ? 'src-gupy' : 'src-native'"
+              >{{ v.source === 'GUPY' ? 'Gupy' : 'VitrinePro' }}</span>
+            </div>
             <div class="db-list-meta">
               <span class="vaga-status-pill" :class="`s-${v.status}`">{{ statusLabel(v.status) }}</span>
+              <span v-if="v.companyName">{{ v.companyName }}</span>
               <span v-if="v.location">{{ v.location }}</span>
               <span v-if="v.deadline">prazo: {{ formatDate(v.deadline) }}</span>
             </div>
@@ -57,7 +64,15 @@
 
           <div class="db-list-actions">
             <a
-              v-if="v.status === 'PUBLISHED'"
+              v-if="v.source === 'GUPY' && v.externalUrl"
+              :href="v.externalUrl"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-ghost btn-sm"
+              title="Abrir na Gupy"
+            >Ver na Gupy ↗</a>
+            <a
+              v-else-if="v.status === 'PUBLISHED'"
               :href="`/vaga/${v.slug}`"
               target="_blank"
               class="btn btn-ghost btn-sm"
@@ -186,6 +201,18 @@ onMounted(() => {
 .s-DRAFT { background: #fef3c7; color: #92400e; }
 .s-PUBLISHED { background: #dcfce7; color: #166534; }
 .s-CLOSED { background: #fee2e2; color: #991b1b; }
+.vaga-source-pill {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.src-native { background: #e0e7ff; color: #3730a3; }
+.src-gupy { background: #ede9fe; color: #5b21b6; }
 .vagas-pagination {
   display: flex;
   justify-content: center;

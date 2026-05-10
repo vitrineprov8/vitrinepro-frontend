@@ -599,6 +599,8 @@ export async function searchAutocomplete(q: string, type?: string): Promise<Auto
 export type VagaStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
 export type VagaType = 'CLT' | 'PJ' | 'FREELA' | 'ESTAGIO';
 export type VagaWorkMode = 'REMOTE' | 'HYBRID' | 'ONSITE';
+export type VagaSource = 'NATIVE' | 'GUPY';
+export type ApplicationSource = 'NATIVE' | 'GUPY_REDIRECT';
 
 export interface Vaga {
   id: string;
@@ -615,6 +617,13 @@ export interface Vaga {
   deadline?: string | null;
   status: VagaStatus;
   contactEmail?: string | null;
+  source: VagaSource;
+  companyName?: string | null;
+  gupyConfigId?: string | null;
+  externalJobId?: string | null;
+  externalUrl?: string | null;
+  gupyConfig?: GupyConfig | null;
+  lastSyncedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -624,6 +633,7 @@ export type ApplicationStatus = 'PENDING' | 'REVIEWED' | 'ACCEPTED' | 'REJECTED'
 export interface VagaApplication {
   id: string;
   status: ApplicationStatus;
+  source?: ApplicationSource;
   message?: string | null;
   createdAt: string;
   vaga?: {
@@ -634,12 +644,16 @@ export interface VagaApplication {
     location?: string | null;
     type?: VagaType | null;
     workMode?: VagaWorkMode | null;
+    source?: VagaSource;
+    companyName?: string | null;
+    externalUrl?: string | null;
   } | null;
 }
 
 export interface VagaApplicationAdminView {
   id: string;
   status: ApplicationStatus;
+  source?: ApplicationSource;
   message?: string | null;
   snapshotFullName: string;
   snapshotEmail: string;
@@ -665,6 +679,11 @@ export interface ApplyVagaPayload {
   location?: string;
 }
 
+export interface ApplyVagaResult {
+  application: VagaApplication;
+  redirectUrl?: string;
+}
+
 export interface VagaPayload {
   title: string;
   description: string;
@@ -678,6 +697,105 @@ export interface VagaPayload {
   deadline?: string;
   status?: VagaStatus;
   contactEmail?: string;
+  source?: VagaSource;
+  companyName?: string;
+  gupyConfigId?: string;
+  externalJobId?: string;
+}
+
+// ─── GUPY INTEGRATION ─────────────────────────────────────────────────────────
+
+export interface GupyConfig {
+  id: string;
+  displayName: string;
+  subdomain: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GupyConfigPayload {
+  displayName: string;
+  subdomain: string;
+  enabled?: boolean;
+}
+
+export async function getGupyConfigs(): Promise<GupyConfig[]> {
+  return fetchAPI<GupyConfig[]>('/admin/gupy/configs');
+}
+
+export async function createGupyConfig(data: GupyConfigPayload): Promise<GupyConfig> {
+  return fetchAPI<GupyConfig>('/admin/gupy/configs', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateGupyConfig(
+  id: string,
+  data: Partial<GupyConfigPayload>,
+): Promise<GupyConfig> {
+  return fetchAPI<GupyConfig>(`/admin/gupy/configs/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteGupyConfig(id: string): Promise<void> {
+  return fetchAPI<void>(`/admin/gupy/configs/${id}`, { method: 'DELETE' });
+}
+
+export interface GupyRemoteJob {
+  id: number;
+  title: string;
+  type: string | null;
+  department: string | null;
+  city: string | null;
+  state: string | null;
+  workplaceType: string | null;
+  alreadyImported: boolean;
+  importedVagaId?: string;
+  importedStatus?: VagaStatus;
+}
+
+export interface GupyRemoteJobsResponse {
+  config: GupyConfig;
+  jobs: GupyRemoteJob[];
+}
+
+export interface GupyImportResult {
+  imported: number;
+  skipped: number;
+  failed: number;
+  errors: { jobId: number; reason: string }[];
+}
+
+export interface GupySyncResult {
+  total: number;
+  closed: number;
+  updated: number;
+  errors: { vagaId: string; reason: string }[];
+  syncedAt: string;
+}
+
+export async function getGupyRemoteJobs(configId: string): Promise<GupyRemoteJobsResponse> {
+  return fetchAPI<GupyRemoteJobsResponse>(`/admin/gupy/configs/${configId}/remote-jobs`);
+}
+
+export async function importGupyJobs(
+  configId: string,
+  jobIds: number[],
+): Promise<GupyImportResult> {
+  return fetchAPI<GupyImportResult>(`/admin/gupy/configs/${configId}/import`, {
+    method: 'POST',
+    body: JSON.stringify({ jobIds }),
+  });
+}
+
+export async function syncGupyConfig(configId: string): Promise<GupySyncResult> {
+  return fetchAPI<GupySyncResult>(`/admin/gupy/configs/${configId}/sync`, {
+    method: 'POST',
+  });
 }
 
 export interface VagaListParams {
@@ -725,8 +843,8 @@ export async function deleteVaga(id: string): Promise<void> {
   return fetchAPI<void>(`/vagas/${id}`, { method: 'DELETE' });
 }
 
-export async function applyToVaga(slug: string, payload: ApplyVagaPayload): Promise<VagaApplication> {
-  return fetchAPI<VagaApplication>(`/vagas/${slug}/apply`, {
+export async function applyToVaga(slug: string, payload: ApplyVagaPayload): Promise<ApplyVagaResult> {
+  return fetchAPI<ApplyVagaResult>(`/vagas/${slug}/apply`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });

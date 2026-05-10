@@ -25,7 +25,12 @@
               <a :href="`/vaga/${a.vaga.slug}`" target="_blank">{{ a.vaga.title }}</a>
             </strong>
             <strong v-else>Vaga removida</strong>
+            <span
+              v-if="a.source === 'GUPY_REDIRECT'"
+              class="apps-source-badge"
+            >via Gupy</span>
             <div class="apps-card-meta">
+              <span v-if="a.vaga?.companyName">{{ a.vaga.companyName }}</span>
               <span v-if="a.vaga?.location">📍 {{ a.vaga.location }}</span>
               <span class="apps-date">enviada em {{ formatDate(a.createdAt) }}</span>
             </div>
@@ -34,6 +39,12 @@
             {{ statusLabel(a.status) }}
           </span>
         </div>
+        <p v-if="a.source === 'GUPY_REDIRECT'" class="apps-gupy-note">
+          Candidatura aberta no career page Gupy. Acompanhe o status por lá.
+          <a v-if="a.vaga?.externalUrl" :href="a.vaga.externalUrl" target="_blank" rel="noopener">
+            Abrir vaga na Gupy ↗
+          </a>
+        </p>
         <p v-if="a.message" class="apps-message">{{ a.message }}</p>
       </li>
     </ul>
@@ -135,4 +146,34 @@ onMounted(load);
 .s-REVIEWED { background: #dbeafe; color: #1e40af; }
 .s-ACCEPTED { background: #dcfce7; color: #166534; }
 .s-REJECTED { background: #fee2e2; color: #991b1b; }
+.apps-source-badge {
+  margin-left: 0.5rem;
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.apps-gupy-note {
+  margin: 0.5rem 0 0;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #4c1d95;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.apps-gupy-note a {
+  color: #5b21b6;
+  text-decoration: underline;
+  font-weight: 500;
+}
 </style>

@@ -51,9 +51,12 @@ const jobPostingSchema = vaga
         : {}),
       hiringOrganization: {
         '@type': 'Organization',
-        name: 'VitrinePro',
+        name: vaga.companyName || 'VitrinePro',
         sameAs: SITE,
       },
+      ...(vaga.source === 'GUPY' && vaga.externalUrl
+        ? { applicantLocationRequirements: undefined, directApply: false, url: vaga.externalUrl }
+        : {}),
       ...(vaga.location
         ? {
             jobLocation: {

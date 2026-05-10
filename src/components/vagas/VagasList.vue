@@ -41,6 +41,10 @@
       <li v-for="v in vagas" :key="v.id" class="vagas-card">
         <a :href="`/vaga/${v.slug}`" class="vagas-card-link">
           <h2 class="vagas-card-title">{{ v.title }}</h2>
+          <div v-if="v.companyName || v.source === 'GUPY'" class="vagas-card-company">
+            <span v-if="v.companyName">{{ v.companyName }}</span>
+            <span v-if="v.source === 'GUPY'" class="vagas-gupy-badge">via Gupy</span>
+          </div>
           <div class="vagas-card-meta">
             <span v-if="v.type" class="vagas-tag">{{ typeLabel(v.type) }}</span>
             <span v-if="v.workMode" class="vagas-tag">{{ workModeLabel(v.workMode) }}</span>
@@ -210,8 +214,26 @@ onMounted(load);
 }
 .vagas-card-title {
   font-size: 1.15rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.25rem;
   color: var(--text-primary);
+}
+.vagas-card-company {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.vagas-gupy-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 .vagas-card-meta {
   display: flex;

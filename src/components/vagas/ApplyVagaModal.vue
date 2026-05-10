@@ -303,7 +303,7 @@ async function submit() {
   }
   submitting.value = true;
   try {
-    await applyToVaga(props.vaga.slug, {
+    const result = await applyToVaga(props.vaga.slug, {
       fullName: form.fullName.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
@@ -311,6 +311,13 @@ async function submit() {
       cvId: form.cvId,
       message: form.message.trim() || undefined,
     });
+    if (result.redirectUrl) {
+      toast.value?.show(
+        'Candidatura registrada. Finalize na Gupy na nova aba que será aberta.',
+        'success',
+      );
+      window.open(result.redirectUrl, '_blank', 'noopener,noreferrer');
+    }
     emit('applied');
   } catch (err) {
     if (err instanceof ApiException && err.statusCode === 409) {

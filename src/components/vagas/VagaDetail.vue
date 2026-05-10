@@ -6,6 +6,10 @@
 
     <header class="vaga-header">
       <h1 class="vaga-title">{{ vaga.title }}</h1>
+      <div v-if="vaga.companyName || vaga.source === 'GUPY'" class="vaga-company">
+        <span v-if="vaga.companyName" class="vaga-company-name">{{ vaga.companyName }}</span>
+        <span v-if="vaga.source === 'GUPY'" class="vaga-gupy-badge">via Gupy</span>
+      </div>
       <div class="vaga-meta">
         <span v-if="vaga.type" class="vaga-tag">{{ typeLabel(vaga.type) }}</span>
         <span v-if="vaga.workMode" class="vaga-tag">{{ workModeLabel(vaga.workMode) }}</span>
@@ -14,6 +18,9 @@
       </div>
       <p v-if="vaga.deadline" class="vaga-deadline">
         Candidaturas abertas até {{ formatDate(vaga.deadline) }}
+      </p>
+      <p v-if="vaga.source === 'GUPY'" class="vaga-gupy-note">
+        Esta vaga é gerenciada na Gupy. Ao candidatar-se, registramos seus dados aqui e você será redirecionado ao career page para finalizar.
       </p>
     </header>
 
@@ -150,6 +157,37 @@ function formatDate(s: string): string {
   color: var(--text-muted, #6b7280);
   font-size: 0.9rem;
   margin: 0;
+}
+.vaga-company {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+.vaga-company-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.vaga-gupy-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.vaga-gupy-note {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #4c1d95;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0;
 }
 .vaga-section {
   margin-bottom: 1.75rem;
