@@ -181,14 +181,14 @@ function selectSuggestion(s: AutocompleteSuggestion) {
 function submit() {
   const term = query.value.trim();
   if (!term) {
-    window.location.href = '/buscar';
+    window.location.href = '/vitrine';
     return;
   }
-  window.location.href = '/buscar?q=' + encodeURIComponent(term);
+  window.location.href = '/vitrine?q=' + encodeURIComponent(term);
 }
 
 function searchChip(term: string) {
-  window.location.href = '/buscar?q=' + encodeURIComponent(term);
+  window.location.href = '/vitrine?q=' + encodeURIComponent(term);
 }
 
 onUnmounted(() => {

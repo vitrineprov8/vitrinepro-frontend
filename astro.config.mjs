@@ -7,6 +7,7 @@ import googleAnalyticsIntegration, { googleAnalyticsVitePlugin } from './src/int
 // https://astro.build/config
 export default defineConfig({
   site: 'https://v8pro.com.br',
+  trailingSlash: 'never',
   integrations: [
     vue(),
     clarityIntegration({ projectId: 'w1fw9i14tt' }),
