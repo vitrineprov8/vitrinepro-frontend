@@ -1,7 +1,10 @@
 /* ─── DASHBOARD LAYOUT ──────────────────────────────────────────────────────── */
 
-/* Dashboard pages don't have a fixed header — remove global.css body padding */
-body {
+/* Dashboard pages don't have a fixed header — remove global.css body padding.
+   Scoped via the `dashboard-body` class set in DashboardLayout.astro so that
+   public pages (perfil, portfolio, vitrine, explorar) that import this same
+   stylesheet keep their `padding-top: var(--header-height)`. */
+body.dashboard-body {
   padding-top: 0;
 }
 
