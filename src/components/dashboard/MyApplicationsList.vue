@@ -18,12 +18,19 @@
     </div>
 
     <ul v-else class="apps-list">
-      <li v-for="a in apps" :key="a.id" class="apps-card">
+      <li
+        v-for="a in apps"
+        :key="a.id"
+        class="apps-card"
+        :class="{ 'apps-card-clickable': !!a.vaga }"
+        :role="a.vaga ? 'link' : undefined"
+        :tabindex="a.vaga ? 0 : undefined"
+        @click="a.vaga && openVaga(a.vaga.slug)"
+        @keydown.enter="a.vaga && openVaga(a.vaga.slug)"
+      >
         <div class="apps-card-head">
           <div>
-            <strong v-if="a.vaga">
-              <a :href="`/vaga/${a.vaga.slug}`" target="_blank">{{ a.vaga.title }}</a>
-            </strong>
+            <strong v-if="a.vaga">{{ a.vaga.title }}</strong>
             <strong v-else>Vaga removida</strong>
             <div class="apps-card-meta">
               <span v-if="a.vaga?.location">📍 {{ a.vaga.location }}</span>
@@ -73,6 +80,9 @@ function statusLabel(s: ApplicationStatus): string {
 function formatDate(s: string): string {
   return new Date(s).toLocaleString('pt-BR');
 }
+function openVaga(slug: string) {
+  window.open(`/vaga/${slug}`, '_blank', 'noopener');
+}
 
 onMounted(load);
 </script>
@@ -100,6 +110,19 @@ onMounted(load);
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 10px;
   padding: 1rem 1.25rem;
+  transition: background 150ms, border-color 150ms, box-shadow 150ms, transform 150ms;
+}
+.apps-card-clickable {
+  cursor: pointer;
+}
+.apps-card-clickable:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.apps-card-clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .apps-card-head {
   display: flex;

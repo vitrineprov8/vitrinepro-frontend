@@ -27,7 +27,8 @@ export class ApiException extends Error {
   constructor(
     public statusCode: number,
     message: string,
-    public error?: string
+    public error?: string,
+    public body?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'ApiException';
@@ -68,17 +69,25 @@ export async function fetchAPI<T = any>(
     if (!response.ok) {
       let errorMessage = 'Erro na requisição';
       let errorDetail = '';
+      let errorBody: Record<string, unknown> | undefined;
 
       try {
-        const errorData: ApiError = await response.json();
-        errorMessage = errorData.message || errorMessage;
-        errorDetail = errorData.error || '';
+        const errorData = await response.json() as Record<string, unknown>;
+        errorBody = errorData;
+        const rawMessage = errorData.message;
+        if (typeof rawMessage === 'string') {
+          errorMessage = rawMessage;
+        } else if (rawMessage && typeof rawMessage === 'object') {
+          const nestedMsg = (rawMessage as Record<string, unknown>).message;
+          errorMessage = typeof nestedMsg === 'string' ? nestedMsg : errorMessage;
+        }
+        errorDetail = typeof errorData.error === 'string' ? errorData.error : '';
       } catch {
         // Se não conseguir parsear JSON, usar mensagem padrão
         errorMessage = response.statusText || errorMessage;
       }
 
-      throw new ApiException(response.status, errorMessage, errorDetail);
+      throw new ApiException(response.status, errorMessage, errorDetail, errorBody);
     }
 
     // 204 No Content — sem corpo para parsear
@@ -617,6 +626,7 @@ export interface Vaga {
   contactEmail?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  applicationsCount?: number;
 }
 
 export type ApplicationStatus = 'PENDING' | 'REVIEWED' | 'ACCEPTED' | 'REJECTED';
@@ -745,6 +755,146 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
     method: 'PATCH',
     body: JSON.stringify({ status }),
   });
+}
+
+// ─── PLANS & SUBSCRIPTIONS ────────────────────────────────────────────────────
+
+export type PlanTier = 'FREE' | 'PERSONAL' | 'HUNTER' | 'EMPRESARIAL';
+export type PlanStatus = 'NONE' | 'ACTIVE' | 'EXPIRED' | 'PENDING';
+
+export interface Plan {
+  tier: PlanTier;
+  name: string;
+  priceBRL: number;
+  vagaLimit: number;
+  features: string[];
+}
+
+export interface MyPlanInfo {
+  plan: PlanTier;
+  planStatus: PlanStatus;
+  planExpiresAt: string | null;
+  vagasUsed: number;
+  vagasLimit: number;
+}
+
+export interface Subscription {
+  id: string;
+  plan: PlanTier;
+  status: string;
+  priceBRL: number;
+  couponCode: string | null;
+  discountApplied: number;
+  startsAt: string | null;
+  endsAt: string | null;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: 'PERCENT' | 'FIXED';
+  discountValue: number;
+  isActive: boolean;
+}
+
+export interface CouponRedemption {
+  id: string;
+  coupon: Coupon & { owner?: { id: string; firstName: string; lastName: string; email: string } };
+  redeemedBy: { id: string; firstName: string; lastName: string; email: string };
+  ownerName: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface CheckoutResult {
+  subscriptionId: string;
+  priceBRL: number;
+  discountBRL: number;
+  totalBRL: number;
+  couponValid: boolean;
+}
+
+export interface CouponValidationResult {
+  valid: boolean;
+  discountType?: 'PERCENT' | 'FIXED';
+  discountValue?: number;
+  ownerId?: string;
+}
+
+/** Lista os planos disponíveis (público, sem autenticação) */
+export async function listPlans(): Promise<Plan[]> {
+  return fetchAPI<Plan[]>('/plans');
+}
+
+/** Retorna informações do plano atual do usuário autenticado */
+export async function getMyPlan(): Promise<MyPlanInfo> {
+  return fetchAPI<MyPlanInfo>('/me/plan');
+}
+
+/** Lista as vagas do próprio usuário autenticado (paginado) */
+export async function getMyVagas(params?: VagaListParams): Promise<PaginatedResponse<Vaga>> {
+  return fetchAPI<PaginatedResponse<Vaga>>(`/vagas/me${buildVagasQuery(params)}`);
+}
+
+/** Inicia o checkout de um plano (cria Subscription pendente) */
+export async function createCheckout(
+  plan: PlanTier,
+  couponCode?: string
+): Promise<CheckoutResult> {
+  return fetchAPI<CheckoutResult>('/subscriptions/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ plan, ...(couponCode ? { couponCode } : {}) }),
+  });
+}
+
+/** Confirma o pagamento (mock — ativa o plano imediatamente) */
+export async function confirmSubscription(id: string): Promise<{ user: MyPlanInfo }> {
+  return fetchAPI<{ user: MyPlanInfo }>(`/subscriptions/${id}/confirm`, {
+    method: 'POST',
+  });
+}
+
+export interface SubscriptionRecord {
+  id: string;
+  plan: PlanTier;
+  status: 'PENDING' | 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
+  priceBRL: number;
+  couponCode: string | null;
+  discountApplied: number;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Lista o histórico de assinaturas do usuário autenticado (mais recente primeiro) */
+export async function listMySubscriptions(): Promise<SubscriptionRecord[]> {
+  return fetchAPI<SubscriptionRecord[]>('/subscriptions/me');
+}
+
+/** Retorna o cupom de indicação do usuário autenticado (cria se não existir) */
+export async function getMyCoupon(): Promise<Coupon> {
+  return fetchAPI<Coupon>('/me/coupon');
+}
+
+/** Valida um código de cupom publicamente */
+export async function validateCouponCode(code: string): Promise<CouponValidationResult> {
+  return fetchAPI<CouponValidationResult>(`/coupons/${encodeURIComponent(code)}/validate`);
+}
+
+/** [Admin] Lista redenções de cupons pendentes de validação */
+export async function listPendingRedemptions(): Promise<CouponRedemption[]> {
+  return fetchAPI<CouponRedemption[]>('/admin/coupons/redemptions?status=PENDING_VALIDATION');
+}
+
+/** [Admin] Valida uma redenção de cupom */
+export async function validateRedemption(id: string): Promise<void> {
+  return fetchAPI<void>(`/admin/coupons/redemptions/${id}/validate`, { method: 'POST' });
+}
+
+/** [Admin] Rejeita uma redenção de cupom */
+export async function rejectRedemption(id: string): Promise<void> {
+  return fetchAPI<void>(`/admin/coupons/redemptions/${id}/reject`, { method: 'POST' });
 }
 
 // ─── ERROR MESSAGES ───────────────────────────────────────────────────────────

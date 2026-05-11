@@ -1,6 +1,6 @@
 <template>
   <article class="vaga-detail">
-    <Toast ref="toast" />
+    <!-- <Toast ref="toast" /> -->
 
     <a href="/vagas" class="vaga-back">← Voltar para vagas</a>
 

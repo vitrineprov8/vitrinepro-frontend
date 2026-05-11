@@ -1,111 +1,108 @@
 <template>
   <DashboardLayout>
     <Toast ref="toast" />
+    <UpgradePlanModal
+      :visible="showUpgradeModal"
+      :current-plan="upgradePlan"
+      :limit="upgradeLimit"
+      @close="showUpgradeModal = false"
+    />
 
-    <div v-if="!authorized" class="db-section-header">
+    <div class="db-section-header">
       <div>
-        <h1 class="db-section-title">Acesso restrito</h1>
-        <p class="db-section-subtitle">Esta área é apenas para administradores.</p>
+        <h1 class="db-section-title">{{ vagaId ? 'Editar vaga' : 'Nova vaga' }}</h1>
+        <p class="db-section-subtitle">{{ vagaId ? 'Atualize os dados da vaga' : 'Cadastre uma nova vaga' }}</p>
       </div>
+      <a href="/dashboard/vagas" class="btn btn-ghost btn-sm">Voltar</a>
     </div>
 
-    <template v-else>
-      <div class="db-section-header">
-        <div>
-          <h1 class="db-section-title">{{ vagaId ? 'Editar vaga' : 'Nova vaga' }}</h1>
-          <p class="db-section-subtitle">{{ vagaId ? 'Atualize os dados da vaga' : 'Cadastre uma nova vaga' }}</p>
-        </div>
-        <a href="/dashboard/vagas" class="btn btn-ghost btn-sm">Voltar</a>
+    <div v-if="loading" class="loading-center"><div class="spinner spinner-lg" /></div>
+
+    <form v-else class="vaga-form" @submit.prevent="save">
+      <label class="db-field">
+        <span class="db-label">Título *</span>
+        <input v-model="form.title" type="text" required maxlength="255" class="db-input" />
+      </label>
+
+      <label class="db-field">
+        <span class="db-label">Descrição *</span>
+        <textarea v-model="form.description" rows="6" required class="db-textarea" />
+      </label>
+
+      <label class="db-field">
+        <span class="db-label">Requisitos</span>
+        <textarea v-model="form.requirements" rows="4" class="db-textarea" />
+      </label>
+
+      <label class="db-field">
+        <span class="db-label">Benefícios</span>
+        <textarea v-model="form.benefits" rows="3" class="db-textarea" />
+      </label>
+
+      <div class="vaga-form-grid">
+        <label class="db-field">
+          <span class="db-label">Localização</span>
+          <input v-model="form.location" type="text" maxlength="255" class="db-input" />
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Tipo</span>
+          <select v-model="form.type" class="db-input">
+            <option value="">—</option>
+            <option value="CLT">CLT</option>
+            <option value="PJ">PJ</option>
+            <option value="FREELA">Freelance</option>
+            <option value="ESTAGIO">Estágio</option>
+          </select>
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Modalidade</span>
+          <select v-model="form.workMode" class="db-input">
+            <option value="">—</option>
+            <option value="REMOTE">Remoto</option>
+            <option value="HYBRID">Híbrido</option>
+            <option value="ONSITE">Presencial</option>
+          </select>
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Status</span>
+          <select v-model="form.status" class="db-input">
+            <option value="DRAFT">Rascunho</option>
+            <option value="PUBLISHED">Publicada</option>
+            <option value="CLOSED">Encerrada</option>
+          </select>
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Salário mínimo (BRL)</span>
+          <input v-model.number="form.salaryMin" type="number" min="0" step="0.01" class="db-input" />
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Salário máximo (BRL)</span>
+          <input v-model.number="form.salaryMax" type="number" min="0" step="0.01" class="db-input" />
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">Prazo (deadline)</span>
+          <input v-model="form.deadline" type="datetime-local" class="db-input" />
+        </label>
+
+        <label class="db-field">
+          <span class="db-label">E-mail de contato</span>
+          <input v-model="form.contactEmail" type="email" maxlength="255" class="db-input" />
+        </label>
       </div>
 
-      <div v-if="loading" class="loading-center"><div class="spinner spinner-lg" /></div>
-
-      <form v-else class="vaga-form" @submit.prevent="save">
-        <label class="db-field">
-          <span class="db-label">Título *</span>
-          <input v-model="form.title" type="text" required maxlength="255" class="db-input" />
-        </label>
-
-        <label class="db-field">
-          <span class="db-label">Descrição *</span>
-          <textarea v-model="form.description" rows="6" required class="db-textarea" />
-        </label>
-
-        <label class="db-field">
-          <span class="db-label">Requisitos</span>
-          <textarea v-model="form.requirements" rows="4" class="db-textarea" />
-        </label>
-
-        <label class="db-field">
-          <span class="db-label">Benefícios</span>
-          <textarea v-model="form.benefits" rows="3" class="db-textarea" />
-        </label>
-
-        <div class="vaga-form-grid">
-          <label class="db-field">
-            <span class="db-label">Localização</span>
-            <input v-model="form.location" type="text" maxlength="255" class="db-input" />
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Tipo</span>
-            <select v-model="form.type" class="db-input">
-              <option value="">—</option>
-              <option value="CLT">CLT</option>
-              <option value="PJ">PJ</option>
-              <option value="FREELA">Freelance</option>
-              <option value="ESTAGIO">Estágio</option>
-            </select>
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Modalidade</span>
-            <select v-model="form.workMode" class="db-input">
-              <option value="">—</option>
-              <option value="REMOTE">Remoto</option>
-              <option value="HYBRID">Híbrido</option>
-              <option value="ONSITE">Presencial</option>
-            </select>
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Status</span>
-            <select v-model="form.status" class="db-input">
-              <option value="DRAFT">Rascunho</option>
-              <option value="PUBLISHED">Publicada</option>
-              <option value="CLOSED">Encerrada</option>
-            </select>
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Salário mínimo (BRL)</span>
-            <input v-model.number="form.salaryMin" type="number" min="0" step="0.01" class="db-input" />
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Salário máximo (BRL)</span>
-            <input v-model.number="form.salaryMax" type="number" min="0" step="0.01" class="db-input" />
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">Prazo (deadline)</span>
-            <input v-model="form.deadline" type="datetime-local" class="db-input" />
-          </label>
-
-          <label class="db-field">
-            <span class="db-label">E-mail de contato</span>
-            <input v-model="form.contactEmail" type="email" maxlength="255" class="db-input" />
-          </label>
-        </div>
-
-        <div class="vaga-form-actions">
-          <button type="button" class="btn btn-ghost" @click="cancel">Cancelar</button>
-          <button type="submit" class="btn btn-primary" :disabled="saving">
-            {{ saving ? 'Salvando...' : (vagaId ? 'Salvar' : 'Criar vaga') }}
-          </button>
-        </div>
-      </form>
-    </template>
+      <div class="vaga-form-actions">
+        <button type="button" class="btn btn-ghost" @click="cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary" :disabled="saving">
+          {{ saving ? 'Salvando...' : (vagaId ? 'Salvar' : 'Criar vaga') }}
+        </button>
+      </div>
+    </form>
   </DashboardLayout>
 </template>
 
@@ -113,20 +110,18 @@
 import { onMounted, reactive, ref } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
-import { isAdmin } from '../../utils/auth';
-import {
-  createVaga,
-  getAdminVagas,
-  updateVaga,
-} from '../../utils/api';
-import type { VagaPayload, VagaStatus, VagaType, VagaWorkMode } from '../../utils/api';
+import UpgradePlanModal from './UpgradePlanModal.vue';
+import { createVaga, getMyVagas, updateVaga } from '../../utils/api';
+import type { PlanTier, VagaPayload, VagaStatus, VagaType, VagaWorkMode } from '../../utils/api';
 
 const props = defineProps<{ vagaId?: string }>();
 
 const toast = ref<InstanceType<typeof Toast>>();
-const authorized = ref(false);
 const loading = ref(true);
 const saving = ref(false);
+const showUpgradeModal = ref(false);
+const upgradePlan = ref<PlanTier>('FREE');
+const upgradeLimit = ref(0);
 
 interface FormState {
   title: string;
@@ -171,16 +166,16 @@ async function load() {
   }
   loading.value = true;
   try {
-    // Admin endpoint returns all statuses; locate this id by paging.
-    let page = 1;
+    // Find the vaga in the user's own list
+    let pageNum = 1;
     let lastPage = 1;
-    let found: any = null;
+    let found: ReturnType<typeof Object.assign> | null = null;
     do {
-      const res = await getAdminVagas({ page, limit: 20 });
-      found = res.data.find((v) => v.id === props.vagaId);
+      const res = await getMyVagas({ page: pageNum, limit: 20 });
+      found = res.data.find((v) => v.id === props.vagaId) ?? null;
       lastPage = res.lastPage;
-      page++;
-    } while (!found && page <= lastPage);
+      pageNum++;
+    } while (!found && pageNum <= lastPage);
 
     if (!found) {
       toast.value?.show('Vaga não encontrada', 'error');
@@ -237,13 +232,24 @@ async function save() {
       await updateVaga(props.vagaId, payload);
       toast.value?.show('Vaga atualizada', 'success');
     } else {
-      const created = await createVaga(payload);
+      await createVaga(payload);
       toast.value?.show('Vaga criada', 'success');
-      window.location.href = `/dashboard/vagas/${created.id}`;
-      return;
     }
-  } catch (err: any) {
-    toast.value?.show(err?.message || 'Erro ao salvar vaga', 'error');
+    setTimeout(() => { window.location.href = '/dashboard/vagas'; }, 600);
+    return;
+  } catch (err: unknown) {
+    const e = err as { statusCode?: number; message?: string; body?: Record<string, unknown> };
+    if (e?.statusCode === 403) {
+      const body = e.body ?? {};
+      const code = typeof body.code === 'string' ? body.code : undefined;
+      if (code === 'PLAN_LIMIT_REACHED' || e?.message?.toLowerCase().includes('limite')) {
+        upgradePlan.value = (typeof body.plan === 'string' ? body.plan : 'FREE') as PlanTier;
+        upgradeLimit.value = typeof body.limit === 'number' ? body.limit : 0;
+        showUpgradeModal.value = true;
+        return;
+      }
+    }
+    toast.value?.show(e?.message || 'Erro ao salvar vaga', 'error');
   } finally {
     saving.value = false;
   }
@@ -254,12 +260,6 @@ function cancel() {
 }
 
 onMounted(() => {
-  if (!isAdmin()) {
-    authorized.value = false;
-    loading.value = false;
-    return;
-  }
-  authorized.value = true;
   load();
 });
 </script>
