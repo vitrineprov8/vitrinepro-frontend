@@ -122,12 +122,12 @@ import { isAuthenticated, redirectToLogin } from '../../utils/auth';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
-  PERSONAL: 'Personal',
-  HUNTER: 'Hunter',
-  EMPRESARIAL: 'Empresarial',
+  RECRUITER: 'Recruiter',
+  TEAM: 'Recruiter Team',
+  ENTERPRISE: 'Recruiter Enterprise',
 };
 
-const VALID_PLANS: PlanTier[] = ['PERSONAL', 'HUNTER', 'EMPRESARIAL'];
+const VALID_PLANS: PlanTier[] = ['RECRUITER', 'TEAM', 'ENTERPRISE'];
 
 const toast = ref<InstanceType<typeof Toast>>();
 const loading = ref(true);
@@ -135,7 +135,7 @@ const paying = ref(false);
 const applyingCoupon = ref(false);
 const savingBilling = ref(false);
 
-const selectedPlan = ref<PlanTier>('PERSONAL');
+const selectedPlan = ref<PlanTier>('RECRUITER');
 const planLabel = ref('');
 const checkout = ref<CheckoutResult | null>(null);
 const appliedCoupon = ref('');

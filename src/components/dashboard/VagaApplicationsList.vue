@@ -99,11 +99,20 @@ async function load() {
   }
 }
 
+/** Maps legacy status enum values to pipeline stage ids used by the new endpoint */
+const LEGACY_STATUS_TO_STAGE: Record<string, { pipelineStage: string; isRejected: boolean }> = {
+  PENDING:  { pipelineStage: 'para_analisar', isRejected: false },
+  REVIEWED: { pipelineStage: 'analisados',    isRejected: false },
+  ACCEPTED: { pipelineStage: 'entrev_final',  isRejected: false },
+  REJECTED: { pipelineStage: 'rejected',      isRejected: true  },
+};
+
 async function onStatusChange(app: VagaApplicationAdminView, value: string) {
   if (updatingId.value) return;
   updatingId.value = app.id;
+  const mapped = LEGACY_STATUS_TO_STAGE[value] ?? { pipelineStage: value, isRejected: false };
   try {
-    await updateApplicationStatus(app.id, value as ApplicationStatus);
+    await updateApplicationStatus(app.id, mapped.pipelineStage, mapped.isRejected);
     app.status = value as ApplicationStatus;
     toast.value?.show('Status atualizado', 'success');
   } catch {

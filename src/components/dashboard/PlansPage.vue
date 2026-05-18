@@ -12,6 +12,18 @@
     <div v-if="loading" class="loading-center"><div class="spinner spinner-lg" /></div>
 
     <template v-else>
+      <!-- Coupon banner (server-driven, silent fail if empty) -->
+      <div v-if="activeCoupons.length > 0" class="coupon-banner" role="region" aria-label="Cupom promocional">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-3.75-3.75 3.75-3.75-3.75-3.75 3.75V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z" /></svg>
+        <span>
+          Use o cupom <strong>{{ activeCoupons[0].code }}</strong> e ganhe
+          <strong>{{ formatCouponDiscount(activeCoupons[0]) }}</strong> no primeiro mês!
+        </span>
+        <button class="coupon-banner-cta btn btn-sm btn-primary" @click="goToCheckoutWithCoupon(activeCoupons[0].code)">
+          Assinar agora
+        </button>
+      </div>
+
       <!-- Current plan summary -->
       <section v-if="myPlanInfo && myPlanInfo.plan !== 'FREE'" class="my-plan-card" :class="`plan-card-${myPlanInfo.plan.toLowerCase()}`">
         <div class="my-plan-header">
@@ -26,7 +38,7 @@
         <div class="my-plan-stats">
           <div class="my-plan-stat">
             <span class="stat-label">Vagas usadas</span>
-            <span class="stat-value">{{ myPlanInfo.vagasUsed }} / {{ myPlanInfo.vagasLimit }}</span>
+            <span class="stat-value">{{ myPlanInfo.vagasUsed }} / {{ myPlanInfo.vagasLimit === -1 ? '∞' : myPlanInfo.vagasLimit }}</span>
           </div>
           <div v-if="myPlanInfo.planExpiresAt" class="my-plan-stat">
             <span class="stat-label">Válido até</span>
@@ -75,7 +87,7 @@
           class="plan-card"
           :class="{
             'plan-card--current': isCurrentPlan(plan.tier),
-            'plan-card--highlight': plan.tier === 'HUNTER',
+            'plan-card--highlight': plan.tier === 'TEAM',
             'plan-card--clickable': !isCurrentPlan(plan.tier),
           }"
           :role="!isCurrentPlan(plan.tier) ? 'button' : undefined"
@@ -83,7 +95,7 @@
           @click="!isCurrentPlan(plan.tier) && selectPlan(plan.tier)"
           @keydown.enter="!isCurrentPlan(plan.tier) && selectPlan(plan.tier)"
         >
-          <div v-if="plan.tier === 'HUNTER'" class="plan-card-ribbon">Popular</div>
+          <div v-if="plan.tier === 'TEAM'" class="plan-card-ribbon">Popular</div>
 
           <div class="plan-card-header">
             <h2 class="plan-card-name">{{ plan.name }}</h2>
@@ -91,7 +103,7 @@
               <span class="plan-price-value">R$ {{ plan.priceBRL }}</span>
               <span class="plan-price-period">/mês</span>
             </div>
-            <p class="plan-card-vagas">Até {{ plan.vagaLimit }} vagas</p>
+            <p class="plan-card-vagas">{{ formatVagaLimit(plan.vagaLimit) }}</p>
           </div>
 
           <ul class="plan-features">
@@ -108,7 +120,7 @@
             <button
               v-else
               class="btn btn-primary plan-cta"
-              :class="{ 'btn-outline': plan.tier !== 'HUNTER' }"
+              :class="{ 'btn-outline': plan.tier !== 'TEAM' }"
               @click.stop="selectPlan(plan.tier)"
             >
               Assinar
@@ -143,15 +155,15 @@
 import { computed, onMounted, ref } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
 import Toast from '../ui/Toast.vue';
-import { getMyCoupon, getMyPlan, listMySubscriptions, listPlans } from '../../utils/api';
-import type { Coupon, MyPlanInfo, Plan, PlanStatus, PlanTier, SubscriptionRecord } from '../../utils/api';
+import { getMyCoupon, getMyPlan, listMySubscriptions, listPlans, listPublicActiveCoupons } from '../../utils/api';
+import type { Coupon, MyPlanInfo, Plan, PlanStatus, PlanTier, PublicCoupon, SubscriptionRecord } from '../../utils/api';
 import { isAuthenticated, redirectToLogin } from '../../utils/auth';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
-  PERSONAL: 'Personal',
-  HUNTER: 'Hunter',
-  EMPRESARIAL: 'Empresarial',
+  RECRUITER: 'Recruiter',
+  TEAM: 'Recruiter Team',
+  ENTERPRISE: 'Recruiter Enterprise',
 };
 
 const toast = ref<InstanceType<typeof Toast>>();
@@ -160,6 +172,7 @@ const loadingCoupon = ref(true);
 const plans = ref<Plan[]>([]);
 const myPlanInfo = ref<MyPlanInfo | null>(null);
 const myCoupon = ref<Coupon | null>(null);
+const activeCoupons = ref<PublicCoupon[]>([]);
 const subscriptions = ref<SubscriptionRecord[]>([]);
 const copied = ref(false);
 
@@ -201,8 +214,22 @@ function isCurrentPlan(tier: PlanTier): boolean {
   );
 }
 
+function formatVagaLimit(limit: number): string {
+  if (limit === -1 || limit == null) return 'Vagas ilimitadas';
+  return `Até ${limit} vagas`;
+}
+
 function selectPlan(tier: PlanTier) {
   window.location.href = `/dashboard/checkout?plan=${tier}`;
+}
+
+function goToCheckoutWithCoupon(code: string) {
+  window.location.href = `/dashboard/checkout?plan=RECRUITER&coupon=${encodeURIComponent(code)}`;
+}
+
+function formatCouponDiscount(coupon: PublicCoupon): string {
+  if (coupon.discountType === 'PERCENT') return `${coupon.discountValue}% off`;
+  return `R$ ${coupon.discountValue.toFixed(2)} off`;
 }
 
 async function copyCoupon() {
@@ -241,6 +268,13 @@ onMounted(async () => {
   } finally {
     loadingCoupon.value = false;
   }
+
+  // Carregar cupons públicos (silent fail)
+  try {
+    activeCoupons.value = await listPublicActiveCoupons();
+  } catch {
+    // silent fail — banner simplesmente não aparece
+  }
 });
 </script>
 
@@ -254,9 +288,36 @@ onMounted(async () => {
   background: var(--bg-primary);
   border-left: 4px solid var(--primary);
 }
-.plan-card-personal { border-left-color: var(--primary); }
-.plan-card-hunter { border-left-color: #7c3aed; }
-.plan-card-empresarial { border-left-color: #f59e0b; }
+.plan-card-recruiter { border-left-color: var(--primary); }
+.plan-card-team { border-left-color: #7c3aed; }
+.plan-card-enterprise { border-left-color: #f59e0b; }
+
+/* Coupon banner */
+.coupon-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-lg, 12px);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  flex-wrap: wrap;
+}
+.coupon-banner svg {
+  flex-shrink: 0;
+  color: #d97706;
+}
+.coupon-banner span {
+  flex: 1;
+  min-width: 0;
+}
+.coupon-banner-cta {
+  white-space: nowrap;
+  margin-left: auto;
+}
 
 .my-plan-header {
   display: flex;

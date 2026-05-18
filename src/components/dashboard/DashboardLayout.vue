@@ -29,6 +29,9 @@
             <span v-if="myPlan.planStatus === 'ACTIVE' && myPlan.planExpiresAt" class="db-plan-expires">
               até {{ formatPlanExpiry(myPlan.planExpiresAt) }}
             </span>
+            <span v-if="myPlan.inheritedFromTeam" class="db-plan-inherited" title="Você é membro de um time e herdou o plano do proprietário.">
+              herdado do time
+            </span>
           </div>
         </div>
       </div>
@@ -40,16 +43,16 @@
       </div>
 
       <nav class="db-nav">
-        <template v-for="group in navGroups" :key="group.label">
-          <div class="db-nav-section">{{ group.label }}</div>
-          <a v-for="item in group.items" :key="item.href"
-            :href="item.href"
+        <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
+          <hr v-if="'divider' in entry" class="db-nav-divider" />
+          <a v-else
+            :href="entry.href"
             class="db-nav-item"
-            :class="{ active: isActive(item.href), disabled: item.disabled }"
+            :class="{ active: isActive(entry.href), disabled: entry.disabled }"
           >
-            <svg class="db-nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="item.icon" />
-            {{ item.label }}
-            <span v-if="item.badge" class="db-nav-badge">{{ item.badge }}</span>
+            <svg class="db-nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="entry.icon" />
+            {{ entry.label }}
+            <span v-if="entry.badge" class="db-nav-badge">{{ entry.badge }}</span>
           </a>
         </template>
       </nav>
@@ -122,17 +125,17 @@
           </button>
         </div>
         <div class="db-drawer-body">
-          <template v-for="group in navGroups" :key="group.label">
-            <div class="db-drawer-section">{{ group.label }}</div>
-            <a v-for="item in group.items" :key="item.href"
-              :href="item.href"
+          <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
+            <hr v-if="'divider' in entry" class="db-drawer-divider" />
+            <a v-else
+              :href="entry.href"
               class="db-drawer-item"
-              :class="{ active: isActive(item.href), disabled: item.disabled }"
+              :class="{ active: isActive(entry.href), disabled: entry.disabled }"
               @click="moreOpen = false"
             >
-              <svg width="22" height="22" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="item.icon" />
-              <span class="db-drawer-item-label">{{ item.label }}</span>
-              <span v-if="item.badge" class="db-nav-badge">{{ item.badge }}</span>
+              <svg width="22" height="22" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="entry.icon" />
+              <span class="db-drawer-item-label">{{ entry.label }}</span>
+              <span v-if="entry.badge" class="db-nav-badge">{{ entry.badge }}</span>
             </a>
           </template>
         </div>
@@ -146,21 +149,27 @@
         </div>
       </div>
     </div>
+
+    <PendingInvitesModal
+      :visible="pendingInvitesOpen"
+      @close="pendingInvitesOpen = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue';
 import { isAdmin, isAuthenticated, logout } from '../../utils/auth';
-import { getFullProfile, getMyPlan, updateProfile } from '../../utils/api';
+import { getFullProfile, getMyPlan, team, updateProfile } from '../../utils/api';
 import type { FullProfile, MyPlanInfo, PlanTier } from '../../utils/api';
 import Toast from '../ui/Toast.vue';
+import PendingInvitesModal from './PendingInvitesModal.vue';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
-  PERSONAL: 'Personal',
-  HUNTER: 'Hunter',
-  EMPRESARIAL: 'Empresarial',
+  RECRUITER: 'Recruiter',
+  TEAM: 'Recruiter Team',
+  ENTERPRISE: 'Recruiter Enterprise',
 };
 
 function formatPlanExpiry(iso: string): string {
@@ -189,6 +198,7 @@ const adminMode = ref(false);
 const planExpiryOpen = ref(false);
 
 const VAGAS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />';
+const PLANOS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />';
 
 interface NavItem {
   href: string;
@@ -197,16 +207,17 @@ interface NavItem {
   disabled?: boolean;
   badge?: string;
 }
+type NavEntry = NavItem | { divider: true };
 
-const inicioItem: NavItem = { href: '/dashboard', label: 'Início', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />' };
+const painelItem: NavItem = { href: '/dashboard/recrutador?tab=carreira', label: 'Painel', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />' };
 const perfilItem: NavItem = { href: '/dashboard/perfil', label: 'Perfil', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />' };
 const portfolioItem: NavItem = { href: '/dashboard/portfolio', label: 'Portfólio', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />' };
-const tagsItem: NavItem = { href: '/dashboard/tags', label: 'Tags', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />' };
 const curriculosItem: NavItem = { href: '/dashboard/curriculos', label: 'Currículos', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />' };
 const formacaoItem: NavItem = { href: '/dashboard/formacao', label: 'Formação', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />' };
-const candidaturasItem: NavItem = { href: '/dashboard/minhas-candidaturas', label: 'Candidaturas', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />' };
-const vagasItem: NavItem = { href: '/dashboard/vagas', label: 'Vagas', icon: VAGAS_ICON };
-const planosItem: NavItem = { href: '/dashboard/planos', label: 'Planos', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />' };
+const tagsItem: NavItem = { href: '/dashboard/tags', label: 'Tags', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />' };
+const minhasCandidaturasItem: NavItem = { href: '/dashboard/minhas-candidaturas', label: 'Minhas candidaturas', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />' };
+const vagasPublicadasItem: NavItem = { href: '/dashboard/recrutador?tab=publicar', label: 'Vagas publicadas', icon: VAGAS_ICON };
+const planosAssinaturaItem: NavItem = { href: '/dashboard/recrutador?tab=servicos', label: 'Planos & assinatura', icon: PLANOS_ICON };
 const eventosItem: NavItem = { href: '/dashboard/eventos', label: 'Eventos', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />', disabled: true, badge: 'Em breve' };
 
 const adminCuponsNavItem: NavItem = {
@@ -215,28 +226,30 @@ const adminCuponsNavItem: NavItem = {
   icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" />',
 };
 
-const navGroups = computed<{ label: string; items: NavItem[] }[]>(() => {
-  const groups = [
-    {
-      label: 'Meu Perfil',
-      items: [inicioItem, perfilItem, portfolioItem, tagsItem, curriculosItem, formacaoItem],
-    },
-    {
-      label: 'Carreira',
-      items: [candidaturasItem, vagasItem, planosItem, eventosItem],
-    },
+const navEntries = computed<NavEntry[]>(() => {
+  const entries: NavEntry[] = [
+    painelItem,
+    perfilItem,
+    portfolioItem,
+    curriculosItem,
+    formacaoItem,
+    tagsItem,
+    minhasCandidaturasItem,
+    { divider: true },
+    vagasPublicadasItem,
+    planosAssinaturaItem,
+    { divider: true },
+    eventosItem,
   ];
-  if (adminMode.value) {
-    groups.push({ label: 'Administração', items: [adminCuponsNavItem] });
-  }
-  return groups;
+  if (adminMode.value) entries.push(adminCuponsNavItem);
+  return entries;
 });
 
 const mobileNavItems = computed<NavItem[]>(() => [
-  inicioItem,
+  painelItem,
   perfilItem,
   portfolioItem,
-  candidaturasItem,
+  { ...vagasPublicadasItem, label: 'Recrutar' },
 ]);
 
 const moreOpen = ref(false);
@@ -245,12 +258,34 @@ onBeforeUnmount(() => {
   if (typeof window !== 'undefined' && window.visualViewport && vpResizeHandler) {
     window.visualViewport.removeEventListener('resize', vpResizeHandler);
   }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('popstate', updateCurrentLocation);
+    window.removeEventListener('vp:nav-changed', updateCurrentLocation);
+  }
+});
+
+const currentLocation = ref({
+  pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+  search:   typeof window !== 'undefined' ? window.location.search   : '',
 });
 
 function isActive(href: string) {
-  if (typeof window === 'undefined') return false;
-  if (href === '/dashboard') return window.location.pathname === '/dashboard';
-  return window.location.pathname.startsWith(href);
+  const [path, query = ''] = href.split('?');
+  if (path === '/dashboard/recrutador') {
+    if (currentLocation.value.pathname !== '/dashboard/recrutador') return false;
+    const expectedTab = new URLSearchParams(query).get('tab');
+    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'carreira';
+    return expectedTab ? expectedTab === currentTab : currentTab === 'carreira';
+  }
+  if (path === '/dashboard') return currentLocation.value.pathname === '/dashboard';
+  return currentLocation.value.pathname.startsWith(path ?? '');
+}
+
+function updateCurrentLocation() {
+  currentLocation.value = {
+    pathname: window.location.pathname,
+    search:   window.location.search,
+  };
 }
 
 async function toggleVisibility() {
@@ -285,6 +320,10 @@ onMounted(async () => {
     window.visualViewport.addEventListener('resize', vpResizeHandler);
   }
 
+  // React to URL changes (popstate + tab switches that emit vp:nav-changed)
+  window.addEventListener('popstate', updateCurrentLocation);
+  window.addEventListener('vp:nav-changed', updateCurrentLocation);
+
   if (!isAuthenticated()) {
     const redirect = encodeURIComponent(window.location.pathname);
     window.location.href = `/login?redirect=${redirect}`;
@@ -302,10 +341,30 @@ onMounted(async () => {
       logout();
     }
   }
+
+  try {
+    const invites = await team.listPendingInvites();
+    if (invites.length > 0) pendingInvitesOpen.value = true;
+  } catch {
+    // silent
+  }
 });
+
+const pendingInvitesOpen = ref(false);
 </script>
 
 <style scoped>
+.db-nav-divider {
+  border: none;
+  border-top: 1px solid var(--border-light);
+  margin: var(--spacing-sm) var(--spacing-md);
+  opacity: 0.6;
+}
+.db-drawer-divider {
+  border: none;
+  border-top: 1px solid var(--border-light);
+  margin: var(--spacing-sm) var(--spacing-lg);
+}
 .db-plan-row {
   display: flex;
   flex-direction: column;
@@ -350,6 +409,17 @@ onMounted(async () => {
 .db-plan-row:hover .db-plan-expires,
 .db-plan-row.expanded .db-plan-expires {
   display: inline;
+}
+.db-plan-inherited {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+  margin-left: 4px;
 }
 /* Avatar ring colored by plan */
 .db-user-avatar.ring-personal {
@@ -462,21 +532,6 @@ onMounted(async () => {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-sm) 0;
-}
-.db-drawer-section {
-  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xs);
-  margin-top: var(--spacing-sm);
-  border-top: 1px solid var(--border-light);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-light);
-}
-.db-drawer-section:first-child {
-  margin-top: 0;
-  border-top: none;
-  padding-top: var(--spacing-xs);
 }
 .db-drawer-item {
   display: flex;

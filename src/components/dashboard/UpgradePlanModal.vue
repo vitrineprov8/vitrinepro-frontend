@@ -34,9 +34,9 @@ defineEmits<{ close: [] }>();
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
-  PERSONAL: 'Personal',
-  HUNTER: 'Hunter',
-  EMPRESARIAL: 'Empresarial',
+  RECRUITER: 'Recruiter',
+  TEAM: 'Recruiter Team',
+  ENTERPRISE: 'Recruiter Enterprise',
 };
 
 const planName = computed(() => PLAN_NAMES[props.currentPlan]);

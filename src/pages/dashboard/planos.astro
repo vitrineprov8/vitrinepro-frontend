@@ -1,7 +1,14 @@
 ---
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import PlansPage from '../../components/dashboard/PlansPage.vue';
 ---
-<DashboardLayout title="Planos | Dashboard VitrinePro">
-  <PlansPage client:load />
-</DashboardLayout>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planos · VitrinePro</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <PlansPage client:load />
+  </body>
+</html>

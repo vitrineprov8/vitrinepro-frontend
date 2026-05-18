@@ -139,9 +139,28 @@
         </div>
       </div>
 
-      <!-- ── Atalhos (shown when wizard is done) ───────────────────── -->
-      <div v-else class="db-card dh-shortcuts-card" style="margin-bottom: var(--spacing-lg);">
-        <div class="db-card-title">Atalhos</div>
+      <!-- ── Atalhos + Banner Recrutador (shown when wizard is done) ─ -->
+      <template v-else>
+        <a v-if="!recrutadorBannerDismissed" href="/dashboard/recrutador" class="dh-recrutador-banner" style="margin-bottom: var(--spacing-lg);">
+          <div class="dh-rb-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.75 6.75h16.5M3.75 12h10.5m-10.5 5.25h16.5M18 9l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="dh-rb-content">
+            <div class="dh-rb-title">
+              Novo: Painel do Recrutador
+              <span class="dh-rb-pill">Beta</span>
+            </div>
+            <div class="dh-rb-desc">
+              Pipeline visual de candidatos em 7 etapas, timeline por idade de vaga e métricas em tempo real. Experimente agora.
+            </div>
+          </div>
+          <button class="dh-rb-close" type="button" aria-label="Dispensar" @click.prevent="dismissRecrutadorBanner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </a>
+
+        <div class="db-card dh-shortcuts-card" style="margin-bottom: var(--spacing-lg);">
+          <div class="db-card-title">Atalhos</div>
         <div class="dh-shortcuts-grid">
           <a href="/dashboard/curriculos" class="dh-shortcut">
             <span class="dh-shortcut-icon">📋</span>
@@ -161,6 +180,7 @@
           </a>
         </div>
       </div>
+      </template>
 
       <!-- ── Publicações ────────────────────────────────────────────── -->
       <div class="db-card">
@@ -273,6 +293,16 @@ const toastRef = ref<InstanceType<typeof Toast> | null>(null);
 // complete when the page loaded (modal should only appear after user finishes
 // the last step during an active session).
 const initialWizardComplete = ref(false);
+const RECRUTADOR_BANNER_KEY = 'vp_recrutador_banner_dismissed_v1';
+const recrutadorBannerDismissed = ref(
+  typeof window !== 'undefined' && localStorage.getItem(RECRUTADOR_BANNER_KEY) === '1'
+);
+function dismissRecrutadorBanner() {
+  recrutadorBannerDismissed.value = true;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(RECRUTADOR_BANNER_KEY, '1');
+  }
+}
 
 
 // ── Step definitions ─────────────────────────────────────────────────────────
@@ -667,6 +697,77 @@ watch(wizardComplete, (done) => {
   font-size: var(--text-xs);
   color: var(--text-secondary);
   margin: 0;
+}
+
+/* ── Recrutador discovery banner ─────────────────────────────────────────── */
+.dh-recrutador-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  border-radius: var(--radius-lg);
+  color: #ffffff;
+  text-decoration: none;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.dh-recrutador-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.dh-rb-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+.dh-rb-content { flex: 1; min-width: 0; }
+.dh-rb-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.dh-rb-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+}
+.dh-rb-desc {
+  font-size: var(--text-sm);
+  opacity: 0.92;
+  line-height: var(--leading-normal);
+}
+.dh-rb-close {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+.dh-rb-close:hover { background: rgba(255, 255, 255, 0.3); }
+@media (max-width: 640px) {
+  .dh-recrutador-banner { padding: var(--spacing-md); }
+  .dh-rb-icon { width: 36px; height: 36px; }
+  .dh-rb-desc { font-size: var(--text-xs); }
 }
 
 /* ── Shortcuts ───────────────────────────────────────────────────────────── */

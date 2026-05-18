@@ -1,7 +1,3 @@
 ---
-import DashboardLayout from '../layouts/DashboardLayout.astro';
-import DashboardHome from '../components/dashboard/DashboardHome.vue';
+return Astro.redirect('/dashboard/recrutador', 302);
 ---
-<DashboardLayout title="Dashboard | VitrinePro">
-  <DashboardHome client:load />
-</DashboardLayout>

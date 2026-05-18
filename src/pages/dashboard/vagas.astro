@@ -1,7 +1,3 @@
 ---
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
-import VagasAdminList from '../../components/dashboard/VagasAdminList.vue';
+return Astro.redirect('/dashboard/recrutador?tab=publicar', 302);
 ---
-<DashboardLayout title="Vagas | Dashboard VitrinePro">
-  <VagasAdminList client:load />
-</DashboardLayout>

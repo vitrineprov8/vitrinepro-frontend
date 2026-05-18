@@ -97,4 +97,36 @@
 
   /* Header */
   --header-height: 73px;
+
+  /* ─── Recrutamento: edad de la vacante (timeline) ─────────────────────── */
+  --age-fresh: #10b981;          /* 0–5 días — verde */
+  --age-fresh-bg: #d1fae5;
+  --age-fresh-text: #065f46;
+  --age-recent: #84cc16;         /* 6–15 días — verde lima */
+  --age-recent-bg: #ecfccb;
+  --age-recent-text: #365314;
+  --age-normal: #9ca3af;         /* 16–30 días — gris */
+  --age-normal-bg: #f3f4f6;
+  --age-normal-text: #374151;
+  --age-warn: #facc15;            /* 31–60 días — amarillo */
+  --age-warn-bg: #fef3c7;
+  --age-warn-text: #854d0e;
+  --age-late: #f97316;            /* 61–90 días — naranja */
+  --age-late-bg: #ffedd5;
+  --age-late-text: #9a3412;
+  --age-critical: #dc2626;        /* +90 días — rojo */
+  --age-critical-bg: #fee2e2;
+  --age-critical-text: #991b1b;
+
+  /* ─── Status badges (Kanban / listas) ───────────────────────────────── */
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #92400e;
+  --status-active-bg: #dbeafe;
+  --status-active-text: #1e40af;
+  --status-success-bg: #d1fae5;
+  --status-success-text: #065f46;
+  --status-rejected-bg: #fee2e2;
+  --status-rejected-text: #991b1b;
+  --status-neutral-bg: #f3f4f6;
+  --status-neutral-text: #374151;
 }

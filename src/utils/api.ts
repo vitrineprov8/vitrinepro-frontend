@@ -493,6 +493,12 @@ export async function uploadContentImage(file: File): Promise<{ url: string }> {
   return fetchAPIFormData<{ url: string }>('/uploads/image', fd);
 }
 
+export async function uploadGenericImage(file: File): Promise<{ url: string }> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return fetchAPIFormData<{ url: string }>('/uploads/image', fd);
+}
+
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
 
 export interface SearchParams {
@@ -627,9 +633,44 @@ export interface Vaga {
   createdAt?: string;
   updatedAt?: string;
   applicationsCount?: number;
+  // TEAM/ENTERPRISE fields
+  company?: Company | null;
+  companyId?: string | null;
+  assignedTo?: { id: string; name: string; avatarUrl?: string } | null;
+  assignedToId?: string | null;
 }
 
 export type ApplicationStatus = 'PENDING' | 'REVIEWED' | 'ACCEPTED' | 'REJECTED';
+
+// ─── PIPELINE TEMPLATE ────────────────────────────────────────────────────────
+
+export interface PipelineStage {
+  id: string;
+  label: string;
+  color?: string;
+  order: number;
+  isRejected?: boolean;
+}
+
+export interface PipelineTemplate {
+  id: string;
+  ownerId: string;
+  stages: PipelineStage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const pipelineTemplates = {
+  getMine(): Promise<PipelineTemplate> {
+    return fetchAPI<PipelineTemplate>('/me/pipeline-template');
+  },
+  updateMine(stages: PipelineStage[]): Promise<PipelineTemplate> {
+    return fetchAPI<PipelineTemplate>('/me/pipeline-template', {
+      method: 'PATCH',
+      body: JSON.stringify({ stages }),
+    });
+  },
+};
 
 export interface VagaApplication {
   id: string;
@@ -650,12 +691,16 @@ export interface VagaApplication {
 export interface VagaApplicationAdminView {
   id: string;
   status: ApplicationStatus;
+  pipelineStage?: string | null;
+  isRejected?: boolean;
   message?: string | null;
   snapshotFullName: string;
   snapshotEmail: string;
   snapshotPhone?: string | null;
   snapshotLocation?: string | null;
   createdAt: string;
+  vagaId?: string;
+  vagaTitle?: string;
   cv: { id: string; label: string; fileUrl: string } | null;
   user: {
     id: string;
@@ -750,16 +795,20 @@ export async function getVagaApplications(vagaId: string): Promise<VagaApplicati
   return fetchAPI<VagaApplicationAdminView[]>(`/vagas/${vagaId}/applications`);
 }
 
-export async function updateApplicationStatus(id: string, status: ApplicationStatus): Promise<VagaApplication> {
+export async function updateApplicationStatus(
+  id: string,
+  pipelineStage: string,
+  isRejected?: boolean,
+): Promise<VagaApplication> {
   return fetchAPI<VagaApplication>(`/applications/${id}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ pipelineStage, isRejected: isRejected ?? false }),
   });
 }
 
 // ─── PLANS & SUBSCRIPTIONS ────────────────────────────────────────────────────
 
-export type PlanTier = 'FREE' | 'PERSONAL' | 'HUNTER' | 'EMPRESARIAL';
+export type PlanTier = 'FREE' | 'RECRUITER' | 'TEAM' | 'ENTERPRISE';
 export type PlanStatus = 'NONE' | 'ACTIVE' | 'EXPIRED' | 'PENDING';
 
 export interface Plan {
@@ -767,7 +816,31 @@ export interface Plan {
   name: string;
   priceBRL: number;
   vagaLimit: number;
+  seatLimit: number;
   features: string[];
+}
+
+export interface VagaUsage {
+  used: number;
+  limit: number;       // -1 = ilimitado
+  cycleStart: string;
+  cycleEnd: string;
+  planTier: PlanTier;
+  inheritedFromTeam?: boolean;
+}
+
+export interface PublicCoupon {
+  code: string;
+  discountType: 'PERCENT' | 'FIXED';
+  discountValue: number;
+}
+
+export interface PlanLimitReachedBody {
+  code: 'PLAN_LIMIT_REACHED';
+  used: number;
+  limit: number;
+  cycleEnd: string;
+  message: string;
 }
 
 export interface MyPlanInfo {
@@ -776,6 +849,9 @@ export interface MyPlanInfo {
   planExpiresAt: string | null;
   vagasUsed: number;
   vagasLimit: number;
+  inheritedFromTeam?: boolean;
+  teamRole?: TeamRole | null;
+  teamId?: string | null;
 }
 
 export interface Subscription {
@@ -872,6 +948,26 @@ export async function listMySubscriptions(): Promise<SubscriptionRecord[]> {
   return fetchAPI<SubscriptionRecord[]>('/subscriptions/me');
 }
 
+/** Retorna o uso de vagas do usuário no ciclo atual */
+export async function getMyVagaUsage(): Promise<VagaUsage> {
+  return fetchAPI<VagaUsage>('/vagas/me/usage');
+}
+
+/** Publica uma vaga (POST /vagas/:id/publish — consome 1 slot do ciclo) */
+export async function publishVaga(id: string): Promise<Vaga> {
+  return fetchAPI<Vaga>(`/vagas/${id}/publish`, { method: 'POST' });
+}
+
+/** Despublica/encerra uma vaga (POST /vagas/:id/unpublish) */
+export async function unpublishVaga(id: string): Promise<Vaga> {
+  return fetchAPI<Vaga>(`/vagas/${id}/unpublish`, { method: 'POST' });
+}
+
+/** Lista cupons públicos ativos (sem autenticação) */
+export async function listPublicActiveCoupons(): Promise<PublicCoupon[]> {
+  return fetchAPI<PublicCoupon[]>('/coupons/public/active');
+}
+
 /** Retorna o cupom de indicação do usuário autenticado (cria se não existir) */
 export async function getMyCoupon(): Promise<Coupon> {
   return fetchAPI<Coupon>('/me/coupon');
@@ -895,6 +991,171 @@ export async function validateRedemption(id: string): Promise<void> {
 /** [Admin] Rejeita uma redenção de cupom */
 export async function rejectRedemption(id: string): Promise<void> {
   return fetchAPI<void>(`/admin/coupons/redemptions/${id}/reject`, { method: 'POST' });
+}
+
+// ─── COMPANY (CLIENTES) ───────────────────────────────────────────────────────
+
+export interface CompanyRecruiter {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username?: string;
+  avatarUrl?: string | null;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  industry: string | null;
+  description: string | null;
+  ownerId: string;
+  assignedRecruiters?: CompanyRecruiter[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyPayload {
+  name: string;
+  logoUrl?: string | null;
+  industry?: string | null;
+  description?: string | null;
+}
+
+export const companies = {
+  list(): Promise<Company[]> {
+    return fetchAPI<Company[]>('/companies');
+  },
+  get(id: string): Promise<Company> {
+    return fetchAPI<Company>(`/companies/${id}`);
+  },
+  create(data: CompanyPayload): Promise<Company> {
+    return fetchAPI<Company>('/companies', { method: 'POST', body: JSON.stringify(data) });
+  },
+  update(id: string, data: Partial<CompanyPayload>): Promise<Company> {
+    return fetchAPI<Company>(`/companies/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  },
+  remove(id: string): Promise<void> {
+    return fetchAPI<void>(`/companies/${id}`, { method: 'DELETE' });
+  },
+  setRecruiters(id: string, recruiterIds: string[]): Promise<Company> {
+    return fetchAPI<Company>(`/companies/${id}/recruiters`, {
+      method: 'PATCH',
+      body: JSON.stringify({ recruiterIds }),
+    });
+  },
+};
+
+// ─── TEAM & MEMBERS ───────────────────────────────────────────────────────────
+
+export type TeamRole = 'OWNER' | 'MANAGER' | 'RECRUITER';
+export type TeamMemberStatus = 'PENDING' | 'ACTIVE';
+
+export interface TeamMember {
+  id: string;
+  teamId: string;
+  userId: string | null;
+  invitedEmail?: string | null;
+  user?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email: string;
+    username?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+  team?: { id: string; name: string };
+  role: TeamRole;
+  status: TeamMemberStatus;
+  joinedAt: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  ownerId: string;
+  members?: TeamMember[];
+}
+
+export const team = {
+  getMine(): Promise<Team> {
+    return fetchAPI<Team>('/me/team');
+  },
+  listMembers(): Promise<TeamMember[]> {
+    return fetchAPI<TeamMember[]>('/me/team/members');
+  },
+  invite(data: { email: string; role: 'MANAGER' | 'RECRUITER' }): Promise<TeamMember> {
+    return fetchAPI<TeamMember>('/me/team/invite', { method: 'POST', body: JSON.stringify(data) });
+  },
+  updateMember(id: string, data: { role: TeamRole }): Promise<TeamMember> {
+    return fetchAPI<TeamMember>(`/me/team/members/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  },
+  removeMember(id: string): Promise<void> {
+    return fetchAPI<void>(`/me/team/members/${id}`, { method: 'DELETE' });
+  },
+  listPendingInvites(): Promise<TeamMember[]> {
+    return fetchAPI<TeamMember[]>('/me/team/invites/pending');
+  },
+  acceptInvite(memberId: string): Promise<TeamMember> {
+    return fetchAPI<TeamMember>(`/me/team/accept/${memberId}`, { method: 'POST' });
+  },
+  rejectInvite(memberId: string): Promise<void> {
+    return fetchAPI<void>(`/me/team/invites/${memberId}/reject`, { method: 'POST' });
+  },
+};
+
+// ─── VAGAS ASSIGNMENT ─────────────────────────────────────────────────────────
+
+export const vagasAssignment = {
+  assign(vagaId: string, userId: string | null): Promise<Vaga> {
+    return fetchAPI<Vaga>(`/vagas/${vagaId}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ userId }),
+    });
+  },
+};
+
+// ─── PLAN LIMIT HELPERS ───────────────────────────────────────────────────────
+
+/**
+ * Type guard — detecta o shape PLAN_LIMIT_REACHED devolvido pelo backend
+ */
+export function isPlanLimitReachedError(
+  err: unknown
+): err is ApiException & { body: PlanLimitReachedBody } {
+  if (!(err instanceof ApiException)) return false;
+  if (err.statusCode !== 403) return false;
+  const body = err.body;
+  if (!body || typeof body !== 'object') return false;
+  const msg = body['message'];
+  if (msg && typeof msg === 'object') {
+    return (msg as Record<string, unknown>)['code'] === 'PLAN_LIMIT_REACHED';
+  }
+  return false;
+}
+
+/**
+ * Extrai o body PLAN_LIMIT_REACHED de uma ApiException com body aninhado
+ */
+export function extractPlanLimitBody(err: ApiException): PlanLimitReachedBody | null {
+  if (err.statusCode !== 403 || !err.body) return null;
+  const msg = err.body['message'];
+  if (msg && typeof msg === 'object' && (msg as Record<string, unknown>)['code'] === 'PLAN_LIMIT_REACHED') {
+    return msg as unknown as PlanLimitReachedBody;
+  }
+  return null;
+}
+
+/** Formata a mensagem de limite atingido em PT-BR */
+export function formatPlanLimitMessage(body: PlanLimitReachedBody): string {
+  const cycleEnd = new Date(body.cycleEnd).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  return `Limite de ${body.limit} vaga${body.limit === 1 ? '' : 's'} atingido neste ciclo (${body.used}/${body.limit} usadas). O contador reinicia em ${cycleEnd}.`;
 }
 
 // ─── ERROR MESSAGES ───────────────────────────────────────────────────────────

@@ -1,0 +1,10 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro';
+import PipelinePage from '../../../../components/dashboard/PipelinePage.vue';
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/dashboard/recrutador');
+---
+<DashboardLayout title="Pipeline | Dashboard VitrinePro">
+  <PipelinePage client:load vagaId={id} />
+</DashboardLayout>
