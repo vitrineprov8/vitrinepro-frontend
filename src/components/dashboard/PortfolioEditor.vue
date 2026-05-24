@@ -2,6 +2,13 @@
   <DashboardLayout>
     <Toast ref="toast" />
 
+    <Breadcrumb :items="[
+      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Portfólio', href: '/dashboard/portfolio' },
+      { label: portfolioId ? 'Editar item' : 'Novo item' },
+    ]" />
+
     <div class="editor-toolbar">
       <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
         <a href="/dashboard/portfolio" class="btn btn-ghost btn-sm">
@@ -209,6 +216,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
+import Breadcrumb from './Breadcrumb.vue';
 import Toast from '../ui/Toast.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import TiptapEditor from './TiptapEditor.vue';

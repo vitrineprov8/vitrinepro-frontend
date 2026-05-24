@@ -358,11 +358,19 @@ async function submit() {
 .apply-field input,
 .apply-field select,
 .apply-field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 16px; /* prevent iOS zoom on focus */
   font-family: inherit;
+}
+.cv-inline-upload input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .apply-field textarea {
   resize: vertical;

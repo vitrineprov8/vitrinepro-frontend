@@ -3,17 +3,32 @@ import { ref, computed } from 'vue';
 import { registerUser, getErrorMessage } from '../utils/api';
 import { saveToken, redirectAfterLogin } from '../utils/auth';
 
+const isCompany = ref(false);
+
 const firstName = ref('');
 const lastName = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+
+// Company fields
+const companyName = ref('');
+const companyIndustry = ref('');
+
 const error = ref('');
 const isLoading = ref(false);
 
-// Validação client-side
+const INDUSTRIES = [
+  { value: 'Tecnologia', label: 'Tecnologia' },
+  { value: 'Comercio', label: 'Comércio' },
+  { value: 'Saude', label: 'Saúde' },
+  { value: 'Educacao', label: 'Educação' },
+  { value: 'Financeiro', label: 'Financeiro' },
+  { value: 'Outros', label: 'Outros' },
+];
+
 const passwordsMatch = computed(() => {
-  if (!confirmPassword.value) return true; // Não mostrar erro até digitar
+  if (!confirmPassword.value) return true;
   return password.value === confirmPassword.value;
 });
 
@@ -25,22 +40,23 @@ const passwordStrength = computed(() => {
 });
 
 async function handleSubmit() {
-  // Limpar erro anterior
   error.value = '';
 
-  // Validação básica
   if (!firstName.value || !lastName.value || !email.value || !password.value || !confirmPassword.value) {
     error.value = 'Por favor, preencha todos os campos';
     return;
   }
 
-  // Validar senha
+  if (isCompany.value && !companyName.value.trim()) {
+    error.value = 'Informe o nome da empresa';
+    return;
+  }
+
   if (password.value.length < 8) {
     error.value = 'A senha deve ter no mínimo 8 caracteres';
     return;
   }
 
-  // Validar senhas iguais
   if (password.value !== confirmPassword.value) {
     error.value = 'As senhas não coincidem';
     return;
@@ -49,18 +65,24 @@ async function handleSubmit() {
   try {
     isLoading.value = true;
 
-    // Registrar usuário
     const response = await registerUser(
       email.value,
       firstName.value,
       lastName.value,
-      password.value
+      password.value,
+      isCompany.value
+        ? {
+            isCompany: true,
+            companyName: companyName.value.trim(),
+            companyIndustry: companyIndustry.value || undefined,
+          }
+        : undefined
     );
 
-    // Salvar token (backend já retorna o token após registro)
     saveToken(response.access_token);
-
-    // Redirecionar para dashboard
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('vp:just-logged-in', '1');
+    }
     redirectAfterLogin();
   } catch (err) {
     error.value = getErrorMessage(err);
@@ -76,9 +98,53 @@ async function handleSubmit() {
       {{ error }}
     </div>
 
+    <!-- Toggle Empresa / Profissional -->
+    <div class="company-toggle-row">
+      <button
+        type="button"
+        class="toggle-btn"
+        :class="{ active: !isCompany }"
+        @click="isCompany = false"
+      >
+        Profissional
+      </button>
+      <button
+        type="button"
+        class="toggle-btn"
+        :class="{ active: isCompany }"
+        @click="isCompany = true"
+      >
+        Empresa
+      </button>
+    </div>
+
+    <!-- Company fields (shown when isCompany = true) -->
+    <template v-if="isCompany">
+      <div class="form-group">
+        <label for="companyName" class="form-label">Nome da empresa <span class="required">*</span></label>
+        <input
+          id="companyName"
+          v-model="companyName"
+          type="text"
+          class="form-input"
+          placeholder="Ex: Acme Ltda"
+          required
+          :disabled="isLoading"
+        />
+      </div>
+      <div class="form-group">
+        <label for="companyIndustry" class="form-label">Setor</label>
+        <select id="companyIndustry" v-model="companyIndustry" class="form-input" :disabled="isLoading">
+          <option value="">Selecione o setor</option>
+          <option v-for="ind in INDUSTRIES" :key="ind.value" :value="ind.value">{{ ind.label }}</option>
+        </select>
+      </div>
+    </template>
+
+    <!-- Responsible person fields (always shown, re-labeled for empresa) -->
     <div class="form-row">
       <div class="form-group">
-        <label for="firstName" class="form-label">Nome</label>
+        <label for="firstName" class="form-label">{{ isCompany ? 'Nome do responsável' : 'Nome' }}</label>
         <input
           id="firstName"
           v-model="firstName"
@@ -92,7 +158,7 @@ async function handleSubmit() {
       </div>
 
       <div class="form-group">
-        <label for="lastName" class="form-label">Sobrenome</label>
+        <label for="lastName" class="form-label">{{ isCompany ? 'Sobrenome do responsável' : 'Sobrenome' }}</label>
         <input
           id="lastName"
           v-model="lastName"
@@ -177,6 +243,43 @@ async function handleSubmit() {
 <style scoped>
 .auth-form {
   width: 100%;
+}
+
+/* Empresa / Profissional toggle */
+.company-toggle-row {
+  display: flex;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.toggle-btn.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.toggle-btn:not(.active):hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.required {
+  color: #ef4444;
 }
 
 .form-row {

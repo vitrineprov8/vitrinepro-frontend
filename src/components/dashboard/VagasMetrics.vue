@@ -87,11 +87,14 @@ function trendClass(trend?: number): string {
 .vm-helper--negative { color: var(--age-critical-text); }
 .vm-helper--neutral  { color: var(--text-light); }
 
-@media (max-width: 640px) {
-  .vm-grid { grid-template-columns: repeat(2, 1fr); }
-  .vm-value { font-size: 28px; }
-}
-@media (max-width: 380px) {
-  .vm-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .vm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-sm);
+  }
+  .vm-card { padding: var(--spacing-md); }
+  .vm-value { font-size: 22px; }
+  .vm-label { font-size: 10px; }
+  .vm-helper { font-size: 10px; }
 }
 </style>

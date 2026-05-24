@@ -10,6 +10,12 @@
       @cancel="showAvatarCrop = false"
     />
 
+    <Breadcrumb :items="[
+      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Perfil' },
+    ]" />
+
     <div class="db-section-header">
       <div>
         <h1 class="db-section-title">Meu Perfil</h1>
@@ -157,6 +163,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
+import Breadcrumb from './Breadcrumb.vue';
 import Toast from '../ui/Toast.vue';
 import ImageAdjustModal from '../ui/ImageAdjustModal.vue';
 import CitySelect from '../ui/CitySelect.vue';

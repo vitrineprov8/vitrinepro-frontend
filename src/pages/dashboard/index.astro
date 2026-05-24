@@ -1,3 +1,22 @@
----
-return Astro.redirect('/dashboard/recrutador?tab=carreira', 302);
----
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecionando...</title>
+    <meta name="robots" content="noindex" />
+    <script is:inline>
+      (function () {
+        try {
+          var role = localStorage.getItem('activeRole');
+          var target = role === 'hunter'
+            ? '/dashboard/recrutador?tab=publicar'
+            : '/dashboard/recrutador?tab=carreira';
+          window.location.replace(target);
+        } catch (e) {
+          window.location.replace('/dashboard/recrutador?tab=carreira');
+        }
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

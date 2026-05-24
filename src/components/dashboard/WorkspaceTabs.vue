@@ -59,6 +59,10 @@ function onKey(ev: KeyboardEvent, id: string) {
   padding: var(--spacing-xs) 0;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
 }
 .wt-root::-webkit-scrollbar { display: none; }
 
@@ -108,5 +112,8 @@ function onKey(ev: KeyboardEvent, id: string) {
 
 @media (max-width: 768px) {
   .wt-tab { padding: 8px 16px; font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .wt-tab { padding: 7px 12px; font-size: 12px; }
 }
 </style>

@@ -27,6 +27,10 @@ async function handleSubmit() {
     // Salvar token
     saveToken(response.access_token);
 
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('vp:just-logged-in', '1');
+    }
+
     // Redirecionar para dashboard ou página anterior
     redirectAfterLogin();
   } catch (err) {

@@ -78,6 +78,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Se houver token, salvar e redirecionar para dashboard
     else if (token) {
       saveToken(token);
+      try { window.sessionStorage.setItem('vp:just-logged-in', '1'); } catch {}
 
       // Verificar se há URL de retorno
       const redirectUrl = params.get('redirect');

@@ -1,0 +1,395 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const { token } = Astro.params;
+
+const BACKEND = import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:3000';
+const FRONTEND = import.meta.env.PUBLIC_FRONTEND_URL ?? 'https://v8pro.com.br';
+
+type StageHistoryEntry = {
+  stage: string;
+  enteredAt: string;
+  byUserName?: string | null;
+  note?: string | null;
+};
+
+type StageNote = {
+  observacoes?: string | null;
+  nota?: number | null;
+};
+
+type Snapshot = {
+  applicationId: string;
+  candidate: {
+    fullName: string;
+    email: string;
+    phone?: string | null;
+    location?: string | null;
+    avatarUrl?: string | null;
+    username?: string | null;
+    profession?: string | null;
+  };
+  vaga: {
+    title: string;
+    segment?: string | null;
+    location?: string | null;
+  };
+  currentStage: string | null;
+  generalScore?: number | null;
+  generalNote?: string | null;
+  stageNotes?: Record<string, StageNote>;
+  stageHistory: StageHistoryEntry[];
+  createdBy?: { id: string; firstName: string; lastName: string } | null;
+  shareToken: string;
+};
+
+let snapshot: Snapshot | null = null;
+let errorCode: 404 | 410 | 500 | null = null;
+
+try {
+  const res = await fetch(`${BACKEND}/public/processo/${token}`);
+  if (res.status === 404) {
+    errorCode = 404;
+  } else if (res.status === 410) {
+    errorCode = 410;
+  } else if (!res.ok) {
+    errorCode = 500;
+  } else {
+    snapshot = (await res.json()) as Snapshot;
+  }
+} catch {
+  errorCode = 500;
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+const pageTitle = snapshot
+  ? `Processo seletivo — ${snapshot.candidate.fullName} | VitrinePro`
+  : 'Processo seletivo | VitrinePro';
+---
+
+<BaseLayout title={pageTitle} canonical={`${FRONTEND}/processo/${token}`}>
+  <style is:global>
+    @import '../../styles/static-pages.css';
+  </style>
+
+  <style is:global>
+    .proc-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+      font-family: var(--font-sans, system-ui, sans-serif);
+      color: var(--text-primary, #1f2937);
+    }
+    .proc-logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary, #2563eb);
+      margin-bottom: 2rem;
+      display: block;
+      text-decoration: none;
+    }
+    .proc-error {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+    .proc-error h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .proc-error p { color: var(--text-secondary, #6b7280); margin-bottom: 1.5rem; }
+    .proc-candidate {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .proc-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--bg-secondary, #f3f4f6);
+      flex-shrink: 0;
+    }
+    .proc-avatar-fallback {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--primary, #2563eb);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .proc-name { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.2rem; }
+    .proc-role { color: var(--text-secondary, #6b7280); margin: 0; }
+    .proc-vaga-card {
+      background: var(--bg-secondary, #f9fafb);
+      border: 1.5px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .proc-vaga-title { font-weight: 700; font-size: 1.05rem; margin: 0; }
+    .proc-vaga-meta { font-size: 0.85rem; color: var(--text-secondary, #6b7280); }
+    .proc-score-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .proc-score-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      background: var(--primary, #2563eb);
+      color: #fff;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .proc-score-pill span { font-size: 0.75rem; font-weight: 400; opacity: 0.85; }
+    .proc-note { font-size: 0.9rem; color: var(--text-secondary, #6b7280); }
+    .proc-stage-badge {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.1);
+      color: var(--primary, #2563eb);
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .proc-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-light, #9ca3af);
+      margin: 1.5rem 0 0.75rem;
+    }
+    .proc-stages { display: flex; flex-direction: column; gap: 0.75rem; }
+    .proc-stage-row {
+      border: 1.5px solid var(--border, #e5e7eb);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .proc-stage-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.9rem;
+      background: var(--bg-secondary, #f9fafb);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .proc-stage-name { font-weight: 600; font-size: 0.9rem; }
+    .proc-stage-info { font-size: 0.8rem; color: var(--text-secondary, #6b7280); }
+    .proc-stage-body { padding: 0.7rem 0.9rem; }
+    .proc-stage-nota { font-size: 0.85rem; font-weight: 600; color: var(--primary, #2563eb); margin-bottom: 0.35rem; }
+    .proc-stage-obs { font-size: 0.88rem; color: var(--text-primary, #1f2937); line-height: 1.5; margin: 0; }
+    .proc-timeline { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem; padding-left: 0.75rem; border-left: 2px solid var(--border, #e5e7eb); }
+    .proc-tl-item { display: flex; flex-direction: column; gap: 1px; }
+    .proc-tl-date { font-size: 0.78rem; color: var(--text-light, #9ca3af); }
+    .proc-tl-author { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary, #6b7280); }
+    .proc-tl-note { font-size: 0.85rem; color: var(--text-primary, #1f2937); margin: 0; }
+    .proc-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1.5px solid var(--border, #e5e7eb);
+      font-size: 0.85rem;
+      color: var(--text-secondary, #6b7280);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .proc-footer a { color: var(--primary, #2563eb); text-decoration: none; font-weight: 600; }
+    .proc-footer a:hover { text-decoration: underline; }
+
+    @media print {
+      .proc-logo { color: #000 !important; }
+      .proc-score-pill { background: #000 !important; -webkit-print-color-adjust: exact; }
+    }
+    @media (max-width: 600px) {
+      .proc-page { padding: 1.25rem 1rem 3rem; }
+      .proc-name { font-size: 1.25rem; }
+    }
+  </style>
+
+  <main class="proc-page">
+    <a href="/" class="proc-logo">VitrinePro</a>
+
+    <!-- Erro: link invalido -->
+    {errorCode === 404 && (
+      <div class="proc-error">
+        <h1>Link invalido</h1>
+        <p>Este link de processo nao existe ou ja foi removido.</p>
+        <a href="/" class="btn btn-primary">Ir para VitrinePro</a>
+      </div>
+    )}
+
+    <!-- Erro: link expirado/revogado -->
+    {errorCode === 410 && (
+      <div class="proc-error">
+        <h1>Link expirado</h1>
+        <p>Este link de compartilhamento expirou ou foi revogado pelo recrutador.</p>
+        <a href="/" class="btn btn-primary">Ir para VitrinePro</a>
+      </div>
+    )}
+
+    <!-- Erro generico -->
+    {errorCode === 500 && (
+      <div class="proc-error">
+        <h1>Erro ao carregar</h1>
+        <p>Nao foi possivel carregar este processo. Tente novamente em alguns instantes.</p>
+        <a href="/" class="btn btn-primary">Ir para VitrinePro</a>
+      </div>
+    )}
+
+    <!-- Snapshot carregado -->
+    {snapshot && (
+      <>
+        {/* Candidato */}
+        <div class="proc-candidate">
+          {snapshot.candidate.avatarUrl ? (
+            <img
+              src={snapshot.candidate.avatarUrl}
+              alt={snapshot.candidate.fullName}
+              class="proc-avatar"
+              width="72"
+              height="72"
+            />
+          ) : (
+            <div class="proc-avatar-fallback" aria-hidden="true">
+              {snapshot.candidate.fullName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h1 class="proc-name">{snapshot.candidate.fullName}</h1>
+            {snapshot.candidate.profession && (
+              <p class="proc-role">{snapshot.candidate.profession}</p>
+            )}
+            {snapshot.candidate.location && (
+              <p class="proc-role">{snapshot.candidate.location}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Vaga */}
+        <div class="proc-vaga-card">
+          <p class="proc-vaga-title">{snapshot.vaga.title}</p>
+          {snapshot.vaga.segment && (
+            <p class="proc-vaga-meta">{snapshot.vaga.segment}</p>
+          )}
+          {snapshot.vaga.location && (
+            <p class="proc-vaga-meta">{snapshot.vaga.location}</p>
+          )}
+        </div>
+
+        {/* Etapa atual + Nota Geral */}
+        <div class="proc-score-row">
+          {snapshot.currentStage && (
+            <span class="proc-stage-badge">{snapshot.currentStage}</span>
+          )}
+          {snapshot.generalScore != null && (
+            <span class="proc-score-pill">
+              {snapshot.generalScore.toFixed(1)}
+              <span>/ 10</span>
+            </span>
+          )}
+          {snapshot.generalNote && (
+            <p class="proc-note">{snapshot.generalNote}</p>
+          )}
+        </div>
+
+        {/* Etapas com notas */}
+        {snapshot.stageNotes && Object.keys(snapshot.stageNotes).length > 0 && (
+          <>
+            <p class="proc-section-title">Avaliacao por etapa</p>
+            <div class="proc-stages">
+              {Object.entries(snapshot.stageNotes).map(([key, note]) => {
+                const events = snapshot!.stageHistory.filter((e) => e.stage === key);
+                const hasContent = note.observacoes || note.nota != null || events.length > 0;
+                if (!hasContent) return null;
+                return (
+                  <div class="proc-stage-row">
+                    <div class="proc-stage-head">
+                      <span class="proc-stage-name">{key}</span>
+                      {events.length > 0 && (
+                        <span class="proc-stage-info">
+                          {formatDate(events[events.length - 1]!.enteredAt)}
+                          {events[events.length - 1]!.byUserName ? ` · ${events[events.length - 1]!.byUserName}` : ''}
+                        </span>
+                      )}
+                    </div>
+                    <div class="proc-stage-body">
+                      {note.nota != null && (
+                        <p class="proc-stage-nota">Nota: {Number(note.nota).toFixed(1)} / 10</p>
+                      )}
+                      {note.observacoes && (
+                        <p class="proc-stage-obs">{note.observacoes}</p>
+                      )}
+                      {events.length > 0 && (
+                        <div class="proc-timeline">
+                          {events.map((ev) => (
+                            <div class="proc-tl-item">
+                              <span class="proc-tl-date">{formatDate(ev.enteredAt)}</span>
+                              {ev.byUserName && <span class="proc-tl-author">{ev.byUserName}</span>}
+                              {ev.note && <p class="proc-tl-note">{ev.note}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Linha do tempo geral */}
+        {snapshot.stageHistory.length > 0 && (
+          <>
+            <p class="proc-section-title">Linha do tempo</p>
+            <div class="proc-timeline">
+              {snapshot.stageHistory.map((ev) => (
+                <div class="proc-tl-item">
+                  <span class="proc-tl-date">{formatDate(ev.enteredAt)}</span>
+                  <span class="proc-tl-author">{ev.stage}</span>
+                  {ev.byUserName && <span class="proc-tl-date">{ev.byUserName}</span>}
+                  {ev.note && <p class="proc-tl-note">{ev.note}</p>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Footer */}
+        <footer class="proc-footer">
+          {snapshot.createdBy && (
+            <span>
+              Compartilhado por {snapshot.createdBy.firstName} {snapshot.createdBy.lastName}
+            </span>
+          )}
+          <a href="/">Conheca o VitrinePro →</a>
+        </footer>
+      </>
+    )}
+  </main>
+</BaseLayout>

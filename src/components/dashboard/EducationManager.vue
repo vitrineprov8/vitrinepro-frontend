@@ -73,6 +73,12 @@
       </template>
     </Modal>
 
+    <Breadcrumb :items="[
+      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Formação' },
+    ]" />
+
     <div class="db-section-header">
       <div>
         <h1 class="db-section-title">Formação Acadêmica</h1>
@@ -123,6 +129,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
+import Breadcrumb from './Breadcrumb.vue';
 import Toast from '../ui/Toast.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import Modal from '../ui/Modal.vue';

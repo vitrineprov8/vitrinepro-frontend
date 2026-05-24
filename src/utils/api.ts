@@ -156,11 +156,16 @@ export async function registerUser(
   email: string,
   firstName: string,
   lastName: string,
-  password: string
+  password: string,
+  options?: {
+    isCompany?: boolean;
+    companyName?: string;
+    companyIndustry?: string;
+  }
 ): Promise<AuthResponse> {
   return fetchAPI<AuthResponse>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, firstName, lastName, password }),
+    body: JSON.stringify({ email, firstName, lastName, password, ...options }),
   });
 }
 
@@ -190,6 +195,13 @@ export interface FullProfile {
   bannerUrl?: string;
   bannerColor?: string;
   isVisible?: boolean;
+  // Empresa fields
+  isCompany?: boolean;
+  companyName?: string;
+  companyIndustry?: string;
+  companyLogoUrl?: string;
+  // Hunter multi-contexto
+  activeContextTeamId?: string | null;
   socialLinks: {
     linkedin?: string;
     github?: string;
@@ -614,6 +626,18 @@ export async function searchAutocomplete(q: string, type?: string): Promise<Auto
 export type VagaStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
 export type VagaType = 'CLT' | 'PJ' | 'FREELA' | 'ESTAGIO';
 export type VagaWorkMode = 'REMOTE' | 'HYBRID' | 'ONSITE';
+export type VagaSegment =
+  | 'COMERCIO_VENDAS'
+  | 'LOGISTICA_TRANSPORTE'
+  | 'FINANCAS_CONTABILIDADE'
+  | 'ADMINISTRATIVO'
+  | 'TECNOLOGIA'
+  | 'RH'
+  | 'SAUDE'
+  | 'EDUCACAO'
+  | 'MARKETING'
+  | 'JURIDICO'
+  | 'OUTROS';
 
 export interface Vaga {
   id: string;
@@ -633,6 +657,10 @@ export interface Vaga {
   createdAt?: string;
   updatedAt?: string;
   applicationsCount?: number;
+  // Fase 1 fields
+  segment?: VagaSegment | null;
+  allowHunters?: boolean;
+  hunterContactPhone?: string | null;
   // TEAM/ENTERPRISE fields
   company?: Company | null;
   companyId?: string | null;
@@ -733,6 +761,8 @@ export interface VagaPayload {
   deadline?: string;
   status?: VagaStatus;
   contactEmail?: string;
+  allowHunters?: boolean;
+  hunterContactPhone?: string | null;
 }
 
 export interface VagaListParams {
@@ -1079,9 +1109,20 @@ export interface Team {
   members?: TeamMember[];
 }
 
+export interface AccessibleTeam {
+  id: string;
+  name: string;
+  ownerId: string;
+  role: TeamRole;
+}
+
 export const team = {
   getMine(): Promise<Team> {
     return fetchAPI<Team>('/me/team');
+  },
+  /** All teams the user can act in (owned + active memberships) */
+  listAccessible(): Promise<AccessibleTeam[]> {
+    return fetchAPI<AccessibleTeam[]>('/me/team/accessible');
   },
   listMembers(): Promise<TeamMember[]> {
     return fetchAPI<TeamMember[]>('/me/team/members');
@@ -1157,6 +1198,258 @@ export function formatPlanLimitMessage(body: PlanLimitReachedBody): string {
   });
   return `Limite de ${body.limit} vaga${body.limit === 1 ? '' : 's'} atingido neste ciclo (${body.used}/${body.limit} usadas). O contador reinicia em ${cycleEnd}.`;
 }
+
+// ─── SAVED VAGAS ──────────────────────────────────────────────────────────────
+
+export interface SavedVagaItem {
+  id: string;
+  vagaId: string;
+  createdAt: string;
+  vaga: Vaga;
+}
+
+export const savedVagas = {
+  async list(): Promise<SavedVagaItem[]> {
+    const res = await fetchAPI<SavedVagaItem[] | { data: SavedVagaItem[] }>('/me/saved-vagas?limit=20');
+    return Array.isArray(res) ? res : (res?.data ?? []);
+  },
+  save(vagaId: string): Promise<SavedVagaItem> {
+    return fetchAPI<SavedVagaItem>(`/vagas/${vagaId}/save`, { method: 'POST' });
+  },
+  unsave(vagaId: string): Promise<void> {
+    return fetchAPI<void>(`/vagas/${vagaId}/save`, { method: 'DELETE' });
+  },
+};
+
+// ─── SAVED FILTERS ────────────────────────────────────────────────────────────
+
+export interface SavedFilterData {
+  q?: string;
+  segment?: VagaSegment | '';
+  city?: string;
+  type?: VagaType | '';
+  workMode?: VagaWorkMode | '';
+  salaryMin?: number | null;
+  order?: 'recent' | 'relevance';
+}
+
+export interface SavedFilter {
+  id: string;
+  name: string;
+  filters: SavedFilterData;
+  isDefault: boolean;
+  position: number;
+  createdAt: string;
+}
+
+export const savedFilters = {
+  list(): Promise<SavedFilter[]> {
+    return fetchAPI<SavedFilter[]>('/me/saved-filters');
+  },
+  create(data: { name: string; filters: SavedFilterData }): Promise<SavedFilter> {
+    return fetchAPI<SavedFilter>('/me/saved-filters', { method: 'POST', body: JSON.stringify(data) });
+  },
+  update(id: string, data: Partial<{ name: string; filters: SavedFilterData }>): Promise<SavedFilter> {
+    return fetchAPI<SavedFilter>(`/me/saved-filters/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  },
+  delete(id: string): Promise<void> {
+    return fetchAPI<void>(`/me/saved-filters/${id}`, { method: 'DELETE' });
+  },
+  setDefault(id: string): Promise<SavedFilter> {
+    return fetchAPI<SavedFilter>(`/me/saved-filters/${id}/default`, { method: 'POST' });
+  },
+};
+
+// ─── RADAR DE VAGAS ───────────────────────────────────────────────────────────
+
+export interface RadarSearchParams {
+  q?: string;
+  segment?: VagaSegment | '';
+  city?: string;
+  type?: VagaType | '';
+  workMode?: VagaWorkMode | '';
+  salaryMin?: number;
+  order?: 'recent' | 'relevance';
+  page?: number;
+  limit?: number;
+}
+
+export const radar = {
+  search(params: RadarSearchParams): Promise<PaginatedResponse<Vaga>> {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.set(k, String(v));
+    });
+    const query = qs.toString() ? `?${qs}` : '';
+    return fetchAPI<PaginatedResponse<Vaga>>(`/vagas/radar${query}`);
+  },
+};
+
+// ─── HUNTER INTERESTS ─────────────────────────────────────────────────────────
+
+export type HunterInterestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
+export interface HunterInterest {
+  id: string;
+  vagaId: string;
+  hunterUserId: string;
+  status: HunterInterestStatus;
+  createdAt: string;
+  vaga?: Vaga;
+  hunter?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string | null;
+    username?: string | null;
+    avatarUrl?: string | null;
+  };
+}
+
+export const hunterInterests = {
+  /** Registra interesse como hunter na vaga (409 se duplicado) */
+  create(vagaId: string): Promise<HunterInterest> {
+    return fetchAPI<HunterInterest>(`/vagas/${vagaId}/hunter-interest`, { method: 'POST' });
+  },
+  /** Lista meus interesses como hunter (com join na vaga) */
+  listMine(): Promise<HunterInterest[]> {
+    return fetchAPI<HunterInterest[]>('/me/hunter-interests');
+  },
+  /** [Dono da vaga] Lista hunters interessados em uma vaga */
+  listByVaga(vagaId: string): Promise<HunterInterest[]> {
+    return fetchAPI<HunterInterest[]>(`/vagas/${vagaId}/hunter-interests`);
+  },
+  /** [Dono da vaga] Aceita ou rejeita um hunter interessado */
+  respond(vagaId: string, hunterId: string, status: 'ACCEPTED' | 'REJECTED'): Promise<HunterInterest> {
+    return fetchAPI<HunterInterest>(`/vagas/${vagaId}/hunter-interests/${hunterId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
+};
+
+// ─── PROFILE CONTEXT (Hunter multi-empresa) ───────────────────────────────────
+
+export const profile = {
+  /** Define o contexto ativo do hunter (team ou pessoal) */
+  setActiveContext(teamId: string | null): Promise<FullProfile> {
+    return fetchAPI<FullProfile>('/profile/me/active-context', {
+      method: 'PATCH',
+      body: JSON.stringify({ teamId }),
+    });
+  },
+};
+
+// ─── APPLICATIONS ─────────────────────────────────────────────────────────────
+
+/** Entrada de histórico de etapa do processo seletivo */
+export interface StageHistoryEntry {
+  id?: string;
+  stage: string;
+  enteredAt: string;
+  byUserId?: string;
+  byUserName?: string;
+  note?: string | null;
+}
+
+/** Observações e nota de uma etapa específica */
+export interface StageNote {
+  observacoes?: string | null;
+  nota?: number | null;
+}
+
+/** Link de compartilhamento de processo */
+export interface ProcessShareLink {
+  id: string;
+  token: string;
+  url: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  createdBy?: { id: string; firstName: string; lastName: string } | null;
+}
+
+/** Snapshot público de um processo (retornado por GET /public/processo/:token) */
+export interface PublicProcessSnapshot {
+  applicationId: string;
+  candidate: {
+    fullName: string;
+    email: string;
+    phone?: string | null;
+    location?: string | null;
+    avatarUrl?: string | null;
+    username?: string | null;
+    profession?: string | null;
+  };
+  vaga: {
+    title: string;
+    segment?: string | null;
+    location?: string | null;
+  };
+  currentStage: string | null;
+  generalScore?: number | null;
+  generalNote?: string | null;
+  stageNotes?: Record<string, StageNote>;
+  stageHistory: StageHistoryEntry[];
+  createdBy?: { id: string; firstName: string; lastName: string } | null;
+  shareToken: string;
+}
+
+export const applications = {
+  /** Candidato remove a própria candidatura */
+  remove(id: string): Promise<void> {
+    return fetchAPI<void>(`/applications/${id}`, { method: 'DELETE' });
+  },
+
+  /** Atualiza nota geral e/ou anotação geral de uma candidatura */
+  updateGeneral(id: string, body: { generalScore?: number | null; generalNote?: string | null }): Promise<void> {
+    return fetchAPI<void>(`/applications/${id}/general`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** Atualiza observações e/ou nota de uma etapa específica */
+  updateStageNotes(id: string, stageKey: string, body: { observacoes?: string | null; nota?: number | null }): Promise<void> {
+    return fetchAPI<void>(`/applications/${id}/stage-notes/${encodeURIComponent(stageKey)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** Retorna o histórico de etapas de uma candidatura */
+  history(id: string): Promise<StageHistoryEntry[]> {
+    return fetchAPI<StageHistoryEntry[]>(`/applications/${id}/history`);
+  },
+
+  /** Gera um link de compartilhamento público */
+  share(id: string, expiresInDays?: number): Promise<ProcessShareLink> {
+    return fetchAPI<ProcessShareLink>(`/applications/${id}/share`, {
+      method: 'POST',
+      body: JSON.stringify(expiresInDays != null ? { expiresInDays } : {}),
+    });
+  },
+
+  /** Revoga um link de compartilhamento */
+  revokeShare(id: string, token: string): Promise<void> {
+    return fetchAPI<void>(`/applications/${id}/share/${token}`, { method: 'DELETE' });
+  },
+
+  /** Retorna a URL completa para download do PDF de processo */
+  pdfUrl(id: string): string {
+    return `${getBackendUrl()}/applications/${id}/pdf`;
+  },
+};
+
+// ─── PUBLIC PROCESSO ──────────────────────────────────────────────────────────
+
+export const publicProcesso = {
+  /** Carrega snapshot público de um processo pelo token */
+  get(token: string): Promise<PublicProcessSnapshot> {
+    return fetchAPI<PublicProcessSnapshot>(`/public/processo/${token}`);
+  },
+};
 
 // ─── ERROR MESSAGES ───────────────────────────────────────────────────────────
 

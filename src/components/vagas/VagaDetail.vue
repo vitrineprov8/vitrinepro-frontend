@@ -40,10 +40,29 @@
       >
         {{ ctaLabel }}
       </button>
+
+      <!-- "Quero ser Hunter" — visivel quando vaga permite hunters e usuario logado nao-empresa -->
+      <button
+        v-if="vaga.allowHunters && showHunterBtn"
+        class="btn btn-secondary btn-lg vaga-hunter-btn"
+        :disabled="hunterInterestSent || sendingHunterInterest"
+        :title="hunterInterestSent ? 'Interesse registrado' : 'Candidatar-se como hunter para recrutar para esta vaga'"
+        @click="onHunterInterestClick"
+      >
+        <span v-if="sendingHunterInterest" class="spinner spinner-sm" />
+        <span v-else-if="hunterInterestSent">Interesse registrado</span>
+        <span v-else>Quero ser Hunter nesta vaga</span>
+      </button>
+
       <p v-if="!canApply" class="vaga-cta-note">
         Esta vaga está encerrada e não aceita mais candidaturas.
       </p>
+      <p v-if="vaga.allowHunters && !isAuthenticated()" class="vaga-cta-note">
+        <a href="/login">Faça login</a> para candidatar-se como hunter.
+      </p>
     </div>
+
+    <Toast ref="toast" />
 
     <ApplyVagaModal
       :visible="showModal"
@@ -59,12 +78,54 @@ import { computed, ref } from 'vue';
 import Toast from '../ui/Toast.vue';
 import ApplyVagaModal from './ApplyVagaModal.vue';
 import { isAuthenticated, redirectToLogin } from '../../utils/auth';
+import { hunterInterests, getErrorMessage } from '../../utils/api';
 import type { Vaga, VagaType, VagaWorkMode } from '../../utils/api';
 
-const props = defineProps<{ vaga: Vaga }>();
+const props = defineProps<{
+  vaga: Vaga;
+  userIsCompany?: boolean;
+  activeRole?: 'profissional' | 'hunter';
+}>();
 
 const toast = ref<InstanceType<typeof Toast>>();
 const showModal = ref(false);
+
+// Hunter interest state
+const hunterInterestSent = ref(false);
+const sendingHunterInterest = ref(false);
+
+// Show hunter button: logged in, not company, vaga allows hunters
+const showHunterBtn = computed(() => {
+  if (!isAuthenticated()) return false;
+  if (props.userIsCompany) return false;
+  return true;
+});
+
+async function onHunterInterestClick() {
+  if (!isAuthenticated()) {
+    redirectToLogin(`/vaga/${props.vaga.slug}#apply`);
+    return;
+  }
+  if (sendingHunterInterest.value || hunterInterestSent.value) return;
+  sendingHunterInterest.value = true;
+  try {
+    await hunterInterests.create(props.vaga.id);
+    hunterInterestSent.value = true;
+    toast.value?.show('Interesse como hunter registrado! O recrutador será notificado.', 'success');
+  } catch (err: unknown) {
+    const e = err as { statusCode?: number };
+    if (e?.statusCode === 409) {
+      hunterInterestSent.value = true;
+      toast.value?.show('Você já registrou interesse como hunter nesta vaga.', 'info');
+    } else if (e?.statusCode === 403) {
+      toast.value?.show('Disponível para planos Recruiter ou superior.', 'error');
+    } else {
+      toast.value?.show(getErrorMessage(err), 'error');
+    }
+  } finally {
+    sendingHunterInterest.value = false;
+  }
+}
 
 const canApply = computed(() => {
   if (props.vaga.status !== 'PUBLISHED') return false;
@@ -112,6 +173,14 @@ function formatDate(s: string): string {
   max-width: 760px;
   margin: 0 auto;
   padding: 2rem 1rem 4rem;
+}
+.vaga-hunter-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .vaga-back {
   display: inline-block;

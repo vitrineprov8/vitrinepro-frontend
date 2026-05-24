@@ -11,6 +11,12 @@
       @cancel="deleteTarget = null"
     />
 
+    <Breadcrumb :items="[
+      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Currículos' },
+    ]" />
+
     <div class="db-section-header">
       <div>
         <h1 class="db-section-title">Currículos</h1>
@@ -81,6 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import DashboardLayout from './DashboardLayout.vue';
+import Breadcrumb from './Breadcrumb.vue';
 import Toast from '../ui/Toast.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import EmptyState from '../ui/EmptyState.vue';

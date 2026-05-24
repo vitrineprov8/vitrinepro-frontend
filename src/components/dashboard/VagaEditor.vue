@@ -21,6 +21,47 @@
       <a href="/dashboard/vagas" class="btn btn-ghost btn-sm">Voltar</a>
     </div>
 
+    <!-- Switcher de contexto: Pessoal + cada time acessivel -->
+    <div v-if="accessibleTeams.length > 0" class="vaga-context-switcher">
+      <div class="vaga-context-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span><strong>Publicar como</strong> — escolha o contexto desta vaga</span>
+      </div>
+      <div class="vaga-context-options">
+        <button
+          type="button"
+          class="vaga-context-btn"
+          :class="{ active: !activeContextTeamId }"
+          :disabled="switchingContext"
+          @click="switchContext(null)"
+        >
+          <span class="vaga-context-btn-title">Pessoal</span>
+          <span class="vaga-context-btn-sub">Conta no seu plano. Nenhum time vê esta vaga.</span>
+        </button>
+        <button
+          v-for="t in accessibleTeams"
+          :key="t.id"
+          type="button"
+          class="vaga-context-btn"
+          :class="{ active: activeContextTeamId === t.id }"
+          :disabled="switchingContext"
+          @click="switchContext(t.id)"
+        >
+          <span class="vaga-context-btn-title">
+            {{ t.role === 'OWNER' ? 'Meu time · ' : 'Time · ' }}{{ t.name }}
+          </span>
+          <span class="vaga-context-btn-sub">
+            {{ t.role === 'OWNER'
+              ? 'Conta no plano do time. Membros e empresa veem.'
+              : 'Conta no plano deste time. Empresa que te convidou vê.' }}
+          </span>
+        </button>
+      </div>
+    </div>
+
     <div v-if="loading" class="loading-center"><div class="spinner spinner-lg" /></div>
 
     <form v-else class="vaga-form" @submit.prevent="saveDraft">
@@ -161,6 +202,33 @@
         </div>
       </div>
 
+      <!-- Permitir Hunters externos -->
+      <div class="vaga-hunters-box">
+        <label class="vaga-hunters-toggle">
+          <input v-model="form.allowHunters" type="checkbox" />
+          <div class="vaga-hunters-text">
+            <span class="vaga-hunters-title">Permitir Hunters externos</span>
+            <span class="vaga-hunters-desc">
+              Outros recrutadores (Hunters) poderao se voluntariar para trabalhar nesta vaga
+              e indicar candidatos. Voce mantem o controle final do processo seletivo.
+            </span>
+          </div>
+        </label>
+        <label v-if="form.allowHunters" class="db-field vaga-hunters-phone">
+          <span class="db-label">Telefone de contato para Hunters</span>
+          <input
+            v-model="form.hunterContactPhone"
+            type="tel"
+            maxlength="32"
+            placeholder="(11) 99999-9999"
+            class="db-input"
+          />
+          <span class="vaga-hunters-hint">
+            Exibido apenas para Hunters que demonstrarem interesse na vaga.
+          </span>
+        </label>
+      </div>
+
       <div class="vaga-form-actions">
         <button type="button" class="btn btn-ghost" @click="cancel">Cancelar</button>
 
@@ -202,6 +270,7 @@ import {
   createVaga,
   extractPlanLimitBody,
   formatPlanLimitMessage,
+  getFullProfile,
   getMyPlan,
   getMyVagaUsage,
   getMyVagas,
@@ -211,8 +280,10 @@ import {
   companies,
   team,
   vagasAssignment,
+  profile,
+  getErrorMessage,
 } from '../../utils/api';
-import type { Company, PlanTier, TeamMember, TeamRole, VagaPayload, VagaType, VagaUsage, VagaWorkMode } from '../../utils/api';
+import type { AccessibleTeam, Company, FullProfile, PlanTier, TeamMember, TeamRole, VagaPayload, VagaType, VagaUsage, VagaWorkMode } from '../../utils/api';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
@@ -227,6 +298,34 @@ const toast = ref<InstanceType<typeof Toast>>();
 const loading = ref(true);
 const saving = ref(false);
 const publishing = ref(false);
+
+// Active context (hunter publishing as a team)
+const activeContextTeamId = ref<string | null>(null);
+// Todos os times nos quais o user pode atuar (próprio + convites aceitos)
+const accessibleTeams = ref<AccessibleTeam[]>([]);
+const switchingContext = ref(false);
+
+async function switchContext(teamId: string | null) {
+  if (switchingContext.value) return;
+  if (teamId === activeContextTeamId.value) return;
+  switchingContext.value = true;
+  try {
+    await profile.setActiveContext(teamId);
+    activeContextTeamId.value = teamId;
+    if (isTeamOrEnterprise.value) {
+      await Promise.all([loadCompanies(), loadTeamMembers()]);
+    }
+    const teamName = accessibleTeams.value.find(t => t.id === teamId)?.name;
+    toast.value?.show(
+      teamId ? `Contexto alterado para ${teamName}` : 'Contexto pessoal ativado',
+      'success'
+    );
+  } catch (err) {
+    toast.value?.show(getErrorMessage(err), 'error');
+  } finally {
+    switchingContext.value = false;
+  }
+}
 const showPublishConfirm = ref(false);
 const currentVagaId = ref<string | undefined>(props.vagaId);
 const usage = ref<VagaUsage | null>(null);
@@ -349,6 +448,8 @@ interface FormState {
   salaryMax: number | null;
   deadline: string;
   contactEmail: string;
+  allowHunters: boolean;
+  hunterContactPhone: string;
 }
 
 const form = reactive<FormState>({
@@ -363,6 +464,8 @@ const form = reactive<FormState>({
   salaryMax: null,
   deadline: '',
   contactEmail: '',
+  allowHunters: false,
+  hunterContactPhone: '',
 });
 
 // Extended payload type to allow companyId
@@ -409,6 +512,8 @@ async function load() {
     form.salaryMax = found.salaryMax != null ? Number(found.salaryMax) : null;
     form.deadline = found.deadline ? toLocalInput(found.deadline) : '';
     form.contactEmail = found.contactEmail ?? '';
+    form.allowHunters = Boolean(found.allowHunters);
+    form.hunterContactPhone = found.hunterContactPhone ?? '';
     selectedCompanyId.value = (found as { companyId?: string | null }).companyId ?? '';
     assignedRecruiterId.value = (found as { assignedToId?: string | null }).assignedToId ?? '';
   } catch {
@@ -459,6 +564,8 @@ function buildPayload(): VagaPayloadExtended {
   if (form.salaryMax != null && Number.isFinite(form.salaryMax)) payload.salaryMax = form.salaryMax;
   if (form.deadline) payload.deadline = new Date(form.deadline).toISOString();
   if (form.contactEmail.trim()) payload.contactEmail = form.contactEmail.trim();
+  payload.allowHunters = form.allowHunters;
+  payload.hunterContactPhone = form.allowHunters ? (form.hunterContactPhone.trim() || null) : null;
   // Include companyId for TEAM/ENTERPRISE (null clears the association)
   if (isTeamOrEnterprise.value) {
     payload.companyId = selectedCompanyId.value || null;
@@ -559,9 +666,23 @@ function cancel() {
 onMounted(async () => {
   // Load plan info first so we know if company selector is needed
   try {
-    const info = await getMyPlan();
+    const [info, userProfile] = await Promise.all([getMyPlan(), getFullProfile()]);
     userPlan.value = info.plan;
+    // FREE users cannot publish vagas — redirect to plan upsell
+    if (info.plan === 'FREE') {
+      window.location.href = '/dashboard/recrutador?tab=servicos';
+      return;
+    }
     myTeamRole.value = info.teamRole ?? null;
+    // Lista todos os times acessiveis (proprio + memberships ativas)
+    try {
+      accessibleTeams.value = await team.listAccessible();
+    } catch {
+      accessibleTeams.value = [];
+    }
+    if (userProfile.activeContextTeamId) {
+      activeContextTeamId.value = userProfile.activeContextTeamId;
+    }
     if (info.plan === 'TEAM' || info.plan === 'ENTERPRISE') {
       loadCompanies();
       loadTeamMembers();
@@ -577,6 +698,86 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.vaga-context-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--secondary, #7c3aed);
+  margin-bottom: var(--spacing-md);
+}
+
+.vaga-context-switcher {
+  background: rgba(124, 58, 237, 0.04);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vaga-context-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.vaga-context-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .vaga-context-options { grid-template-columns: 1fr; }
+}
+
+.vaga-context-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 150ms;
+  font-family: var(--font-sans);
+}
+
+.vaga-context-btn:hover:not(:disabled) {
+  border-color: var(--secondary, #7c3aed);
+}
+
+.vaga-context-btn.active {
+  border-color: var(--secondary, #7c3aed);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.vaga-context-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.vaga-context-btn-title {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.vaga-context-btn-sub {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
 .vaga-form {
   display: flex;
   flex-direction: column;
@@ -593,6 +794,50 @@ onMounted(async () => {
   flex-direction: column;
   gap: 0.3rem;
 }
+.vaga-hunters-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+.vaga-hunters-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.vaga-hunters-toggle input[type='checkbox'] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.vaga-hunters-text { display: flex; flex-direction: column; gap: 4px; }
+.vaga-hunters-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.vaga-hunters-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.vaga-hunters-phone {
+  padding-left: 30px;
+  border-left: 2px solid var(--primary);
+  margin-left: 6px;
+}
+.vaga-hunters-hint {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
 .vaga-form-actions {
   display: flex;
   justify-content: flex-end;

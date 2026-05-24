@@ -3,6 +3,8 @@
     <div v-if="candidate" class="cd-overlay" @click.self="emit('close')" role="dialog" aria-modal="true">
       <transition name="cd-slide" appear>
         <aside v-if="candidate" class="cd-drawer" :key="candidate.id">
+          <Toast ref="toast" />
+
           <header class="cd-head">
             <div class="cd-head-id">
               <img
@@ -14,7 +16,7 @@
               <div v-else class="cd-avatar" :style="{ background: avColor.bg, color: avColor.fg }">
                 {{ candidate.initials }}
               </div>
-              <div>
+              <div class="cd-head-info">
                 <div class="cd-name">{{ candidate.fullName }}</div>
                 <div class="cd-role">
                   <template v-if="candidate.role">{{ candidate.role }}</template>
@@ -23,12 +25,62 @@
                 </div>
               </div>
             </div>
+            <!-- Nota Geral -->
+            <div class="cd-score-block">
+              <label class="cd-score-label" :for="`score-${candidate.id}`">Nota</label>
+              <input
+                :id="`score-${candidate.id}`"
+                v-model.number="localScore"
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                class="cd-score-input"
+                placeholder="—"
+                @input="onScoreInput"
+              />
+            </div>
             <button class="cd-close" type="button" aria-label="Fechar" @click="emit('close')">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
           </header>
 
           <div class="cd-body">
+            <!-- Nota Geral textarea (collapsible) -->
+            <div class="cd-section cd-general-note-section">
+              <button
+                type="button"
+                class="cd-collapsible-toggle"
+                :aria-expanded="generalNoteOpen"
+                @click="generalNoteOpen = !generalNoteOpen"
+              >
+                <span class="cd-section-label" style="margin:0">Anotacao geral</span>
+                <svg
+                  class="cd-collapsible-chevron"
+                  :class="{ 'cd-collapsible-chevron--open': generalNoteOpen }"
+                  width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                ><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <Transition name="cd-collapse">
+                <div v-if="generalNoteOpen" class="cd-collapse-body">
+                  <textarea
+                    v-model="localNote"
+                    class="cd-textarea"
+                    rows="3"
+                    placeholder="Anotacoes sobre este candidato..."
+                    @input="onNoteInput"
+                  />
+                </div>
+              </Transition>
+            </div>
+
+            <!-- CandidateProcessHistory -->
+            <CandidateProcessHistory
+              :application-id="candidate.applicationId ?? `mock-${candidate.id}`"
+              :stages="stages"
+              @aggregate-score="onAggregateScore"
+            />
+
             <!-- Profile public URL -->
             <div v-if="candidate.username" class="cd-section">
               <div class="cd-section-label">Perfil VitrinePro</div>
@@ -151,6 +203,14 @@
           </div>
 
           <footer class="cd-actions">
+            <button
+              class="cd-btn cd-btn--share"
+              type="button"
+              @click="shareModalOpen = true"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Compartilhar
+            </button>
             <button class="cd-btn cd-btn--secondary" type="button" @click="emit('reject', candidate)">
               Rejeitar
             </button>
@@ -158,6 +218,21 @@
               {{ canAdvance ? 'Avançar etapa' : 'Etapa final' }}
             </button>
           </footer>
+
+          <!-- ShareProcessModal -->
+          <ShareProcessModal
+            :visible="shareModalOpen"
+            :application-id="candidate.applicationId ?? `mock-${candidate.id}`"
+            :candidate="candidate"
+            :stages="stages"
+            :general-score="localScore"
+            :general-note="localNote"
+            :social-links="socialLinks"
+            :all-cvs="allCvs"
+            :profile-url="profileUrl"
+            :stage-label="stageLabel"
+            @close="shareModalOpen = false"
+          />
         </aside>
       </transition>
     </div>
@@ -165,15 +240,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 import { avatarColor, type MockCandidate } from '../../data/mock-recrutador';
 import {
   getPublicCVList,
   getPublicProfile,
+  applications,
   type CV,
   type FullProfile,
   type PipelineStage,
 } from '../../utils/api';
+import Toast from '../ui/Toast.vue';
+import CandidateProcessHistory from './CandidateProcessHistory.vue';
+import ShareProcessModal from './ShareProcessModal.vue';
 
 const props = defineProps<{
   candidate: MockCandidate | null;
@@ -190,6 +269,73 @@ const emit = defineEmits<{
   (e: 'advance', c: MockCandidate): void;
   (e: 'reject', c: MockCandidate): void;
 }>();
+
+const toast = ref<InstanceType<typeof Toast>>();
+
+// ── Nota Geral ────────────────────────────────────────────────────────────────
+const localScore = ref<number | string>('');
+const localNote = ref<string>('');
+const generalNoteOpen = ref(false);
+let scoreDebounce: ReturnType<typeof setTimeout> | null = null;
+let noteDebounce: ReturnType<typeof setTimeout> | null = null;
+const savingGeneral = ref(false);
+
+function onScoreInput() {
+  if (scoreDebounce) clearTimeout(scoreDebounce);
+  scoreDebounce = setTimeout(() => saveGeneral(), 800);
+}
+
+function onAggregateScore(value: number | null) {
+  if (value == null) return;
+  localScore.value = value;
+  if (scoreDebounce) clearTimeout(scoreDebounce);
+  scoreDebounce = setTimeout(() => saveGeneral(), 800);
+}
+
+function onNoteInput() {
+  if (noteDebounce) clearTimeout(noteDebounce);
+  noteDebounce = setTimeout(() => saveGeneral(), 800);
+}
+
+async function saveGeneral() {
+  const appId = props.candidate?.applicationId;
+  if (!appId) return;
+  if (savingGeneral.value) return;
+  savingGeneral.value = true;
+  const scoreNum = localScore.value === '' ? null : Number(localScore.value);
+  try {
+    await applications.updateGeneral(appId, {
+      generalScore: scoreNum,
+      generalNote: localNote.value || null,
+    });
+    toast.value?.show('Nota salva', 'success');
+  } catch {
+    toast.value?.show('Erro ao salvar nota', 'error');
+  } finally {
+    savingGeneral.value = false;
+  }
+}
+
+// ── Share modal ───────────────────────────────────────────────────────────────
+const shareModalOpen = ref(false);
+
+// ── Cleanup debounces ─────────────────────────────────────────────────────────
+onUnmounted(() => {
+  if (scoreDebounce) clearTimeout(scoreDebounce);
+  if (noteDebounce) clearTimeout(noteDebounce);
+});
+
+// Reset local score/note when candidate changes
+watch(
+  () => props.candidate?.applicationId,
+  () => {
+    localScore.value = (props.candidate as any)?.generalScore ?? '';
+    localNote.value = (props.candidate as any)?.generalNote ?? '';
+    generalNoteOpen.value = false;
+    shareModalOpen.value = false;
+  },
+  { immediate: true }
+);
 
 const FRONTEND_URL =
   (import.meta.env.PUBLIC_FRONTEND_URL as string | undefined) ??
@@ -375,8 +521,85 @@ function formatDate(iso: string): string {
   align-items: flex-start;
   padding: var(--spacing-lg);
   border-bottom: 1px solid var(--border);
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
-.cd-head-id { display: flex; gap: var(--spacing-md); align-items: center; }
+.cd-head-id { display: flex; gap: var(--spacing-md); align-items: center; flex: 1; min-width: 0; }
+.cd-head-info { min-width: 0; }
+
+/* Nota Geral no header */
+.cd-score-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.cd-score-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+}
+.cd-score-input {
+  width: 56px;
+  padding: 4px 6px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary);
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
+  -moz-appearance: textfield;
+}
+.cd-score-input::-webkit-outer-spin-button,
+.cd-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.cd-score-input:focus { outline: none; border-color: var(--primary); }
+
+/* Collapsible anotacao geral */
+.cd-general-note-section { padding: 0; }
+.cd-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 2px;
+  width: 100%;
+  text-align: left;
+}
+.cd-collapsible-chevron {
+  color: var(--text-light);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.cd-collapsible-chevron--open { transform: rotate(180deg); }
+.cd-collapse-body { padding-top: var(--spacing-xs); }
+.cd-textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+.cd-textarea:focus { outline: none; border-color: var(--primary); }
+.cd-collapse-enter-active, .cd-collapse-leave-active {
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.cd-collapse-enter-from, .cd-collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
 .cd-avatar {
   width: 48px;
   height: 48px;
@@ -608,6 +831,7 @@ function formatDate(iso: string): string {
   padding: var(--spacing-md) var(--spacing-lg);
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
+  flex-wrap: wrap;
 }
 .cd-btn {
   flex: 1;
@@ -635,6 +859,18 @@ function formatDate(iso: string): string {
   color: #ffffff;
 }
 .cd-btn--primary:hover:not(:disabled) { background: var(--primary-dark); }
+.cd-btn--share {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-primary);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-size: 12px;
+  padding: 8px 12px;
+}
+.cd-btn--share:hover { background: var(--bg-secondary); }
 
 .cd-fade-enter-active, .cd-fade-leave-active { transition: opacity var(--transition-base); }
 .cd-fade-enter-from, .cd-fade-leave-to { opacity: 0; }

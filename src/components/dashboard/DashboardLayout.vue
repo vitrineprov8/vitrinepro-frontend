@@ -8,7 +8,25 @@
       </a>
       </div>
 
-      <div class="db-sidebar-user" v-if="user">
+      <!-- Empresa header -->
+      <div class="db-sidebar-user" v-if="user && isEmpresaMode">
+        <div class="db-user-avatar db-company-avatar" :class="myPlan ? `ring-${myPlan.plan.toLowerCase()}` : ''">
+          <img v-if="user.companyLogoUrl" :src="user.companyLogoUrl" :alt="user.companyName" />
+          <span v-else>{{ companyInitials }}</span>
+        </div>
+        <div class="db-user-info">
+          <div class="db-user-name">{{ user.companyName }}</div>
+          <div class="db-user-role">{{ user.companyIndustry || 'Empresa' }}</div>
+          <div v-if="myPlan" class="db-plan-row" :class="{ 'expanded': planExpiryOpen }">
+            <button type="button" class="db-plan-badge" :class="`plan-${myPlan.plan.toLowerCase()}`" @click="planExpiryOpen = !planExpiryOpen">
+              Plano: {{ PLAN_NAMES[myPlan.plan] }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profissional / Hunter header -->
+      <div class="db-sidebar-user" v-else-if="user && !isEmpresaMode">
         <div class="db-user-avatar" :class="myPlan ? `ring-${myPlan.plan.toLowerCase()}` : ''">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="user.firstName" />
           <span v-else>{{ initials }}</span>
@@ -35,6 +53,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Skeleton while loading -->
       <div class="db-sidebar-user" v-else>
         <div class="db-user-avatar" style="background: var(--bg-tertiary);"></div>
         <div class="db-user-info">
@@ -42,9 +62,59 @@
         </div>
       </div>
 
+      <!-- "Acessando como" selector — only for non-empresa users -->
+      <div class="db-role-selector" v-if="user && !isEmpresaMode">
+        <span class="db-role-label">Acessando como</span>
+        <div class="db-role-btns">
+          <button
+            type="button"
+            class="db-role-btn"
+            :class="{ active: activeRole === 'profissional' }"
+            @click="setActiveRole('profissional')"
+          >
+            Profissional
+          </button>
+          <button
+            type="button"
+            class="db-role-btn"
+            :class="{ active: activeRole === 'hunter', disabled: !canBeHunter }"
+            :disabled="!canBeHunter"
+            :title="!canBeHunter ? 'Disponível a partir do plano Recruiter' : ''"
+            @click="canBeHunter && setActiveRole('hunter')"
+          >
+            Hunter
+          </button>
+        </div>
+      </div>
+
+      <!-- Context switcher — only in Hunter mode -->
+      <ContextSwitcher
+        v-if="user && !isEmpresaMode && activeRole === 'hunter' && canBeHunter"
+        :user="user"
+        @context-changed="onContextChanged"
+      />
+
+      <!-- "Publicando como" badge — visible in Hunter mode with active team context -->
+      <div
+        v-if="user && !isEmpresaMode && activeRole === 'hunter' && user.activeContextTeamId"
+        class="db-publishing-as"
+      >
+        Publicando como: <strong>{{ activeContextName }}</strong>
+      </div>
+
       <nav class="db-nav">
         <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
           <hr v-if="'divider' in entry" class="db-nav-divider" />
+          <button
+            v-else-if="entry.href === '#meus-dados'"
+            type="button"
+            class="db-nav-item db-nav-item-toggle"
+            :class="{ active: meusDadosExpanded }"
+            @click="meusDadosExpanded = !meusDadosExpanded"
+          >
+            <svg class="db-nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="entry.icon" />
+            {{ entry.label }}
+          </button>
           <a v-else
             :href="entry.href"
             class="db-nav-item"
@@ -127,6 +197,16 @@
         <div class="db-drawer-body">
           <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
             <hr v-if="'divider' in entry" class="db-drawer-divider" />
+            <button
+              v-else-if="entry.href === '#meus-dados'"
+              type="button"
+              class="db-drawer-item"
+              :class="{ active: meusDadosExpanded }"
+              @click="meusDadosExpanded = !meusDadosExpanded"
+            >
+              <svg width="22" height="22" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" v-html="entry.icon" />
+              <span class="db-drawer-item-label">{{ entry.label }}</span>
+            </button>
             <a v-else
               :href="entry.href"
               class="db-drawer-item"
@@ -158,12 +238,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, provide, watch } from 'vue';
 import { isAdmin, isAuthenticated, logout } from '../../utils/auth';
 import { getFullProfile, getMyPlan, team, updateProfile } from '../../utils/api';
 import type { FullProfile, MyPlanInfo, PlanTier } from '../../utils/api';
 import Toast from '../ui/Toast.vue';
 import PendingInvitesModal from './PendingInvitesModal.vue';
+import ContextSwitcher from '../hunter/ContextSwitcher.vue';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
@@ -178,6 +259,7 @@ function formatPlanExpiry(iso: string): string {
 
 const user = ref<FullProfile | null>(null);
 const myPlan = ref<MyPlanInfo | null>(null);
+const accessibleTeamsCount = ref(0);
 provide('currentUser', user);
 
 const togglingVisibility = ref(false);
@@ -194,11 +276,74 @@ const initials = computed(() => {
   return `${user.value.firstName[0] ?? ''}${user.value.lastName[0] ?? ''}`.toUpperCase();
 });
 
+// Company initials for empresa mode
+const companyInitials = computed(() => {
+  const name = user.value?.companyName || '';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || 'E';
+});
+
 const adminMode = ref(false);
 const planExpiryOpen = ref(false);
 
+// ── Modo ativo (Profissional / Hunter / Empresa) ──────────────────────────────
+
+// Reads/writes activeRole to localStorage; default = 'profissional'
+const activeRole = ref<'profissional' | 'hunter'>('profissional');
+
+const isEmpresaMode = computed(() => user.value?.isCompany === true);
+
+// Hunter is available if plan is RECRUITER/TEAM/ENTERPRISE OR user is a member of any team
+const canBeHunter = computed(() => {
+  const plan = myPlan.value?.plan;
+  const paidPersonal = plan === 'RECRUITER' || plan === 'TEAM' || plan === 'ENTERPRISE';
+  return paidPersonal || accessibleTeamsCount.value > 0;
+});
+
+function loadActiveRole() {
+  if (typeof window === 'undefined') return;
+  const stored = window.localStorage.getItem('activeRole') as 'profissional' | 'hunter' | null;
+  if (stored === 'profissional') {
+    activeRole.value = 'profissional';
+  } else if (stored === 'hunter' && canBeHunter.value) {
+    activeRole.value = 'hunter';
+  } else if (canBeHunter.value) {
+    activeRole.value = 'hunter';
+  } else {
+    activeRole.value = 'profissional';
+  }
+}
+
+function setActiveRole(role: 'profissional' | 'hunter') {
+  activeRole.value = role;
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem('activeRole', role);
+    window.location.href = role === 'hunter'
+      ? '/dashboard/recrutador?tab=publicar'
+      : '/dashboard/recrutador?tab=carreira';
+  }
+}
+
+// ── Icons ─────────────────────────────────────────────────────────────────────
+
 const VAGAS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />';
 const PLANOS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />';
+const RADAR_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />';
+const HEART_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />';
+const PREFS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />';
+const TEAM_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />';
+const CLIENTS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z" />';
+const CANDIDATURAS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />';
+const PROFILE_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />';
+const PORTFOLIO_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />';
+const CV_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />';
+const FORMACAO_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />';
+const TAGS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />';
+const CUPONS_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" />';
+const PAINEL_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />';
+
+// ── Nav items ─────────────────────────────────────────────────────────────────
 
 interface NavItem {
   href: string;
@@ -209,48 +354,104 @@ interface NavItem {
 }
 type NavEntry = NavItem | { divider: true };
 
-const painelItem: NavItem = { href: '/dashboard/recrutador?tab=carreira', label: 'Painel', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />' };
-const perfilItem: NavItem = { href: '/dashboard/perfil', label: 'Perfil', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />' };
-const portfolioItem: NavItem = { href: '/dashboard/portfolio', label: 'Portfólio', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />' };
-const curriculosItem: NavItem = { href: '/dashboard/curriculos', label: 'Currículos', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />' };
-const formacaoItem: NavItem = { href: '/dashboard/formacao', label: 'Formação', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />' };
-const tagsItem: NavItem = { href: '/dashboard/tags', label: 'Tags', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />' };
-const minhasCandidaturasItem: NavItem = { href: '/dashboard/minhas-candidaturas', label: 'Minhas candidaturas', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />' };
-const vagasPublicadasItem: NavItem = { href: '/dashboard/recrutador?tab=publicar', label: 'Vagas publicadas', icon: VAGAS_ICON };
-const planosAssinaturaItem: NavItem = { href: '/dashboard/recrutador?tab=servicos', label: 'Planos & assinatura', icon: PLANOS_ICON };
-const eventosItem: NavItem = { href: '/dashboard/eventos', label: 'Eventos', icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />', disabled: true, badge: 'Em breve' };
+// Shared "Meus dados" items (always accessible)
+const meusDadosItems: NavItem[] = [
+  { href: '/dashboard/perfil', label: 'Perfil', icon: PROFILE_ICON },
+  { href: '/dashboard/portfolio', label: 'Portfólio', icon: PORTFOLIO_ICON },
+  { href: '/dashboard/curriculos', label: 'Currículos', icon: CV_ICON },
+  { href: '/dashboard/formacao', label: 'Formação', icon: FORMACAO_ICON },
+  { href: '/dashboard/tags', label: 'Tags', icon: TAGS_ICON },
+];
 
-const adminCuponsNavItem: NavItem = {
-  href: '/dashboard/admin/cupons',
-  label: 'Validar cupons',
-  icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" />',
-};
+// Items by mode
+const meusDadosExpanded = ref(false);
+
+function buildMeusDadosSection(): NavEntry[] {
+  const toggleItem: NavEntry = {
+    href: '#meus-dados',
+    label: meusDadosExpanded.value ? 'Meus dados ▴' : 'Meus dados ▾',
+    icon: PROFILE_ICON,
+  };
+  if (meusDadosExpanded.value) {
+    return [toggleItem, ...meusDadosItems];
+  }
+  return [toggleItem];
+}
 
 const navEntries = computed<NavEntry[]>(() => {
+  const plan = myPlan.value?.plan;
+  const isTeamOrAbove = plan === 'TEAM' || plan === 'ENTERPRISE';
+  const adminCupons: NavItem = {
+    href: '/dashboard/admin/cupons',
+    label: 'Validar cupons',
+    icon: CUPONS_ICON,
+  };
+
+  // ── Modo Empresa ────────────────────────────────────────────────────────────
+  if (isEmpresaMode.value) {
+    const entries: NavEntry[] = [
+      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+      { divider: true },
+    ];
+    if (isTeamOrAbove) {
+      entries.unshift(
+        { href: '/dashboard/recrutador?tab=carreira', label: 'Meu Time', icon: TEAM_ICON },
+        { href: '/dashboard/recrutador?tab=clientes', label: 'Clientes', icon: CLIENTS_ICON },
+        { divider: true }
+      );
+    }
+    entries.push({ href: '/dashboard/recrutador?tab=servicos', label: 'Ver Planos', icon: PLANOS_ICON });
+    if (adminMode.value) entries.push({ divider: true }, adminCupons);
+    return entries;
+  }
+
+  // ── Modo Hunter ─────────────────────────────────────────────────────────────
+  if (activeRole.value === 'hunter') {
+    const entries: NavEntry[] = [
+      ...buildMeusDadosSection(),
+      { divider: true },
+      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador?tab=servicos', label: 'Ver Planos', icon: PLANOS_ICON },
+    ];
+    if (adminMode.value) entries.push({ divider: true }, adminCupons);
+    return entries;
+  }
+
+  // ── Modo Profissional (default) ─────────────────────────────────────────────
   const entries: NavEntry[] = [
-    painelItem,
-    perfilItem,
-    portfolioItem,
-    curriculosItem,
-    formacaoItem,
-    tagsItem,
-    minhasCandidaturasItem,
+    ...buildMeusDadosSection(),
     { divider: true },
-    vagasPublicadasItem,
-    planosAssinaturaItem,
-    { divider: true },
-    eventosItem,
+    { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+    { href: '/dashboard/profissional?tab=salvas', label: 'Vagas Salvas', icon: HEART_ICON },
   ];
-  if (adminMode.value) entries.push(adminCuponsNavItem);
+  if (adminMode.value) entries.push({ divider: true }, adminCupons);
   return entries;
 });
 
-const mobileNavItems = computed<NavItem[]>(() => [
-  painelItem,
-  perfilItem,
-  portfolioItem,
-  { ...vagasPublicadasItem, label: 'Recrutar' },
-]);
+const mobileNavItems = computed<NavItem[]>(() => {
+  if (isEmpresaMode.value) {
+    return [
+      { href: '/dashboard/recrutador?tab=publicar', label: 'Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador?tab=carreira', label: 'Time', icon: TEAM_ICON },
+    ];
+  }
+  if (activeRole.value === 'hunter') {
+    return [
+      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador?tab=servicos', label: 'Planos', icon: PLANOS_ICON },
+    ];
+  }
+  // Profissional
+  return [
+    { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
+    { href: '/dashboard/profissional?tab=preferencias', label: 'Preferências', icon: PREFS_ICON },
+    { href: '/dashboard/profissional?tab=salvas', label: 'Salvas', icon: HEART_ICON },
+  ];
+});
 
 const moreOpen = ref(false);
 
@@ -270,12 +471,19 @@ const currentLocation = ref({
 });
 
 function isActive(href: string) {
+  if (href === '#meus-dados') return meusDadosExpanded.value;
   const [path, query = ''] = href.split('?');
   if (path === '/dashboard/recrutador') {
     if (currentLocation.value.pathname !== '/dashboard/recrutador') return false;
     const expectedTab = new URLSearchParams(query).get('tab');
     const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'carreira';
     return expectedTab ? expectedTab === currentTab : currentTab === 'carreira';
+  }
+  if (path === '/dashboard/profissional') {
+    if (currentLocation.value.pathname !== '/dashboard/profissional') return false;
+    const expectedTab = new URLSearchParams(query).get('tab');
+    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'radar';
+    return expectedTab ? expectedTab === currentTab : currentTab === 'radar';
   }
   if (path === '/dashboard') return currentLocation.value.pathname === '/dashboard';
   return currentLocation.value.pathname.startsWith(path ?? '');
@@ -331,10 +539,31 @@ onMounted(async () => {
   }
   adminMode.value = isAdmin();
   try {
-    [user.value, myPlan.value] = await Promise.all([
+    const [profileRes, planRes, teamsRes] = await Promise.all([
       getFullProfile(),
       getMyPlan(),
+      team.listAccessible().catch(() => []),
     ]);
+    user.value = profileRes;
+    myPlan.value = planRes;
+    accessibleTeamsCount.value = teamsRes.length;
+    // Load persisted role after plan is known
+    loadActiveRole();
+    // Hunter mode lands on Minhas Vagas (?tab=publicar) by default
+    if (activeRole.value === 'hunter' && typeof window !== 'undefined') {
+      window.localStorage.setItem('activeRole', 'hunter');
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      const justLoggedIn = window.sessionStorage.getItem('vp:just-logged-in') === '1';
+      const isOnCarreiraEntry =
+        window.location.pathname === '/dashboard/recrutador' && (!tab || tab === 'carreira');
+      if (justLoggedIn && isOnCarreiraEntry) {
+        window.sessionStorage.removeItem('vp:just-logged-in');
+        window.location.replace('/dashboard/recrutador?tab=publicar');
+        return;
+      }
+      if (justLoggedIn) window.sessionStorage.removeItem('vp:just-logged-in');
+    }
   } catch (e: unknown) {
     const err = e as { statusCode?: number };
     if (err?.statusCode === 401) {
@@ -351,9 +580,107 @@ onMounted(async () => {
 });
 
 const pendingInvitesOpen = ref(false);
+
+// ── Hunter context ────────────────────────────────────────────────────────────
+
+const activeContextTeamName = ref<string | null>(null);
+
+const activeContextName = computed(() => activeContextTeamName.value || 'Time');
+
+function onContextChanged(teamId: string | null) {
+  if (!user.value) return;
+  user.value = { ...user.value, activeContextTeamId: teamId };
+  if (!teamId) {
+    activeContextTeamName.value = null;
+  }
+  // Name is loaded inside ContextSwitcher and reflected via the user object
+}
 </script>
 
 <style scoped>
+/* ─── ROLE SELECTOR "Acessando como" ─────────────────────────────────────── */
+.db-role-selector {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-light);
+}
+.db-role-label {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.db-role-btns {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.db-role-btn {
+  flex: 1;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+.db-role-btn.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.db-role-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.db-role-btn:not(.active):not(.disabled):hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* "Publicando como" badge */
+.db-publishing-as {
+  margin: 0 var(--spacing-md) var(--spacing-xs);
+  padding: 4px 10px;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--secondary, #7c3aed);
+}
+
+/* Company avatar variant */
+.db-company-avatar {
+  background: var(--secondary, #7c3aed);
+  font-size: var(--text-sm);
+}
+
+/* Sub-items (inside "Meus dados" expansion) */
+.db-nav-item-sub {
+  padding-left: calc(var(--spacing-lg) + 12px) !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* Toggle button styled like nav item */
+.db-nav-item-toggle {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.db-nav-item-toggle.active {
+  color: var(--primary);
+}
+
 .db-nav-divider {
   border: none;
   border-top: 1px solid var(--border-light);
@@ -388,15 +715,15 @@ const pendingInvitesOpen = ref(false);
   background: var(--bg-tertiary, #f3f4f6);
   color: var(--text-secondary, #6b7280);
 }
-.plan-personal {
+.plan-recruiter {
   background: #eff6ff;
   color: var(--primary, #2563eb);
 }
-.plan-hunter {
+.plan-team {
   background: #f3e8ff;
   color: #7c3aed;
 }
-.plan-empresarial {
+.plan-enterprise {
   background: #fef3c7;
   color: #b45309;
 }
@@ -422,13 +749,13 @@ const pendingInvitesOpen = ref(false);
   margin-left: 4px;
 }
 /* Avatar ring colored by plan */
-.db-user-avatar.ring-personal {
+.db-user-avatar.ring-recruiter {
   box-shadow: 0 0 0 2px var(--bg-primary, #fff), 0 0 0 4px var(--primary, #2563eb);
 }
-.db-user-avatar.ring-hunter {
+.db-user-avatar.ring-team {
   box-shadow: 0 0 0 2px var(--bg-primary, #fff), 0 0 0 4px #7c3aed;
 }
-.db-user-avatar.ring-empresarial {
+.db-user-avatar.ring-enterprise {
   box-shadow: 0 0 0 2px var(--bg-primary, #fff), 0 0 0 4px #f59e0b;
 }
 .db-user-avatar.ring-free {

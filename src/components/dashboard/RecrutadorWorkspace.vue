@@ -60,8 +60,14 @@
         <!-- Loading state -->
         <div v-if="loadingVagas" class="rw-loading">Carregando vagas...</div>
 
-        <!-- Layout: lista + sidebar + pipeline em um único grid -->
+        <!-- Layout: overview + lista + pipeline em coluna única (com reordenação por viewport) -->
         <div v-else class="rw-vagas-layout">
+          <!-- Pipeline geral + Atividade recente: topo no desktop, base no mobile -->
+          <div class="rw-overview-row">
+            <PipelineOverviewCard />
+            <RecentActivityFeed v-if="isTeamOrEnterprise" />
+          </div>
+
           <!-- Lista de vagas (ou timeline) -->
           <div class="rw-vagas-list-area">
             <VagasTimeline v-if="viewMode === 'timeline'" :vagas="vagas" />
@@ -81,12 +87,57 @@
               <div v-else-if="filteredVagas.length === 0" class="rw-empty-vagas">
                 <p>Nenhuma vaga com este filtro. <button type="button" class="rw-empty-reset" @click="statusFilter = 'all'">Mostrar todas</button></p>
               </div>
+
+              <!-- Combobox: busca + lista de vagas (1 selecionável) -->
+              <div v-if="filteredVagas.length > 0" class="rw-vaga-picker" v-click-outside="closeVagaPicker">
+                <label class="rw-vaga-picker-label" for="vaga-picker-input">Selecionar vaga</label>
+                <div class="rw-vaga-picker-input-wrap">
+                  <svg class="rw-vaga-picker-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input
+                    id="vaga-picker-input"
+                    type="text"
+                    class="rw-vaga-picker-input"
+                    :placeholder="selectedVaga?.title || 'Buscar vaga por título...'"
+                    v-model="vagaPickerQuery"
+                    @focus="vagaPickerOpen = true"
+                    @input="vagaPickerOpen = true"
+                    autocomplete="off"
+                  />
+                  <button
+                    type="button"
+                    class="rw-vaga-picker-toggle"
+                    @click="vagaPickerOpen = !vagaPickerOpen"
+                    :aria-label="vagaPickerOpen ? 'Fechar lista' : 'Abrir lista'"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path :d="vagaPickerOpen ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'"/></svg>
+                  </button>
+                </div>
+                <ul v-if="vagaPickerOpen" class="rw-vaga-picker-list" role="listbox">
+                  <li v-if="vagaPickerMatches.length === 0" class="rw-vaga-picker-empty">
+                    Nenhuma vaga encontrada.
+                  </li>
+                  <li
+                    v-for="v in vagaPickerMatches"
+                    :key="v.id"
+                    class="rw-vaga-picker-item"
+                    :class="{ 'rw-vaga-picker-item--active': selectedVagaId === v.id }"
+                    role="option"
+                    :aria-selected="selectedVagaId === v.id"
+                    @click="onPickVaga(v.id)"
+                  >
+                    <span class="rw-vaga-picker-item-title">{{ v.title }}</span>
+                    <span class="rw-vaga-picker-item-meta">
+                      <span class="rw-status" :data-status="v.status">{{ statusLabel(v.status) }}</span>
+                      <span class="rw-vaga-picker-item-date" v-if="v.updatedAt">{{ formatDate(v.updatedAt) }}</span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
               <article
-                v-for="v in filteredVagas"
+                v-for="v in displayedVaga"
                 :key="v.id"
-                class="rw-vaga"
-                :class="{ 'rw-vaga--selected': selectedVagaId === v.id }"
-                @click="selectVaga(v.id)"
+                class="rw-vaga rw-vaga--selected"
               >
                 <div class="rw-vaga-id">
                   <div class="rw-vaga-title">{{ v.title }}</div>
@@ -164,27 +215,49 @@
 
           </div>
 
-          <!-- Sidebar: PipelineOverviewCard sempre, RecentActivityFeed só TEAM/ENTERPRISE -->
-          <aside class="rw-sidebar-col">
-            <PipelineOverviewCard />
-            <RecentActivityFeed v-if="isTeamOrEnterprise" />
-          </aside>
-
-          <!-- Pipeline (ocupa as duas colunas no desktop, abaixo da vaga no mobile) -->
+          <!-- Pipeline da vaga selecionada -->
           <section
             v-if="selectedVagaId && viewMode === 'list'"
             ref="pipelineSectionEl"
             class="rw-pipeline-section"
           >
-            <div v-if="loadingCandidates" class="rw-loading">Carregando candidatos...</div>
-            <CandidatePipeline
-              v-else
-              :key="selectedVagaId"
-              :vaga-title="selectedVagaTitle"
-              :subline="selectedVagaSubline"
-              :candidates="candidatesForSelected"
-              :recruiter-name="recruiterName"
-            />
+            <!-- Pipeline / Hunters tabs -->
+            <div class="rw-pipeline-tabs">
+              <button
+                type="button"
+                class="rw-pipeline-tab"
+                :class="{ active: pipelineTab === 'pipeline' }"
+                @click="pipelineTab = 'pipeline'"
+              >Candidatos</button>
+              <button
+                type="button"
+                class="rw-pipeline-tab"
+                :class="{ active: pipelineTab === 'hunters' }"
+                @click="pipelineTab = 'hunters'"
+              >
+                Hunters
+                <span class="rw-pipeline-tab-badge">{{ selectedVagaAllowHunters ? 'ativo' : 'inativo' }}</span>
+              </button>
+            </div>
+
+            <template v-if="pipelineTab === 'pipeline'">
+              <div v-if="loadingCandidates" class="rw-loading">Carregando candidatos...</div>
+              <CandidatePipeline
+                v-else
+                :key="selectedVagaId"
+                :vaga-title="selectedVagaTitle"
+                :subline="selectedVagaSubline"
+                :candidates="candidatesForSelected"
+                :recruiter-name="recruiterName"
+              />
+            </template>
+
+            <template v-else-if="pipelineTab === 'hunters'">
+              <div v-if="!selectedVagaAllowHunters" class="rw-placeholder">
+                <p>Esta vaga não tem "Permitir Hunters" ativado. Edite a vaga para habilitar.</p>
+              </div>
+              <HunterInterestsList v-else :vaga-id="selectedVagaId" />
+            </template>
           </section>
         </div>
       </div>
@@ -193,6 +266,8 @@
         <h4>Seleção e Testes</h4>
         <p>Provas e avaliações associadas a vagas. (Em construção.)</p>
       </div>
+
+      <MinhasVagasSalvasHunter v-else-if="activeSub === 'salvas'" />
 
       <TeamMembersList v-else-if="activeSub === 'time' && isTeamOrEnterprise" />
 
@@ -230,11 +305,10 @@
           <span class="rw-shortcut-label">Tags</span>
           <span class="rw-shortcut-desc">Habilidades e especialidades do perfil</span>
         </a>
-        <a href="/dashboard/minhas-candidaturas" class="rw-shortcut">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" /></svg>
-          <span class="rw-shortcut-label">Minhas candidaturas</span>
-          <span class="rw-shortcut-desc">Vagas em que você se candidatou</span>
-        </a>
+      </div>
+      <div class="rw-carreira-grid">
+        <PerfilCompletionCard />
+        <ApplicationsInline />
       </div>
     </section>
 
@@ -257,7 +331,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, inject, onMounted, watch, nextTick } from 'vue';
+import type { Ref } from 'vue';
+import type { FullProfile } from '../../utils/api';
 import DashboardLayout from './DashboardLayout.vue';
 import Breadcrumbs from '../ui/Breadcrumbs.vue';
 import SubTabs from '../ui/SubTabs.vue';
@@ -274,6 +350,10 @@ import PlansInline from './PlansInline.vue';
 import PendingInvitesCard from './PendingInvitesCard.vue';
 import PipelineOverviewCard from './PipelineOverviewCard.vue';
 import RecentActivityFeed from './RecentActivityFeed.vue';
+import MinhasVagasSalvasHunter from '../hunter/MinhasVagasSalvasHunter.vue';
+import HunterInterestsList from '../hunter/HunterInterestsList.vue';
+import PerfilCompletionCard from './PerfilCompletionCard.vue';
+import ApplicationsInline from './ApplicationsInline.vue';
 import Toast from '../ui/Toast.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import {
@@ -307,7 +387,7 @@ interface Metric {
 }
 
 type MainId = 'carreira' | 'vagas' | 'servicos';
-type SubId = 'vagas' | 'selecao' | 'time' | 'clientes';
+type SubId = 'vagas' | 'selecao' | 'salvas' | 'time' | 'clientes';
 
 // ── Plan & recruiter ─────────────────────────────────────────────────────────
 const userPlan = ref<PlanTier>('FREE');
@@ -315,24 +395,36 @@ const recruiterName = ref<string>('');
 const isTeamOrEnterprise = computed(
   () => userPlan.value === 'TEAM' || userPlan.value === 'ENTERPRISE'
 );
+const isFreePlan = computed(() => userPlan.value === 'FREE');
+
+// ── Company mode (injected from DashboardLayout) ──────────────────────────────
+const currentUser = inject<Ref<FullProfile | null>>('currentUser');
+const isCompany = computed(() => currentUser?.value?.isCompany === true);
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-const mainTabs = [
-  { id: 'carreira', label: 'Carreira' },
-  { id: 'vagas', label: 'Publicar vagas' },
-  { id: 'servicos', label: 'Solicitar serviços' },
-];
+const mainTabs = computed(() => {
+  const tabs = [{ id: 'carreira', label: 'Carreira' }];
+  if (!isFreePlan.value) {
+    tabs.push({ id: 'vagas', label: 'Publicar vagas' });
+  }
+  tabs.push({ id: 'servicos', label: isFreePlan.value ? 'Ver Planos' : 'Solicitar serviços' });
+  return tabs;
+});
 
 const subTabs = computed(() => {
   const base = [
     { id: 'vagas', label: 'Vagas', count: vagas.value.length },
     { id: 'selecao', label: 'Seleção e Testes' },
+    { id: 'salvas', label: 'Vagas Salvas' },
   ];
+  // "Meu Time" disponivel para qualquer usuario em plano TEAM/ENTERPRISE
+  // (Hunter individual com time tambem precisa convidar membros).
   if (isTeamOrEnterprise.value) {
-    base.push(
-      { id: 'time', label: 'Meu Time' },
-      { id: 'clientes', label: 'Clientes' }
-    );
+    base.push({ id: 'time', label: 'Meu Time' });
+  }
+  // "Clientes" segue restrito a contas Empresa
+  if (isCompany.value && isTeamOrEnterprise.value) {
+    base.push({ id: 'clientes', label: 'Clientes' });
   }
   return base;
 });
@@ -349,7 +441,7 @@ const MAIN_TO_QUERY: Record<MainId, string> = {
   servicos: 'servicos',
 };
 
-const activeMain = ref<MainId>('vagas');
+const activeMain = ref<MainId>('carreira');
 const activeSub = ref<SubId>('vagas');
 const viewMode = ref<'list' | 'timeline'>('list');
 
@@ -359,6 +451,12 @@ const loadingVagas = ref(false);
 const statusFilter = ref<VagaStatus | 'all'>('all');
 const selectedVagaId = ref<string>('');
 const usage = ref<VagaUsage | null>(null);
+
+// Pipeline sub-tab (Candidatos | Hunters)
+const pipelineTab = ref<'pipeline' | 'hunters'>('pipeline');
+const selectedVagaAllowHunters = computed(
+  () => vagas.value.find(v => v.id === selectedVagaId.value)?.allowHunters === true
+);
 
 // ── Close / Republish vaga ───────────────────────────────────────────────────
 const closeTargetVaga = ref<Vaga | null>(null);
@@ -394,7 +492,7 @@ const crumbs = computed(() => {
   return baseCrumbs;
 });
 
-const mainTabLabel = computed(() => mainTabs.find((t) => t.id === activeMain.value)?.label ?? '');
+const mainTabLabel = computed(() => mainTabs.value.find((t) => t.id === activeMain.value)?.label ?? '');
 
 const metrics = computed<Metric[]>(() => {
   const publishedVagas = vagas.value.filter((v) => v.status === 'PUBLISHED');
@@ -421,11 +519,60 @@ const metrics = computed<Metric[]>(() => {
 });
 
 const filteredVagas = computed(() => {
-  if (statusFilter.value === 'all') return vagas.value;
-  return vagas.value.filter((v) => v.status === statusFilter.value);
+  const base = statusFilter.value === 'all'
+    ? vagas.value
+    : vagas.value.filter((v) => v.status === statusFilter.value);
+  // Sort by most-recently updated first (fallback to createdAt or position)
+  return [...base].sort((a, b) => {
+    const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return tb - ta;
+  });
 });
 
 const selectedVaga = computed(() => vagas.value.find((v) => v.id === selectedVagaId.value));
+
+// ── Vaga picker (combobox: busca + 1 vaga visível) ──────────────────────────
+const vagaPickerQuery = ref('');
+const vagaPickerOpen = ref(false);
+
+const vagaPickerMatches = computed(() => {
+  const q = vagaPickerQuery.value.trim().toLowerCase();
+  if (!q) return filteredVagas.value;
+  return filteredVagas.value.filter((v) =>
+    v.title.toLowerCase().includes(q) ||
+    (v.location || '').toLowerCase().includes(q),
+  );
+});
+
+const displayedVaga = computed(() => {
+  const sel = selectedVaga.value;
+  if (sel && filteredVagas.value.some((v) => v.id === sel.id)) return [sel];
+  return filteredVagas.value.length > 0 ? [filteredVagas.value[0]!] : [];
+});
+
+function onPickVaga(id: string) {
+  selectedVagaId.value = id;
+  vagaPickerOpen.value = false;
+  vagaPickerQuery.value = '';
+}
+
+function closeVagaPicker() {
+  vagaPickerOpen.value = false;
+}
+
+// Lightweight click-outside directive
+const vClickOutside = {
+  mounted(el: HTMLElement, binding: { value: () => void }) {
+    (el as any).__clickOutside__ = (ev: MouseEvent) => {
+      if (!el.contains(ev.target as Node)) binding.value();
+    };
+    document.addEventListener('mousedown', (el as any).__clickOutside__);
+  },
+  unmounted(el: HTMLElement) {
+    document.removeEventListener('mousedown', (el as any).__clickOutside__);
+  },
+};
 
 const selectedVagaTitle = computed(() => selectedVaga.value?.title ?? '');
 const selectedVagaSubline = computed(() => {
@@ -505,7 +652,13 @@ async function loadVagas() {
     if (vagasResult.status === 'fulfilled') {
       vagas.value = vagasResult.value.data;
       if (vagasResult.value.data.length > 0 && !selectedVagaId.value) {
-        selectedVagaId.value = vagasResult.value.data[0]!.id;
+        // Default selection: most-recently-updated vaga
+        const sorted = [...vagasResult.value.data].sort((a, b) => {
+          const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          return tb - ta;
+        });
+        selectedVagaId.value = sorted[0]!.id;
       }
     } else {
       showToast('Erro ao carregar vagas. Verifique sua conexão.');
@@ -609,6 +762,9 @@ function appToMockCandidate(app: VagaApplicationAdminView): MockCandidate {
 
 // ── Event handlers ────────────────────────────────────────────────────────────
 function onMainTabChange(id: string) {
+  if (id === 'vagas' && isFreePlan.value) {
+    id = 'servicos';
+  }
   activeMain.value = id as MainId;
   const queryParam = MAIN_TO_QUERY[id as MainId];
   if (queryParam) {
@@ -677,16 +833,8 @@ watch(viewMode, (mode) => {
 onMounted(async () => {
   const search = new URLSearchParams(window.location.search);
   const param = search.get('tab');
-  if (param && param in TAB_QUERY_MAP) {
-    activeMain.value = TAB_QUERY_MAP[param]!;
-  } else {
-    // Normalize URL so the sidebar deep-link highlight matches the default tab
-    const queryParam = MAIN_TO_QUERY[activeMain.value];
-    window.history.replaceState(null, '', `/dashboard/recrutador?tab=${queryParam}`);
-    window.dispatchEvent(new CustomEvent('vp:nav-changed'));
-  }
 
-  // Load plan + recruiter profile (non-blocking)
+  // Load plan + recruiter profile FIRST so we can gate FREE users
   try {
     const [planInfo, profile] = await Promise.allSettled([getMyPlan(), getFullProfile()]);
     if (planInfo.status === 'fulfilled') userPlan.value = planInfo.value.plan;
@@ -696,6 +844,22 @@ onMounted(async () => {
     }
   } catch {
     // non-critical
+  }
+
+  if (param && param in TAB_QUERY_MAP) {
+    let target = TAB_QUERY_MAP[param]!;
+    // FREE users cannot access "Publicar vagas" — redirect to servicos (planos)
+    if (target === 'vagas' && isFreePlan.value) {
+      target = 'servicos';
+      window.history.replaceState(null, '', '/dashboard/recrutador?tab=servicos');
+      window.dispatchEvent(new CustomEvent('vp:nav-changed'));
+    }
+    activeMain.value = target;
+  } else {
+    // Normalize URL so the sidebar deep-link highlight matches the default tab
+    const queryParam = MAIN_TO_QUERY[activeMain.value];
+    window.history.replaceState(null, '', `/dashboard/recrutador?tab=${queryParam}`);
+    window.dispatchEvent(new CustomEvent('vp:nav-changed'));
   }
 
   // Load vagas
@@ -729,6 +893,8 @@ onMounted(async () => {
   justify-content: space-between;
   gap: var(--spacing-md);
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .rw-cta {
   display: inline-flex;
@@ -957,6 +1123,45 @@ onMounted(async () => {
   border-top: 1px solid var(--border);
 }
 
+.rw-pipeline-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.rw-pipeline-tab {
+  padding: 6px 16px;
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.rw-pipeline-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.rw-pipeline-tab-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-muted, #9ca3af);
+}
+
 @media (max-width: 1100px) {
   .rw-pipeline-section {
     margin-top: 0;
@@ -983,20 +1188,19 @@ onMounted(async () => {
 .rw-placeholder h4 { margin: 0 0 var(--spacing-xs); color: var(--text-primary); }
 .rw-placeholder p { margin: 0 0 var(--spacing-md); color: var(--text-secondary); }
 
-.rw-hero {
-  padding: var(--spacing-xl);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-}
-.rw-hero h3 { margin: 0 0 var(--spacing-xs); color: var(--text-primary); }
-.rw-hero p { margin: 0; color: var(--text-secondary); }
-.rw-hero a { color: var(--primary); text-decoration: none; }
-.rw-hero a:hover { text-decoration: underline; }
-
 .rw-career-shortcuts {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+@media (max-width: 600px) {
+  .rw-career-shortcuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-sm);
+  }
+  .rw-shortcut { padding: var(--spacing-md); }
+  .rw-shortcut-desc { display: none; }
 }
 .rw-shortcut {
   display: flex;
@@ -1026,6 +1230,23 @@ onMounted(async () => {
   line-height: 1.4;
 }
 
+/* Carreira tab — 2-col desktop layout */
+.rw-carreira-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rw-carreira-grid {
+    grid-template-columns: 1fr;
+  }
+  /* On mobile, PerfilCompletion comes first (source order preserved) */
+  .rw-carreira-grid > :first-child { order: 0; }
+  .rw-carreira-grid > :last-child { order: 1; }
+}
+
 /* Layout vagas — duas colunas para todos os planos */
 .rw-vagas-tab {
   display: flex;
@@ -1034,10 +1255,141 @@ onMounted(async () => {
 }
 
 .rw-vagas-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-lg);
-  align-items: start;
+  min-width: 0;
+}
+
+/* Overview row: PipelineOverviewCard + RecentActivityFeed lado a lado no desktop */
+.rw-overview-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  order: 1;
+}
+.rw-overview-row > * { min-width: 0; }
+.rw-overview-row:has(> *:only-child) {
+  grid-template-columns: 1fr;
+}
+.rw-vagas-list-area { order: 2; }
+.rw-pipeline-section { order: 3; }
+
+@media (max-width: 900px) {
+  .rw-overview-row {
+    grid-template-columns: 1fr;
+    order: 3;
+  }
+  .rw-vagas-list-area { order: 1; }
+  .rw-pipeline-section { order: 2; }
+}
+
+/* Vaga picker (combobox) */
+.rw-vaga-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--spacing-sm);
+}
+.rw-vaga-picker-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rw-vaga-picker-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--spacing-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.rw-vaga-picker-input-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.rw-vaga-picker-icon { color: var(--text-muted, #9ca3af); flex-shrink: 0; }
+.rw-vaga-picker-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 10px var(--spacing-sm);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.rw-vaga-picker-toggle {
+  border: none;
+  background: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+.rw-vaga-picker-toggle:hover { color: var(--text-primary); }
+.rw-vaga-picker-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 320px;
+  overflow-y: auto;
+}
+.rw-vaga-picker-empty {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+.rw-vaga-picker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: background var(--transition-fast);
+}
+.rw-vaga-picker-item:hover { background: var(--bg-secondary); }
+.rw-vaga-picker-item--active {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+  font-weight: 600;
+}
+.rw-vaga-picker-item-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rw-vaga-picker-item-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+.rw-vaga-picker-item-date {
+  font-size: 11px;
+  color: var(--text-muted, #9ca3af);
 }
 
 .rw-vagas-list-area {
@@ -1047,31 +1399,8 @@ onMounted(async () => {
   min-width: 0;
 }
 
-.rw-sidebar-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  position: sticky;
-  top: var(--spacing-lg);
-  min-width: 0;
-}
-
-/* Pipeline spans the full grid width on desktop */
 .rw-pipeline-section {
-  grid-column: 1 / -1;
   min-width: 0;
-}
-
-@media (max-width: 1100px) {
-  .rw-vagas-layout {
-    grid-template-columns: 1fr;
-  }
-  .rw-vagas-list-area { order: 1; }
-  .rw-pipeline-section { order: 2; grid-column: auto; }
-  .rw-sidebar-col {
-    order: 3;
-    position: static;
-  }
 }
 
 /* Pipeline arrow icon is mobile-only by default */

@@ -31,6 +31,12 @@ export interface MockCandidate {
   username?: string;
   avatarUrl?: string;
   applicationCv?: { id: string; label: string; fileUrl: string } | null;
+  /** ID da candidatura no backend (VagaApplication.id) — necessario para notas/historico/share */
+  applicationId?: string;
+  /** Nota geral pre-existente */
+  generalScore?: number | null;
+  /** Anotacao geral pre-existente */
+  generalNote?: string | null;
 }
 
 export interface MockVaga {
