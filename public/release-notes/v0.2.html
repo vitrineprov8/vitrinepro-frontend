@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>VitrinePro — Release Notes v0.2 (Refactor Dashboard 3-Modos)</title>
+<style>
+  :root{
+    --primary:#6d28d9; --primary-dark:#5b21b6; --secondary:#7c3aed;
+    --accent-yellow:#facc15; --accent-green:#22c55e; --accent-orange:#fb923c;
+    --accent-red:#ef4444; --accent-blue:#3b82f6;
+    --bg:#fafafa; --card:#fff; --border:#e5e7eb; --border-soft:#f1f5f9;
+    --text:#0f172a; --muted:#64748b; --muted-2:#94a3b8;
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 12px rgba(15,23,42,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55;font-size:15.5px;-webkit-font-smoothing:antialiased}
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+
+  /* Header */
+  .cover{
+    background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);
+    color:#fff;border-radius:var(--radius);padding:36px 32px;margin-bottom:28px;
+    box-shadow:var(--shadow);
+  }
+  .cover h1{margin:0 0 6px;font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.02em}
+  .cover p.sub{margin:0;opacity:.92;font-size:15px}
+  .cover .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:13px;opacity:.92}
+  .cover .meta span{background:rgba(255,255,255,.16);padding:6px 12px;border-radius:999px}
+
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:24px 26px;margin:18px 0;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 12px;font-size:21px;font-weight:700;letter-spacing:-.01em;
+    border-bottom:2px solid var(--border-soft);padding-bottom:10px}
+  .card h3{margin:18px 0 8px;font-size:16px;font-weight:700;color:var(--primary-dark)}
+  .card p{margin:8px 0}
+  .card ul,.card ol{margin:8px 0;padding-left:22px}
+  .card li{margin:4px 0}
+  .card code{background:#f3f4f6;padding:2px 6px;border-radius:5px;font-size:13px;
+    font-family:"SF Mono",Monaco,Consolas,monospace}
+
+  /* Modes grid */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
+  @media (max-width:720px){.modes{grid-template-columns:1fr}}
+  .mode{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff}
+  .mode.prof{border-top:4px solid var(--accent-yellow)}
+  .mode.hunt{border-top:4px solid var(--primary)}
+  .mode.emp{border-top:4px solid var(--accent-orange)}
+  .mode h4{margin:0 0 8px;font-size:15px;font-weight:700}
+  .mode small{color:var(--muted);font-size:12px;display:block;margin-bottom:6px}
+  .mode ul{margin:6px 0 0;padding-left:18px;font-size:13.5px}
+  .mode li{margin:2px 0;color:#334155}
+
+  /* Badges */
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;
+    font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+  .b-new{background:#dcfce7;color:#166534}
+  .b-fix{background:#fef3c7;color:#92400e}
+  .b-back{background:#dbeafe;color:#1e40af}
+  .b-front{background:#ede9fe;color:#5b21b6}
+  .b-mob{background:#fee2e2;color:#991b1b}
+
+  /* Test routines */
+  .routine{border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:12px 0;background:#fff}
+  .routine h4{margin:0 0 6px;font-size:15px;font-weight:700;color:var(--primary-dark)}
+  .routine .who{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .checklist{list-style:none;padding:0;margin:8px 0 0}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px dashed #f1f5f9}
+  .checklist li:last-child{border-bottom:none}
+  .checklist input[type=checkbox]{margin-top:5px;flex-shrink:0;width:16px;height:16px;cursor:pointer}
+  .checklist span{flex:1;font-size:14px}
+
+  /* Tip box */
+  .tip{background:#fff7ed;border-left:4px solid var(--accent-orange);
+    padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13.5px;color:#7c2d12}
+  .warn{background:#fef2f2;border-left:4px solid var(--accent-red);
+    padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13.5px;color:#7f1d1d}
+  .ok{background:#f0fdf4;border-left:4px solid var(--accent-green);
+    padding:12px 16px;border-radius:8px;margin:12px 0;font-size:13.5px;color:#14532d}
+
+  .toc{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 18px;margin-top:8px}
+  @media (max-width:600px){.toc{grid-template-columns:1fr}}
+  .toc a{font-size:14px;padding:4px 0;border-bottom:1px dashed #e5e7eb;display:block}
+
+  .changes{list-style:none;padding:0;margin:8px 0}
+  .changes li{padding:10px 0;border-bottom:1px solid var(--border-soft);display:flex;gap:12px;align-items:flex-start}
+  .changes li:last-child{border-bottom:none}
+  .changes .text{flex:1;font-size:14px}
+  .changes .text b{display:block;margin-bottom:2px}
+  .changes .text small{color:var(--muted)}
+
+  .feedback{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;
+    padding:20px;text-align:center;margin-top:18px}
+  .feedback h3{margin:0 0 8px;color:#78350f}
+  .feedback a.btn{display:inline-block;margin-top:8px;background:var(--primary);
+    color:#fff;padding:10px 22px;border-radius:8px;font-weight:600}
+
+  .glossary dt{font-weight:700;margin-top:10px;color:var(--primary-dark)}
+  .glossary dd{margin:2px 0 0;color:#475569;font-size:14px}
+
+  @media print{
+    body{background:#fff}
+    .cover{background:#6d28d9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .card{break-inside:avoid;box-shadow:none}
+    .routine{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- COVER -->
+<div class="cover">
+  <h1>VitrinePro — Release v0.2</h1>
+  <p class="sub">Refactor do Dashboard: <b>Profissional / Hunter / Empresa</b> + Radar de Vagas + Multi-contexto</p>
+  <div class="meta">
+    <span>Versão 0.2</span>
+    <span>Data: 24 mai 2026</span>
+    <span>Para: revisão de negócio</span>
+    <span>Ambiente: localhost + staging</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="card">
+  <h2>O que tem neste documento</h2>
+  <div class="toc">
+    <a href="#resumo">1. Resumo executivo</a>
+    <a href="#modos">2. Mapa dos 3 modos</a>
+    <a href="#mudancas">3. Mudanças por área</a>
+    <a href="#ajustes">4. Ajustes finais (parte por parte)</a>
+    <a href="#roteiros">5. Roteiros de teste</a>
+    <a href="#bugs">6. Bugs corrigidos no caminho</a>
+    <a href="#mock">7. O que ainda está mockado / pendente</a>
+    <a href="#glossario">8. Glossário</a>
+    <a href="#feedback">9. Enviar feedback</a>
+  </div>
+</div>
+
+<!-- 1. RESUMO -->
+<div class="card" id="resumo">
+  <h2>1. Resumo executivo</h2>
+  <ul>
+    <li><b>Dashboard dividido em 3 modos</b>: Profissional (busca vagas), Hunter (recrutador autônomo) e Empresa (publica em nome de marca).</li>
+    <li><b>Radar de Vagas</b>: nova tela pública + logada com filtros, salvar com coração, badge de segmento e swipe mobile estilo Tinder.</li>
+    <li><b>Vagas Salvas</b>: 2 colunas (Salvas / Candidatadas) + mobile swipe (direita = candidatar, esquerda = remover).</li>
+    <li><b>Hunter multi-contexto</b>: recrutador pode ser membro de várias empresas; switcher "Publicando como" no sidebar e no editor de vaga.</li>
+    <li><b>Empresa</b>: signup com toggle "Sou empresa", logo, modo dedicado sem perfil público.</li>
+    <li><b>Permitir Hunters externos</b>: vagas marcam <code>allowHunters</code>; hunters externos veem botão "Quero ser Hunter" no Radar.</li>
+    <li><b>Pipeline enriquecido</b>: nota geral, histórico por etapa, observações, compartilhar processo por link/PDF/WhatsApp.</li>
+  </ul>
+  <div class="tip"><b>Como entrar:</b> abra <code>localhost:4321</code>, faça signup escolhendo Profissional ou Empresa. Para virar Hunter, contrate plano Recruiter ou aceite convite de uma empresa.</div>
+</div>
+
+<!-- 2. MAPA 3 MODOS -->
+<div class="card" id="modos">
+  <h2>2. Mapa dos 3 modos</h2>
+  <p>A mesma conta troca entre Profissional e Hunter pelo selector <b>"Acessando como"</b>. Conta Empresa é dedicada (toggle no signup).</p>
+  <div class="modes">
+    <div class="mode prof">
+      <h4>👤 Profissional</h4>
+      <small>FREE em diante</small>
+      <ul>
+        <li>Radar de Vagas</li>
+        <li>Preferências (filtros salvos)</li>
+        <li>Vagas Salvas</li>
+        <li>Minhas Candidaturas</li>
+      </ul>
+    </div>
+    <div class="mode hunt">
+      <h4>🎯 Hunter</h4>
+      <small>Recruiter+ <i>ou</i> membro de qualquer time</small>
+      <ul>
+        <li>Minhas Vagas (publicadas)</li>
+        <li>Seleção e Testes (pipeline)</li>
+        <li>Vagas Salvas (3 colunas)</li>
+        <li>Radar com "Quero ser Hunter"</li>
+        <li>Switcher: Pessoal / Time A / Time B…</li>
+      </ul>
+    </div>
+    <div class="mode emp">
+      <h4>🏢 Empresa</h4>
+      <small><code>isCompany = true</code></small>
+      <ul>
+        <li>Meu Time + Clientes</li>
+        <li>Minhas Vagas (em nome da empresa)</li>
+        <li>Radar (somente leitura)</li>
+        <li>Sem perfil público</li>
+        <li>Permitir Hunters externos por vaga</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 3. MUDANÇAS POR ÁREA -->
+<div class="card" id="mudancas">
+  <h2>3. Mudanças por área</h2>
+
+  <h3>Sidebar e navegação</h3>
+  <ul class="changes">
+    <li><span class="badge b-new">novo</span><div class="text"><b>Sidebar 3-modos</b><small>DashboardLayout monta o menu conforme <code>isCompany</code>, plano e <code>activeRole</code>.</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>Selector "Acessando como"</b><small>Alterna Profissional ↔ Hunter; persiste em localStorage.</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>Context Switcher (multi-team)</b><small>Topo do sidebar lista Pessoal + cada empresa em que o usuário é membro.</small></div></li>
+  </ul>
+
+  <h3>Profissional</h3>
+  <ul class="changes">
+    <li><span class="badge b-new">novo</span><div class="text"><b>RadarVagas.vue</b><small>Busca, filtros (cidade/cargo/ordenação), badge de segmento, coração para salvar.</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>VagasSalvas.vue</b><small>2 colunas: Salvas + Candidatadas. Status de candidatura visível.</small></div></li>
+    <li><span class="badge b-mob">mobile</span><div class="text"><b>SwipeStack + TutorialOverlay</b><small>Tinder swipe nas vagas salvas. Direita = candidatar, esquerda = remover.</small></div></li>
+  </ul>
+
+  <h3>Hunter</h3>
+  <ul class="changes">
+    <li><span class="badge b-new">novo</span><div class="text"><b>"Quero ser Hunter" no Radar</b><small>Hunters veem só vagas com <code>allowHunters=true</code>; mobile usa swipe direita = manifestar interesse.</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>HunterInterestsList</b><small>Dono da vaga aceita/rejeita hunters externos direto no tab "Hunters".</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>Invitar membros do time no tab Vagas</b><small>Em planos Team/Enterprise, "Meu Time" agora aparece como sub-tab fora da Empresa.</small></div></li>
+  </ul>
+
+  <h3>Empresa</h3>
+  <ul class="changes">
+    <li><span class="badge b-new">novo</span><div class="text"><b>Toggle "Sou empresa" no signup</b><small>Adiciona <code>companyName</code> e <code>companyIndustry</code>.</small></div></li>
+    <li><span class="badge b-new">novo</span><div class="text"><b>VagaEditor: allowHunters + telefone</b><small>Empresa decide se aceita hunters externos por vaga.</small></div></li>
+  </ul>
+
+  <h3>Backend</h3>
+  <ul class="changes">
+    <li><span class="badge b-back">backend</span><div class="text"><b>Entities</b><small>User.isCompany / companyName / companyIndustry / activeContextTeamId. Vaga.segment / allowHunters / hunterContactPhone. Novas: SavedVaga, SavedFilter, HunterInterest.</small></div></li>
+    <li><span class="badge b-back">backend</span><div class="text"><b>TeamContextHelper</b><small>Resolve quotaOwner via <code>activeContextTeamId</code>. Pessoal e Time consomem cotas separadas.</small></div></li>
+    <li><span class="badge b-back">backend</span><div class="text"><b>GET /me/team/accessible</b><small>Retorna time próprio + memberships ativos para alimentar o switcher.</small></div></li>
+  </ul>
+</div>
+
+<!-- 4. AJUSTES FINAIS -->
+<div class="card" id="ajustes">
+  <h2>4. Ajustes finais (na ordem em que fizemos)</h2>
+  <ol>
+    <li><b>Hunter no Radar</b> — substituiu "Go Hunter!" por "Quero ser Hunter", adicionou swipe mobile e filtra somente vagas com <code>allowHunters</code>.</li>
+    <li><b>Dica visual</b> — tip box laranja no Radar Hunter explicando como funciona o "Quero ser Hunter" (igual estilo das Vagas Salvas).</li>
+    <li><b>Aceitar hunter dava erro</b> — corrigido em dois pontos:
+      <ul>
+        <li>DTO backend: <code>@IsEnum([...])</code> → <code>@IsIn(ALLOWED_STATUSES)</code>.</li>
+        <li>Frontend: URL com <code>undefined</code> resolvida com fallback <code>interest.hunterUserId ?? interest.hunter?.id</code>.</li>
+      </ul>
+    </li>
+    <li><b>Convite de time no tab Vagas</b> — RecrutadorWorkspace mostra "Meu Time" como sub-tab para qualquer plano Team/Enterprise (não só Empresa), permitindo convidar fora da criação de vaga.</li>
+    <li><b>Separação Pessoal × Time</b> — refactor no backend (TeamContextHelper, vagas.service, plans.service):
+      <ul>
+        <li>Vaga criada em modo Pessoal conta na cota pessoal e não aparece para empresas que convidaram.</li>
+        <li>Vaga criada em modo Time conta na cota do time e é visível para todos do time.</li>
+        <li>Se Pessoal sem plano, mensagem clara: "Contrate um plano para publicar vagas pessoais".</li>
+      </ul>
+    </li>
+    <li><b>Switcher multi-team</b> — antes limitado a um time, agora lista N empresas: novo endpoint <code>/me/team/accessible</code> + <code>AccessibleTeam[]</code> no <code>api.ts</code>; UI itera array no <code>ContextSwitcher.vue</code> e no <code>VagaEditor.vue</code>.</li>
+    <li><b>Hunter sem plano pago mas com convites</b> — usuário FREE membro de pelo menos um time agora habilita o painel de Hunter: <code>canBeHunter</code> em <code>DashboardLayout</code> e <code>loadHunterStatus</code> em <code>ProfissionalWorkspace</code> consideram <code>team.listAccessible().length &gt; 0</code>.</li>
+  </ol>
+</div>
+
+<!-- 5. ROTEIROS -->
+<div class="card" id="roteiros">
+  <h2>5. Roteiros de teste</h2>
+  <p>Marque cada item conforme testar. O HTML é imprimível.</p>
+
+  <div class="routine">
+    <h4>Roteiro 1 — Profissional do zero</h4>
+    <div class="who">Persona: candidato buscando vaga • ~5 min</div>
+    <ul class="checklist">
+      <li><input type="checkbox"><span>Signup como Profissional (sem toggle empresa).</span></li>
+      <li><input type="checkbox"><span>Acessar <code>/dashboard/profissional?tab=radar</code> e ver lista de vagas.</span></li>
+      <li><input type="checkbox"><span>Buscar por cargo, filtrar por cidade, ordenar por mais recentes.</span></li>
+      <li><input type="checkbox"><span>Clicar no coração de 3 vagas → ir em Vagas Salvas e ver as 3 listadas.</span></li>
+      <li><input type="checkbox"><span>Candidatar-se a uma delas → ela move para coluna "Candidatadas".</span></li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Roteiro 2 — Empresa publica e gerencia</h4>
+    <div class="who">Persona: empresa contratante • ~8 min</div>
+    <ul class="checklist">
+      <li><input type="checkbox"><span>Signup com toggle "Sou empresa" + <code>companyName</code> + indústria.</span></li>
+      <li><input type="checkbox"><span>Confirmar que <code>/perfil/&lt;slug&gt;</code> retorna 404 (empresa não tem perfil público).</span></li>
+      <li><input type="checkbox"><span>Publicar vaga marcando <b>"Permitir Hunters externos"</b> + telefone de contato.</span></li>
+      <li><input type="checkbox"><span>Abrir pipeline → editar Nota Geral de um candidato.</span></li>
+      <li><input type="checkbox"><span>Adicionar observação por etapa e gerar link de compartilhar processo.</span></li>
+      <li><input type="checkbox"><span>Baixar o PDF do processo e abrir o link em janela anônima (deve ser readonly).</span></li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Roteiro 3 — Hunter com plano pago</h4>
+    <div class="who">Persona: recrutador autônomo • ~5 min</div>
+    <ul class="checklist">
+      <li><input type="checkbox"><span>Usuário Profissional contrata plano Recruiter.</span></li>
+      <li><input type="checkbox"><span>Selector "Acessando como" mostra Hunter; trocar.</span></li>
+      <li><input type="checkbox"><span>No Radar Hunter, ver só vagas com "Permitir Hunters".</span></li>
+      <li><input type="checkbox"><span>Clicar "Quero ser Hunter" em vaga da Empresa do Roteiro 2.</span></li>
+      <li><input type="checkbox"><span>Logar como Empresa → tab Hunters da vaga → aceitar e confirmar que o telefone aparece.</span></li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Roteiro 4 — Hunter FREE com convites (caso novo)</h4>
+    <div class="who">Persona: recrutador sem plano, convidado por 2 empresas • ~6 min</div>
+    <ul class="checklist">
+      <li><input type="checkbox"><span>Empresa A convida o usuário. Empresa B também.</span></li>
+      <li><input type="checkbox"><span>Usuário aceita ambos os convites.</span></li>
+      <li><input type="checkbox"><span>Mesmo com plano FREE, painel Hunter deve estar habilitado.</span></li>
+      <li><input type="checkbox"><span>Switcher "Publicando como" lista: Pessoal | Empresa A | Empresa B.</span></li>
+      <li><input type="checkbox"><span>Publicar vaga em Empresa A → vaga não aparece para Empresa B.</span></li>
+      <li><input type="checkbox"><span>Trocar para Pessoal → tentar publicar deve pedir plano.</span></li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Roteiro 5 — Mobile swipe</h4>
+    <div class="who">Persona: candidato no celular • ~3 min</div>
+    <ul class="checklist">
+      <li><input type="checkbox"><span>Abrir Vagas Salvas no mobile → tutorial overlay aparece na 1ª visita.</span></li>
+      <li><input type="checkbox"><span>Arrastar card para direita → candidatura registrada.</span></li>
+      <li><input type="checkbox"><span>Arrastar outro para esquerda → removido das salvas.</span></li>
+      <li><input type="checkbox"><span>Recarregar: tutorial não aparece de novo (flag em localStorage).</span></li>
+      <li><input type="checkbox"><span>Como Hunter, Radar mobile: swipe direita registra "Quero ser Hunter".</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 6. BUGS -->
+<div class="card" id="bugs">
+  <h2>6. Bugs corrigidos no caminho</h2>
+  <ul class="changes">
+    <li><span class="badge b-fix">fix</span><div class="text"><b>Erro ao aceitar hunter</b><small>DTO usava <code>@IsEnum</code> com array, que class-validator rejeita. Trocado por <code>@IsIn</code>.</small></div></li>
+    <li><span class="badge b-fix">fix</span><div class="text"><b>URL com /undefined</b><small><code>/vagas/:id/hunter-interests/undefined</code> ao aceitar — backend retornava <code>hunter.id</code> aninhado; frontend agora faz fallback.</small></div></li>
+    <li><span class="badge b-fix">fix</span><div class="text"><b>Vaga pessoal visível para empresa convidante</b><small><code>getTeamContext</code> ignorava <code>activeContextTeamId</code>. Refatorado para honrar o contexto ativo.</small></div></li>
+    <li><span class="badge b-fix">fix</span><div class="text"><b>Switcher limitado a 1 time</b><small>Antes só mostrava um vínculo; agora endpoint <code>/me/team/accessible</code> e UI iteram array completo.</small></div></li>
+    <li><span class="badge b-fix">fix</span><div class="text"><b>Hunter panel não habilitava sem plano pago</b><small>Member de time em FREE agora habilita Hunter via <code>canBeHunter</code>.</small></div></li>
+  </ul>
+</div>
+
+<!-- 7. MOCK / PENDENTE -->
+<div class="card" id="mock">
+  <h2>7. O que ainda está mockado / pendente</h2>
+  <div class="warn"><b>Atenção:</b> não testar fluxos abaixo como produção.</div>
+  <ul>
+    <li><b>Checkout de assinaturas</b> — endpoint <code>/subscriptions/:id/confirm</code> é mock; precisa integrar Stripe/Pagar.me/MP.</li>
+    <li><b>OAuth LinkedIn</b> — comentado, apenas Google ativo.</li>
+    <li><b>Notificações in-app</b> — hunter aceito / mudança de etapa do candidato não notificam ainda.</li>
+    <li><b>Email transacional</b> — verificar SMTP configurado em produção.</li>
+    <li><b>Validação de CNPJ</b> no signup empresa — não implementada.</li>
+    <li><b>OG image default</b> 1200×630 referenciada em SEO ainda não está em <code>/public</code>.</li>
+    <li><b>Testes E2E</b> — cobertura nova é mínima; Playwright recomendado para signup/empresa/salvar/candidatar.</li>
+    <li><b>Geração de PDF do processo</b> — escolha entre puppeteer/pdfkit ainda em validação.</li>
+  </ul>
+</div>
+
+<!-- 8. GLOSSÁRIO -->
+<div class="card" id="glossario">
+  <h2>8. Glossário</h2>
+  <dl class="glossary">
+    <dt>Profissional</dt><dd>Usuário buscando vaga; tem perfil público.</dd>
+    <dt>Hunter</dt><dd>Recrutador autônomo; pode publicar vagas pessoais ou em nome de empresas (membership).</dd>
+    <dt>Empresa</dt><dd>Conta dedicada (<code>isCompany=true</code>); publica vagas em nome da marca, sem perfil público.</dd>
+    <dt>Radar de Vagas</dt><dd>Listagem pública/logada com busca, filtros e salvar.</dd>
+    <dt>Quero ser Hunter</dt><dd>Manifestação de interesse de um recrutador externo em recrutar para a vaga.</dd>
+    <dt>Pipeline</dt><dd>Kanban de candidatos por etapa do processo seletivo.</dd>
+    <dt>Contexto ativo</dt><dd>Pessoal ou Time A/B/... define dono e cota das vagas criadas.</dd>
+  </dl>
+</div>
+
+<!-- 9. FEEDBACK -->
+<div class="card feedback" id="feedback">
+  <h3>Encontrou algo? Envie feedback</h3>
+  <p>Use o roteiro como base e descreva passo, esperado vs observado.</p>
+  <a class="btn" href="mailto:vitrineprov8@gmail.com?subject=Feedback%20Release%20v0.2%20Dashboard%203-modos">Enviar e-mail de feedback</a>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VitrinePro — Notas da Versao 0.1</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      background: #f9fafb;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Print button bar ── */
+    .print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #2563eb;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .print-bar-logo {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+    .print-bar-logo span { color: #93c5fd; }
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 18px;
+      background: #ffffff;
+      color: #2563eb;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 150ms;
+    }
+    .print-btn:hover { background: #eff6ff; }
+
+    /* ── Section card ── */
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 32px;
+      margin-top: 28px;
+    }
+    .section + .section { margin-top: 20px; }
+
+    /* ── Cover section ── */
+    .cover {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 48px 40px 40px;
+      margin-top: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .cover-logo {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+    .cover-logo span { color: #93c5fd; }
+    .cover h1 {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .cover-version {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 28px;
+    }
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .cover-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .cover-login-box {
+      margin-top: 28px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 18px 22px;
+    }
+    .cover-login-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+    .cover-login-box p {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.7;
+    }
+    .cover-login-box code {
+      background: rgba(0,0,0,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: monospace;
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .section-title { font-size: 18px; font-weight: 700; color: #111827; }
+
+    /* ── Bullet list ── */
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .bullet-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.55;
+    }
+    .bullet-list li::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    /* ── 3-mode map ── */
+    .mode-map {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .mode-card {
+      border-radius: 10px;
+      border: 2px solid #e5e7eb;
+      overflow: hidden;
+    }
+    .mode-card-header {
+      padding: 14px 16px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+    }
+    .mode-profissional .mode-card-header { background: #2563eb; }
+    .mode-hunter .mode-card-header { background: #7c3aed; }
+    .mode-empresa .mode-card-header { background: #0f766e; }
+    .mode-card-body { padding: 16px; background: #ffffff; }
+    .mode-card-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      color: #374151;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .mode-card-item:last-child { border-bottom: none; }
+    .mode-card-item-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .mode-profissional .mode-card-item-dot { background: #2563eb; }
+    .mode-hunter .mode-card-item-dot { background: #7c3aed; }
+    .mode-empresa .mode-card-item-dot { background: #0f766e; }
+    .mode-card-gate {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+      margin-left: auto;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .mode-card-gate.plan-team { background: #dbeafe; color: #1e40af; }
+
+    /* ── Roteiros ── */
+    .roteiro { margin-bottom: 28px; }
+    .roteiro:last-child { margin-bottom: 0; }
+    .roteiro-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .roteiro-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      background: #eff6ff;
+      border: 2px solid #2563eb;
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .roteiro-title { font-size: 15px; font-weight: 700; color: #111827; }
+    .roteiro-mode {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .mode-badge-profissional { background: #dbeafe; color: #1e40af; }
+    .mode-badge-empresa { background: #ccfbf1; color: #0f766e; }
+    .mode-badge-hunter { background: #ede9fe; color: #5b21b6; }
+    .mode-badge-mobile { background: #fce7f3; color: #9d174d; }
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; padding-left: 8px; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .checklist input[type="checkbox"] {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .checklist .step-note {
+      font-size: 12px;
+      color: #6b7280;
+      font-style: italic;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* ── Warning / Bug box ── */
+    .warn-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .warn-box-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+    .warn-box p { font-size: 14px; color: #78350f; line-height: 1.55; }
+
+    /* ── Mock box ── */
+    .mock-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .mock-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .mock-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Feedback form ── */
+    .feedback-box {
+      background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+    }
+    .feedback-box h3 { font-size: 16px; font-weight: 700; color: #1e40af; margin-bottom: 8px; }
+    .feedback-box p { font-size: 14px; color: #374151; margin-bottom: 16px; line-height: 1.6; }
+    .feedback-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: #2563eb;
+      color: #ffffff;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 150ms;
+    }
+    .feedback-btn:hover { background: #1d4ed8; }
+
+    /* ── Glossario ── */
+    .glossary { display: flex; flex-direction: column; gap: 0; }
+    .glossary-item {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .glossary-item:last-child { border-bottom: none; }
+    .glossary-term { font-weight: 700; color: #1e40af; }
+    .glossary-def { color: #374151; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 20px 0;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .mode-map { grid-template-columns: 1fr; }
+      .section { padding: 22px 18px; }
+      .cover { padding: 32px 22px 28px; }
+      .cover h1 { font-size: 18px; }
+      .glossary-item { grid-template-columns: 1fr; gap: 4px; }
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #ffffff; font-size: 13px; }
+      .print-bar { display: none; }
+      .section { border: 1px solid #d1d5db; box-shadow: none; break-inside: avoid; margin-top: 18px; }
+      .cover { background: #1e3a8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .roteiro { break-inside: avoid; }
+      .mode-map { grid-template-columns: repeat(3, 1fr); }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sticky print bar ── -->
+<div class="print-bar">
+  <div class="print-bar-logo">Vitrine<span>Pro</span></div>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Imprimir / Salvar PDF
+  </button>
+</div>
+
+<div class="container">
+
+  <!-- ══ 1. CAPA ══ -->
+  <div class="cover">
+    <div class="cover-logo">Vitrine<span>Pro</span></div>
+    <h1>Notas da Versao 0.1<br>Refactor Profissional / Hunter / Empresa</h1>
+    <div class="cover-version">Versao 0.1 — Data de release: 24 de maio de 2026</div>
+    <div class="cover-meta">
+      <span class="cover-chip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Para: equipe de teste
+      </span>
+      <span class="cover-chip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Testado em: 24/05/2026
+      </span>
+    </div>
+    <div class="cover-login-box">
+      <h3>Como comecar os testes</h3>
+      <p>
+        Acesse <code>https://v8pro.com.br/signup</code> e crie uma conta nova de teste.<br>
+        Para testar o modo Empresa, marque a opcao <strong>"Sou empresa"</strong> no cadastro e preencha o nome da empresa.<br>
+        Para testar Hunter, crie uma conta normal, va em <strong>Ver Planos</strong> e selecione o plano <strong>Recruiter</strong> (simulado — pagamento mockado).<br>
+        Sugestao de email de teste: <code>teste.profissional@exemplo.com</code> / <code>teste.empresa@exemplo.com</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ 2. RESUMO EXECUTIVO ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <div class="section-title">Resumo Executivo — O que mudou</div>
+    </div>
+    <ul class="bullet-list">
+      <li>O dashboard agora tem <strong>3 modos distintos</strong>: Profissional (busca vagas), Hunter (recruta autonomamente) e Empresa (publica vagas em nome de uma marca). Cada modo tem seu proprio menu lateral e funcionalidades dedicadas.</li>
+      <li>Criamos a <strong>conta Empresa</strong>: ao se cadastrar marcando "Sou empresa", o usuario ve apenas o menu de empresa (sem perfil publico, sem candidaturas pessoais), com logo propria e nome da empresa no topo do dashboard.</li>
+      <li>O <strong>Radar de Vagas</strong> e uma nova tela com busca e filtros salvaveis: o Profissional pode salvar vagas com um clique no coracao, candidatar-se diretamente, e criar "Preferencias" de busca para aplicar automaticamente — com suporte a arrastar cartoes no celular (swipe estilo Tinder).</li>
+      <li>O <strong>Pipeline do candidato</strong> foi enriquecido: o recrutador agora pode adicionar uma Nota Geral (de 0 a 10), ver o historico completo de etapas com data, autor e observacoes por etapa, e <strong>compartilhar o processo</strong> via link publico (somente leitura), PDF ou WhatsApp.</li>
+      <li>Hunters com plano adequado podem ativar o <strong>ContextSwitcher</strong> para alternar entre publicar vagas em nome proprio e em nome de empresas das quais fazem parte do time, sem precisar trocar de conta.</li>
+      <li>Empresas com plano TEAM ou Enterprise passam a ver as abas <strong>Meu Time</strong> e <strong>Clientes</strong> exclusivamente — hunters com o mesmo plano nao veem essas abas, evitando confusao.</li>
+      <li>A pagina publica <strong>/processo/:token</strong> permite abrir um processo de candidatura anonimamente (sem login), mostrando apenas as informacoes que o recrutador escolheu compartilhar.</li>
+    </ul>
+  </div>
+
+  <!-- ══ 3. MAPA DOS 3 MODOS ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <div class="section-title">Mapa dos 3 Modos do Dashboard</div>
+    </div>
+    <div class="mode-map">
+
+      <!-- Profissional -->
+      <div class="mode-card mode-profissional">
+        <div class="mode-card-header">Profissional</div>
+        <div class="mode-card-body">
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Meus dados</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Radar de Vagas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Preferencias</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Vagas Salvas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Minhas Candidaturas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hunter -->
+      <div class="mode-card mode-hunter">
+        <div class="mode-card-header">Hunter (Recruiter+)</div>
+        <div class="mode-card-body">
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Meus dados</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Minhas Vagas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Radar de Vagas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>ContextSwitcher</span>
+            <span class="mode-card-gate">com time</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Ver Planos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empresa -->
+      <div class="mode-card mode-empresa">
+        <div class="mode-card-header">Empresa (isCompany)</div>
+        <div class="mode-card-body">
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Meu Time</span>
+            <span class="mode-card-gate plan-team">TEAM+</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Clientes</span>
+            <span class="mode-card-gate plan-team">TEAM+</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Minhas Vagas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Radar de Vagas</span>
+          </div>
+          <div class="mode-card-item">
+            <div class="mode-card-item-dot"></div>
+            <span>Ver Planos</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p style="font-size:12px;color:#6b7280;margin-top:14px;">
+      * Selector "Acessando como" aparece apenas para usuarios nao-empresa (Profissional / Hunter). Empresa nunca ve esse selector.
+      TEAM+ significa plano TEAM ou ENTERPRISE.
+    </p>
+  </div>
+
+  <!-- ══ 4. ROTEIROS DE TESTE ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <div class="section-title">Roteiros de Teste Passo a Passo</div>
+    </div>
+    <p style="font-size:14px;color:#6b7280;margin-bottom:24px;">
+      Marque cada checkbox conforme for executando. Imprima esta pagina para usar offline.
+    </p>
+
+    <!-- ROTEIRO 1 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">1</div>
+        <div class="roteiro-title">Cadastrar como Profissional, buscar e candidatar</div>
+        <span class="roteiro-mode mode-badge-profissional">Profissional</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Acessar <strong>/signup</strong> e criar conta SEM marcar "Sou empresa". Preencher nome, email e senha.</span></li>
+        <li><input type="checkbox" /><span>Confirmar que o dashboard abre no modo Profissional: menu lateral mostra "Acessando como: Profissional".</span></li>
+        <li><input type="checkbox" /><span>Navegar para <strong>Radar de Vagas</strong>. Confirmar que a lista de vagas carrega.</span></li>
+        <li><input type="checkbox" /><span>Usar a barra de busca: digitar um cargo (ex: "Analista") e verificar que os cards filtram.</span></li>
+        <li><input type="checkbox" /><span>Clicar no coracao de 3 vagas diferentes para salvar. Verificar que o coracao fica preenchido.</span></li>
+        <li><input type="checkbox" /><span>Navegar para <strong>Vagas Salvas</strong>. Confirmar que as 3 vagas salvas aparecem na coluna esquerda.</span></li>
+        <li><input type="checkbox" /><span>Clicar em "Candidatar" em uma das vagas salvas. Confirmar que ela move para a coluna "Vagas Candidatadas".</span></li>
+        <li><input type="checkbox" /><span>Verificar que a vaga candidatada aparece tambem em <strong>Minhas Candidaturas</strong>.</span></li>
+      </ol>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROTEIRO 2 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">2</div>
+        <div class="roteiro-title">Empresa publica vaga, pipeline e compartilhamento</div>
+        <span class="roteiro-mode mode-badge-empresa">Empresa</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Criar nova conta em <strong>/signup</strong> marcando <strong>"Sou empresa"</strong>. Preencher nome da empresa e setor.</span></li>
+        <li><input type="checkbox" /><span>Confirmar que o dashboard mostra o logo/iniciais da empresa no topo, SEM selector "Acessando como".</span></li>
+        <li><input type="checkbox" /><span>Clicar em <strong>"Nova vaga"</strong> e preencher titulo, descricao, localizacao e salario.</span></li>
+        <li><input type="checkbox" /><span>Ativar o toggle <strong>"Permitir Hunters externos"</strong> e preencher o telefone de contato.</span></li>
+        <li><input type="checkbox" /><span>Salvar e publicar a vaga. Confirmar que aparece com status "Publicada" na lista.</span></li>
+        <li><input type="checkbox" /><span>Abrir a vaga publica (botao "Ver vaga") em aba anonima. Confirmar que aparece corretamente.</span></li>
+        <li><input type="checkbox" /><span>Voltar ao dashboard. Clicar em <strong>"Ver pipeline"</strong> da vaga. Verificar aba "Candidatos" e aba "Hunters".</span></li>
+        <li><input type="checkbox" /><span>Com um candidato no pipeline (use o Roteiro 1 para candidatar), clicar no card do candidato para abrir o drawer.</span></li>
+        <li><input type="checkbox" /><span>No drawer: editar a <strong>Nota Geral</strong> (campo numerico de 0 a 10) e salvar.</span></li>
+        <li><input type="checkbox" /><span>Mover o candidato para a proxima etapa do pipeline. Verificar que o <strong>historico de etapas</strong> registra a mudanca com data e autor.</span></li>
+        <li><input type="checkbox" /><span>Clicar em <strong>"Compartilhar processo"</strong>. Copiar o link gerado.</span></li>
+        <li><input type="checkbox" /><span>Abrir o link copiado em aba anonima (sem login). Verificar que a pagina carrega em modo somente leitura.</span></li>
+        <li><input type="checkbox" /><span>No modal de compartilhamento, clicar em <strong>"Baixar PDF"</strong>. Verificar download.</span></li>
+      </ol>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROTEIRO 3 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">3</div>
+        <div class="roteiro-title">Profissional vira Hunter e declara interesse em vaga</div>
+        <span class="roteiro-mode mode-badge-hunter">Hunter</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Usar a conta do Roteiro 1 (Profissional). Ir para <strong>Ver Planos</strong> no menu lateral.</span></li>
+        <li><input type="checkbox" /><span>Selecionar o plano <strong>Recruiter</strong> e confirmar a assinatura (pagamento mockado — clique em confirmar).</span></li>
+        <li><input type="checkbox" /><span>Voltar ao dashboard. Confirmar que o selector "Acessando como" agora tem o botao <strong>Hunter</strong> habilitado.</span></li>
+        <li><input type="checkbox" /><span>Clicar em <strong>"Hunter"</strong> no selector. Verificar que o menu lateral muda para o modo Hunter.</span></li>
+        <li><input type="checkbox" /><span>Navegar para <strong>Radar de Vagas</strong> (modo Hunter). Localizar a vaga publicada pela Empresa do Roteiro 2.</span></li>
+        <li><input type="checkbox" /><span>Confirmar que o card da vaga exibe o botao <strong>"Quero ser Hunter"</strong>.</span></li>
+        <li><input type="checkbox" /><span>Clicar em "Quero ser Hunter". Confirmar toast de sucesso e que o interesse foi registrado.</span></li>
+        <li><input type="checkbox" /><span>Voltar a conta da Empresa (Roteiro 2). No pipeline da vaga, verificar aba <strong>"Hunters"</strong> e confirmar que o interesse do Hunter aparece com o telefone de contato.</span></li>
+      </ol>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROTEIRO 4 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">4</div>
+        <div class="roteiro-title">Mobile — swipe de vagas salvas</div>
+        <span class="roteiro-mode mode-badge-mobile">Mobile</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Abrir o dashboard em um celular (ou modo responsive do DevTools, largura 375px).</span></li>
+        <li><input type="checkbox" /><span>Ir para <strong>Radar de Vagas</strong> no menu inferior. Confirmar que os cards de vaga aparecem em formato mobile.</span></li>
+        <li><input type="checkbox" /><span>Na primeira visita ao Radar (ou apos limpar localStorage), verificar que aparece o <strong>tutorial de swipe</strong> com seta animada.</span></li>
+        <li><input type="checkbox" /><span>Arrastar um card para a <strong>direita</strong>. Confirmar animacao verde e acao de <strong>Candidatar</strong>.</span></li>
+        <li><input type="checkbox" /><span>Ir para <strong>Vagas Salvas</strong>. Salvar algumas vagas antes se necessario.</span></li>
+        <li><input type="checkbox" /><span>Arrastar um card salvo para a <strong>esquerda</strong>. Confirmar animacao vermelha e remocao dos salvos.</span></li>
+        <li><input type="checkbox" /><span>Confirmar que apos o tutorial ser visto uma vez, ele nao aparece novamente em proximas visitas (verificar <code>localStorage.radar_swipe_tutorial_seen</code>).</span></li>
+      </ol>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROTEIRO 5 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">5</div>
+        <div class="roteiro-title">Hunter multi-empresa via ContextSwitcher</div>
+        <span class="roteiro-mode mode-badge-hunter">Hunter</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Usar a conta Hunter do Roteiro 3. Acessar o <strong>ContextSwitcher</strong> no topo do menu lateral (visivel apenas em modo Hunter com convite de time aceito).</span></li>
+        <li><input type="checkbox" /><span>Confirmar as opcoes: <strong>Pessoal</strong> | <strong>Empresa A</strong> | <strong>Empresa B</strong> (conforme os times que faz parte).</span></li>
+        <li><input type="checkbox" /><span>Selecionar <strong>Empresa A</strong>. Verificar que o badge "Publicando como: Empresa A" aparece no menu.</span></li>
+        <li><input type="checkbox" /><span>Criar uma nova vaga. Confirmar que a vaga e publicada em nome da Empresa A.</span></li>
+        <li><input type="checkbox" /><span>Trocar o contexto para <strong>Empresa B</strong> e publicar outra vaga. Verificar que as duas vagas aparecem com owners diferentes.</span></li>
+        <li><input type="checkbox" /><span>Voltar para o contexto <strong>Pessoal</strong> e publicar uma vaga em nome proprio. Verificar a diferenciacao.</span></li>
+      </ol>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px;">* Requer ser membro convidado de ao menos 2 empresas. Coordenar com o teste da Empresa do Roteiro 2 para aceitar o convite de time.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ROTEIRO 6 -->
+    <div class="roteiro">
+      <div class="roteiro-header">
+        <div class="roteiro-badge">6</div>
+        <div class="roteiro-title">Compartilhar processo — link anonimo + PDF</div>
+        <span class="roteiro-mode mode-badge-empresa">Empresa</span>
+      </div>
+      <ol class="checklist">
+        <li><input type="checkbox" /><span>Na conta Empresa (Roteiro 2), abrir o drawer de um candidato no pipeline.</span></li>
+        <li><input type="checkbox" /><span>Clicar em <strong>"Compartilhar processo"</strong> no rodape do drawer. O modal de compartilhamento abre.</span></li>
+        <li><input type="checkbox" /><span>Copiar o link de compartilhamento. Confirmar que o link segue o formato <code>/processo/[token]</code>.</span></li>
+        <li><input type="checkbox" /><span>Abrir o link em uma <strong>aba anonima / modo privado</strong> (sem estar logado). Verificar que a pagina carrega e exibe os dados do candidato em modo somente leitura.</span></li>
+        <li><input type="checkbox" /><span>Confirmar que na pagina publica do processo nao ha botoes de edicao, aceitar/rejeitar ou navegar para outras partes do sistema.</span></li>
+        <li><input type="checkbox" /><span>De volta ao modal de compartilhamento, clicar em <strong>"Baixar PDF"</strong>. Confirmar que o download inicia.</span></li>
+        <li><input type="checkbox" /><span>Clicar em <strong>"Compartilhar via WhatsApp"</strong>. Confirmar que abre o WhatsApp com a mensagem pre-preenchida e o link.</span></li>
+      </ol>
+      <p style="font-size:12px;color:#9ca3af;margin-top:8px;font-style:italic;">
+        Atencao: o botao "Baixar PDF" na pagina publica (/processo/:token) ainda requer autenticacao no backend — ver Bugs Conhecidos.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ══ 5. BUGS CONHECIDOS ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <div class="section-title">Bugs Conhecidos e Limitacoes</div>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-box-title">ShareProcessModal — links ativos nao listados</div>
+      <p>O modal de compartilhamento nao lista links gerados anteriormente para o mesmo processo. Se o recrutador gerar um segundo link, o primeiro permanece valido mas nao aparece na lista. Solucao futura: listar e revogar links ativos.</p>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-box-title">CandidateDrawer — alguns dados ainda vem de mocks</div>
+      <p>Algumas views do CandidateDrawer (especialmente curriculos e redes sociais) ainda usam dados mockados enquanto os endpoints correspondentes nao estao implementados no backend. Os dados reais (nome, email, etapa) ja vem da API.</p>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-box-title">PDF do processo requer autenticacao</div>
+      <p>O endpoint <code>GET /applications/:id/pdf</code> exige JWT. A pagina publica <code>/processo/:token</code> nao tem acesso autenticado, entao o botao "Baixar PDF" nessa pagina nao funciona. O download so funciona a partir do modal dentro do dashboard autenticado.</p>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-box-title">Mobile: bottom nav pode sobrepor conteudo em alguns dispositivos</div>
+      <p>Em dispositivos com "home indicator" (iPhone X+) o bottom nav pode sobrepor levemente o ultimo card. Ajuste de safe-area-inset pendente para producao.</p>
+    </div>
+  </div>
+
+  <!-- ══ 6. O QUE ESTA MOCKADO ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <div class="section-title">O que ainda esta Mockado ou Incompleto</div>
+    </div>
+    <ul class="mock-list">
+      <li>
+        <span class="mock-badge">MOCK</span>
+        <span><strong>Pagamento:</strong> O endpoint <code>/subscriptions/:id/confirm</code> e mockado. Clique em confirmar aceita qualquer plano sem cobrar. Integracao real com gateway (Stripe / Pagar.me / Mercado Pago) e etapa futura.</span>
+      </li>
+      <li>
+        <span class="mock-badge">MOCK</span>
+        <span><strong>OAuth LinkedIn:</strong> O botao de login com LinkedIn esta comentado no frontend (<code>SignupForm</code> / <code>OAuthButtons</code>). Apenas Google OAuth esta ativo.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>Notificacoes in-app:</strong> Hunter nao recebe notificacao quando empresa aceita interesse "Quero ser Hunter". Candidato nao recebe notificacao de mudanca de etapa. Nao existe sistema de notificacoes in-app.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>Email transacional:</strong> Confirmacao de cadastro, recuperacao de senha e notificacao de candidatura precisam de SMTP configurado. Status atual a confirmar com o time de backend.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>OG image padrao:</strong> O arquivo <code>public/og-default.png</code> (1200x630px) ainda precisa ser criado como imagem real de marketing. A referencia de SEO existe mas a imagem pode ser um placeholder.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>Validacao de CNPJ:</strong> O cadastro de Empresa aceita qualquer valor no campo de empresa sem validar CNPJ. Recomendado para producao no Brasil.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>Analytics / tracking:</strong> Nenhum evento e rastreado (buscas no radar, candidaturas, interesse hunter). Recomendado adicionar antes do lancamento.</span>
+      </li>
+      <li>
+        <span class="mock-badge">PENDENTE</span>
+        <span><strong>Testes E2E:</strong> Cobertura de testes automatizados (Playwright) e inexistente para as novas funcionalidades. Smoke tests para signup, candidatura e compartilhamento de processo sao prioritarios.</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══ 7. FORMULARIO DE FEEDBACK ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <div class="section-title">Formulario de Feedback</div>
+    </div>
+    <div class="feedback-box">
+      <h3>Encontrou algum problema ou tem sugestoes?</h3>
+      <p>
+        Envie seu feedback diretamente para a equipe VitrinePro.<br>
+        Descreva o que testou, o que funcionou e o que nao funcionou.<br>
+        Toda observacao ajuda a melhorar o produto.
+      </p>
+      <a
+        class="feedback-btn"
+        href="mailto:vitrineprov8@gmail.com?subject=Feedback%20VitrinePro%20v0.1&body=Ol%C3%A1%20equipe%20VitrinePro%2C%0A%0ATestei%20a%20vers%C3%A3o%200.1%20e%20gostaria%20de%20compartilhar%20o%20seguinte%3A%0A%0AO%20que%20funcionou%20bem%3A%0A-%20%0A%0AO%20que%20n%C3%A3o%20funcionou%3A%0A-%20%0A%0ASugest%C3%B5es%3A%0A-%20%0A%0ARoteiro(s)%20testado(s)%3A%20%0A%0AAmbiente%3A%20Desktop%20%2F%20Mobile%20(riscar%20o%20que%20n%C3%A3o%20se%20aplica)%0ANavegador%3A%20"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        Enviar Feedback por Email
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ 8. GLOSSARIO ══ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <div class="section-title">Glossario</div>
+    </div>
+    <div class="glossary">
+      <div class="glossary-item">
+        <div class="glossary-term">Profissional</div>
+        <div class="glossary-def">Usuario pessoa fisica que usa o VitrinePro para buscar vagas, salvar oportunidades e gerenciar seu portfolio profissional. Modo padrao ao criar uma conta pessoal.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Hunter</div>
+        <div class="glossary-def">Recrutador autonomo. Um Profissional com plano Recruiter (ou superior) que pode publicar vagas em nome proprio ou de empresas das quais e membro, e tambem se candidatar as proprias vagas.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Empresa</div>
+        <div class="glossary-def">Conta corporativa criada ao marcar "Sou empresa" no cadastro. Nao tem perfil publico pessoal. O dashboard mostra o logo e o nome da empresa, e o foco e publicar vagas e gerenciar o pipeline de candidatos.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Radar de Vagas</div>
+        <div class="glossary-def">Tela de busca e descoberta de vagas, disponivel para Profissional e Hunter. Permite filtrar por cargo, cidade, segmento e ordenacao. Filtros podem ser salvos como "Preferencias".</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Pipeline</div>
+        <div class="glossary-def">Quadro kanban que organiza os candidatos de uma vaga por etapas do processo seletivo (ex: Para analisar → Analisado → Entrevista RH → Entrevista Final). Cada movimentacao e registrada no historico.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Etapa</div>
+        <div class="glossary-def">Fase do processo seletivo no Pipeline. Cada etapa pode ter observacoes e nota propria. A mudanca de etapa registra automaticamente data e autor no historico do candidato.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Contexto</div>
+        <div class="glossary-def">Identidade ativa de um Hunter ao publicar vagas. O ContextSwitcher permite alternar entre "Pessoal" (vaga em nome proprio) e empresas das quais o Hunter e membro do time.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Salvar vaga</div>
+        <div class="glossary-def">Acao de marcar uma vaga com o coracao para acessa-la depois em "Vagas Salvas", sem necessariamente candidatar-se imediatamente.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Quero ser Hunter</div>
+        <div class="glossary-def">Botao exibido em vagas que tem "Permitir Hunters" ativado. Permite que um Hunter registre interesse em recrutar para aquela vaga. A empresa ve os hunters interessados com seu telefone de contato.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    VitrinePro — v0.1 — Release notes geradas em 24/05/2026<br>
+    <a href="https://v8pro.com.br" style="color:#2563eb;">v8pro.com.br</a>
+    &nbsp;|&nbsp;
+    <a href="mailto:vitrineprov8@gmail.com" style="color:#2563eb;">vitrineprov8@gmail.com</a>
+  </div>
+
+</div>
+
+</body>
+</html>
