@@ -25,6 +25,27 @@ try {
   notFound = true;
 }
 
+if (notFound) {
+  try {
+    const tombRes = await fetch(`${BACKEND}/seo/tombstone?type=portfolio&slug=${encodeURIComponent(slug ?? '')}`);
+    if (tombRes.ok) {
+      const tomb = await tombRes.json();
+      if (tomb?.exists && tomb.reason === 'renamed' && tomb.redirectTo) {
+        return Astro.redirect(tomb.redirectTo, 301);
+      }
+      Astro.response.status = tomb?.exists ? 410 : 404;
+    } else {
+      Astro.response.status = 404;
+    }
+  } catch {
+    Astro.response.status = 404;
+  }
+  Astro.response.headers.set('Cache-Control', 'public, max-age=300');
+}
+
+const isDraft = !!item && item.status === 'DRAFT';
+const shouldNoindex = notFound || isDraft;
+
 const authorName = item?.user
   ? `${item.user.firstName ?? ''} ${item.user.lastName ?? ''}`.trim()
   : 'VitrinePro';
@@ -65,6 +86,7 @@ const itemSchema = item ? {
   canonical={canonicalUrl}
   ogImage={ogImage}
   ogType="website"
+  noindex={shouldNoindex}
 >
   <Fragment slot="head">
     {item && <meta name="author" content={authorName} />}

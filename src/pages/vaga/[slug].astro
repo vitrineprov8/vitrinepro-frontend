@@ -25,6 +25,28 @@ try {
   notFound = true;
 }
 
+if (notFound) {
+  try {
+    const tombRes = await fetch(`${BACKEND}/seo/tombstone?type=vaga&slug=${encodeURIComponent(slug ?? '')}`);
+    if (tombRes.ok) {
+      const tomb = await tombRes.json();
+      if (tomb?.exists && tomb.reason === 'renamed' && tomb.redirectTo) {
+        return Astro.redirect(tomb.redirectTo, 301);
+      }
+      Astro.response.status = tomb?.exists ? 410 : 404;
+    } else {
+      Astro.response.status = 404;
+    }
+  } catch {
+    Astro.response.status = 404;
+  }
+  Astro.response.headers.set('Cache-Control', 'public, max-age=300');
+}
+
+const isExpired = !!vaga?.deadline && new Date(vaga.deadline) < new Date();
+const isInactive = !!vaga && vaga.status && vaga.status !== 'PUBLISHED';
+const shouldNoindex = notFound || isExpired || isInactive;
+
 const title = vaga ? `${vaga.title} | Vagas VitrinePro` : 'Vaga não encontrada | VitrinePro';
 const description = vaga
   ? (vaga.description?.slice(0, 160) || 'Vaga aberta no VitrinePro')
@@ -90,6 +112,7 @@ const jobPostingSchema = vaga
   description={description}
   canonical={canonicalUrl}
   ogType="website"
+  noindex={shouldNoindex}
 >
   <Fragment slot="head">
     {jobPostingSchema && (
