@@ -1,6 +1,7 @@
 ---
 import ClarityScript from '../components/ClarityScript.astro';
-import GoogleAnalyticsScript from '../components/GoogleAnalyticsScript.astro';
+import GTMHead from '../components/GTMHead.astro';
+import GTMNoscript from '../components/GTMNoscript.astro';
 interface Props {
   title?: string;
 }
@@ -17,10 +18,11 @@ const { title = 'Dashboard | VitrinePro' } = Astro.props;
       @import '../styles/global.css';
       @import '../styles/dashboard.css';
     </style>
-    <GoogleAnalyticsScript />
+    <GTMHead />
     <ClarityScript />
   </head>
   <body class="dashboard-body">
+    <GTMNoscript />
     <slot />
   </body>
 </html>

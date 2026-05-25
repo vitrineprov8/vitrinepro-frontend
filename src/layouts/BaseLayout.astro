@@ -1,6 +1,7 @@
 ---
 import ClarityScript from '../components/ClarityScript.astro';
-import GoogleAnalyticsScript from '../components/GoogleAnalyticsScript.astro';
+import GTMHead from '../components/GTMHead.astro';
+import GTMNoscript from '../components/GTMNoscript.astro';
 
 const SITE = 'https://v8pro.com.br';
 
@@ -77,8 +78,8 @@ const organizationSchema = {
     <!-- Organization JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 
-    <!-- Google Analytics -->
-    <GoogleAnalyticsScript />
+    <!-- Google Tag Manager -->
+    <GTMHead />
 
     <!-- Microsoft Clarity -->
     <ClarityScript />
@@ -91,6 +92,7 @@ const organizationSchema = {
     </style>
   </head>
   <body>
+    <GTMNoscript />
     <slot />
   </body>
 </html>
