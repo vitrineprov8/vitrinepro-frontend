@@ -1,0 +1,1038 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const SITE = 'https://v8pro.com.br';
+const canonicalUrl = `${SITE}/para-empresas`;
+
+const webPageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'VitrinePro para Recrutadores e Headhunters — Encontre Talento por Portfólio Real',
+  description: 'A ferramenta que headhunter e recrutador freelance precisavam. Encontre talento vendo trabalho real, não só currículo. Banco de talentos com portfólio — por R$79,90/mês.',
+  url: canonicalUrl,
+  inLanguage: 'pt-BR',
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Quantas vagas posso publicar no plano Hunter?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No plano Hunter você pode publicar até 15 vagas ativas simultaneamente. Para equipes maiores, o plano Empresarial oferece 50 vagas e múltiplos usuários recrutadores.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'O que é o trial de 14 dias?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Você tem acesso completo ao plano Hunter durante 14 dias sem cobrança. Não pedimos cartão de crédito para começar o trial.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Como funciona o Selo Recrutador Verificado?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Após validar seus dados profissionais e/ou CNPJ, exibimos um selo de verificação no seu perfil de recrutador. Isso aumenta a confiança dos candidatos e melhora a taxa de candidatura às suas vagas.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Posso filtrar candidatos por cidade, especialidade ou tag?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Sim. Você pode buscar e filtrar candidatos por localidade, especialidade, tags de habilidade e até por quem tem portfólio publicado — o que torna a triagem muito mais rápida.',
+      },
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="VitrinePro para Recrutadores e Headhunters — Encontre Talento por Portfólio Real"
+  description="A ferramenta que headhunter e recrutador freelance precisavam. Encontre talento vendo trabalho real, não só currículo. Banco de talentos criativo/técnico — R$79,90/mês, 14 dias grátis."
+  canonical={canonicalUrl}
+  ogImage="https://v8pro.com.br/og-default.png"
+  ogType="website"
+>
+  <slot name="head">
+    <script type="application/ld+json" set:html={JSON.stringify(webPageSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </slot>
+
+  <Header />
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════
+         HERO
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-hero lp-hero--empresas">
+      <div class="lp-container">
+        <div class="lp-hero__inner">
+
+          <!-- Texto -->
+          <div class="lp-hero__text">
+            <div class="lp-hero__badge lp-hero__badge--empresas">
+              Para headhunters e recrutadores freelance
+            </div>
+            <h1 class="lp-hero__title">
+              Encontre talento vendo<br/>
+              <em class="em-empresas">trabalho real,</em><br/>
+              não só currículo.
+            </h1>
+            <p class="lp-hero__subtitle">
+              A ferramenta de busca que recrutador freelance precisava. Banco de talentos com portfólio publicado — filtre por especialidade, veja o trabalho real e apresente candidatos ao cliente com muito mais velocidade.
+            </p>
+            <div class="lp-hero__actions">
+              <a href="/auth/register?role=hunter" class="lp-btn lp-btn--primary lp-btn--lg"
+                 data-cta-location="hero" data-cta-label="Começar trial de 14 dias">
+                Começar trial de 14 dias
+              </a>
+              <a href="#pricing" class="lp-btn lp-btn--outline-dark"
+                 data-cta-location="hero" data-cta-label="Ver planos e preços">
+                Ver planos e preços
+              </a>
+            </div>
+            <p class="lp-hero__note">
+              <span class="check-green">&#10003;</span> 14 dias grátis &nbsp;|&nbsp; Sem cartão de crédito &nbsp;|&nbsp; Cancele quando quiser
+            </p>
+          </div>
+
+          <!-- Mockup do dashboard -->
+          <div class="lp-hero__visual">
+            <div class="lp-mockup">
+              <div class="lp-mockup__bar">
+                <span class="lp-mockup__dot lp-mockup__dot--red"></span>
+                <span class="lp-mockup__dot lp-mockup__dot--yellow"></span>
+                <span class="lp-mockup__dot lp-mockup__dot--green"></span>
+                <span class="lp-mockup__url">v8pro.com.br/dashboard/vagas</span>
+              </div>
+              <div class="lp-mockup__body">
+                <!-- Dashboard mock -->
+                <div class="mock-dash">
+                  <!-- Cabeçalho da vaga -->
+                  <div class="mock-dash-header">
+                    <div class="mock-dash-title">Designer UI/UX Sênior</div>
+                    <div class="mock-dash-meta">12 candidatos · Publicada há 3 dias</div>
+                  </div>
+                  <!-- Candidatos mock -->
+                  <div class="mock-candidates">
+                    <div class="mock-candidate">
+                      <div class="mock-cand-avatar" style="background: #7c3aed;">AS</div>
+                      <div class="mock-cand-info">
+                        <div class="mock-cand-name">Ana Silva</div>
+                        <div class="mock-cand-role">5 anos exp · Figma · Mobile</div>
+                      </div>
+                      <div class="mock-cand-portfolio">
+                        <div class="mock-portfolio-dot mock-portfolio-dot--1"></div>
+                        <div class="mock-portfolio-dot mock-portfolio-dot--2"></div>
+                        <div class="mock-portfolio-dot mock-portfolio-dot--3"></div>
+                        <span class="mock-port-label">Ver portfólio</span>
+                      </div>
+                    </div>
+                    <div class="mock-candidate">
+                      <div class="mock-cand-avatar" style="background: #2563eb;">RC</div>
+                      <div class="mock-cand-info">
+                        <div class="mock-cand-name">Rafael Costa</div>
+                        <div class="mock-cand-role">3 anos exp · Figma · Web</div>
+                      </div>
+                      <div class="mock-cand-portfolio">
+                        <div class="mock-portfolio-dot mock-portfolio-dot--4"></div>
+                        <div class="mock-portfolio-dot mock-portfolio-dot--5"></div>
+                        <span class="mock-port-label">Ver portfólio</span>
+                      </div>
+                    </div>
+                    <div class="mock-candidate mock-candidate--dim">
+                      <div class="mock-cand-avatar" style="background: #10b981;">ML</div>
+                      <div class="mock-cand-info">
+                        <div class="mock-cand-name">Marina Lima</div>
+                        <div class="mock-cand-role">7 anos exp · Branding · UX</div>
+                      </div>
+                      <div class="mock-cand-portfolio">
+                        <div class="mock-portfolio-dot mock-portfolio-dot--6"></div>
+                        <span class="mock-port-label">Ver portfólio</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Status bar -->
+                  <div class="mock-dash-footer">
+                    <span class="mock-status mock-status--green">Vaga ativa</span>
+                    <span class="mock-view-count">248 visualizações</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Floating badges -->
+            <div class="float-badge float-badge--top float-badge--empresas">
+              <span>+3 candidatos hoje</span>
+            </div>
+            <div class="float-badge float-badge--bottom float-badge--empresas2">
+              <span class="badge-icon">&#127919;</span>
+              <span>100% com portfólio</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         NÚMERO DE IMPACTO
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-impact">
+      <div class="lp-container">
+        <div class="lp-impact__num">100%</div>
+        <p class="lp-impact__text">dos candidatos no VitrinePro chegam com portfólio publicado — você vê o trabalho real antes da primeira entrevista.</p>
+        <div class="impact-sub-stats">
+          <div class="impact-stat">
+            <strong>3x</strong>
+            <span>mais rápido para triagem</span>
+          </div>
+          <div class="impact-stat">
+            <strong>R$79,90</strong>
+            <span>vs R$4.000+/mês do LinkedIn Recruiter</span>
+          </div>
+          <div class="impact-stat">
+            <strong>14 dias</strong>
+            <span>trial gratuito sem cartão</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         3 DORES DO RECRUTADOR
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Reconhece algum desses problemas?</h2>
+        <p class="lp-section-subtitle">São as dores específicas de quem vive de conectar talento com oportunidade — e que o VitrinePro resolve diretamente.</p>
+
+        <div class="lp-cards">
+          <div class="lp-card lp-card--dor-emp">
+            <div class="lp-dor-top">
+              <div class="dor-icon-emp">&#128181;</div>
+              <div class="dor-num">Dor #1</div>
+            </div>
+            <h3 class="lp-card__title">"LinkedIn Recruiter custa USD 9k/ano e meu cliente não paga"</h3>
+            <p class="lp-card__body">Como headhunter freelance ou boutique de recrutamento, você não consegue repassar R$50k+/ano ao cliente. O plano Hunter do VitrinePro custa R$79,90/mês — banco de talentos completo sem contrato anual.</p>
+            <div class="dor-res">Resultado: Economia de +98% vs LinkedIn Recruiter</div>
+          </div>
+
+          <div class="lp-card lp-card--dor-emp">
+            <div class="lp-dor-top">
+              <div class="dor-icon-emp">&#128196;</div>
+              <div class="dor-num">Dor #2</div>
+            </div>
+            <h3 class="lp-card__title">"Filtrar CV em PDF é trabalho braçal e cego"</h3>
+            <p class="lp-card__body">Você lê 50 currículos idênticos e ainda não sabe quem realmente entrega. No VitrinePro cada candidatura vem com portfólio ao vivo — você vê o trabalho real antes de agendar qualquer conversa.</p>
+            <div class="dor-res">Resultado: Triagem visual em minutos, shortlist no mesmo dia</div>
+          </div>
+
+          <div class="lp-card lp-card--dor-emp">
+            <div class="lp-dor-top">
+              <div class="dor-icon-emp">&#128200;</div>
+              <div class="dor-num">Dor #3</div>
+            </div>
+            <h3 class="lp-card__title">"Preciso provar valor mostrando portfólio, não só CV"</h3>
+            <p class="lp-card__body">Seu cliente quer ver o trabalho antes de contratar. Com o VitrinePro você apresenta candidatos com portfólio completo — aumenta sua taxa de fechamento e diferencia você de recrutadores que só mandam PDF.</p>
+            <div class="dor-res">Resultado: Candidatos apresentados com portfólio = mais vagas fechadas</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         COMO FUNCIONA
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section lp-section--alt">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Como funciona para recrutadores</h2>
+        <p class="lp-section-subtitle">Do cadastro ao primeiro candidato com portfólio em três passos simples.</p>
+
+        <div class="lp-steps">
+          <div class="lp-step">
+            <div class="lp-step__num lp-step__num--emp">1</div>
+            <div class="lp-step__content">
+              <h3>Publique sua vaga</h3>
+              <p>Descreva o cargo, requisitos, localidade e faixa salarial. Sua vaga fica visível para todos os profissionais cadastrados em minutos.</p>
+            </div>
+          </div>
+
+          <div class="lp-step">
+            <div class="lp-step__num lp-step__num--emp">2</div>
+            <div class="lp-step__content">
+              <h3>Receba candidaturas com portfólio</h3>
+              <p>Cada candidato que se aplica traz seu portfólio público automaticamente. Você vê o trabalho real antes de marcar qualquer entrevista.</p>
+            </div>
+          </div>
+
+          <div class="lp-step">
+            <div class="lp-step__num lp-step__num--emp">3</div>
+            <div class="lp-step__content">
+              <h3>Gerencie no dashboard</h3>
+              <p>Visualize todas as candidaturas, filtre por critérios e entre em contato com os melhores candidatos diretamente pela plataforma.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="steps-cta-row">
+          <a href="/auth/register?role=hunter" class="lp-btn lp-btn--primary"
+             data-cta-location="how_it_works" data-cta-label="Começar trial grátis">Começar trial grátis</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         CALCULADORA ROI (estático/visual)
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Quanto vale fechar mais uma vaga por mês?</h2>
+        <p class="lp-section-subtitle">Uma estimativa conservadora do que headhunters perdem em tempo de triagem — e o que ganham usando portfólio.</p>
+
+        <div class="lp-roi">
+          <h3 class="lp-roi__title">Cenário típico de um headhunter freelance</h3>
+          <div class="lp-roi__stats">
+            <div class="lp-roi__stat">
+              <span class="lp-roi__stat-num">40</span>
+              <span class="lp-roi__stat-label">CVs triados por vaga aberta</span>
+            </div>
+            <div class="lp-roi__stat">
+              <span class="lp-roi__stat-num">8 min</span>
+              <span class="lp-roi__stat-label">tempo médio por CV em PDF</span>
+            </div>
+            <div class="lp-roi__stat">
+              <span class="lp-roi__stat-num">~5h</span>
+              <span class="lp-roi__stat-label">perdidas em triagem por vaga</span>
+            </div>
+            <div class="lp-roi__stat">
+              <span class="lp-roi__stat-num">R$79,90</span>
+              <span class="lp-roi__stat-label">custo total do plano Hunter/mês</span>
+            </div>
+          </div>
+          <p class="roi-conclusion">
+            Se você fecha 3 vagas/mês e economiza 5h por vaga, são <strong>15h recuperadas</strong>. <br />
+            Tempo suficiente para apresentar mais candidatos ao cliente e <strong>fechar uma vaga extra</strong>.
+          </p>
+          <a href="/auth/register?role=hunter" class="lp-btn lp-btn--white lp-btn--lg" style="margin-top:1rem;"
+             data-cta-location="roi" data-cta-label="Recuperar essas horas agora">
+            Recuperar essas horas agora
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         COMPARATIVO
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section lp-section--alt">
+      <div class="lp-container">
+        <h2 class="lp-section-title">VitrinePro vs as alternativas</h2>
+        <p class="lp-section-subtitle">Compare as principais plataformas de recrutamento disponíveis no Brasil.</p>
+
+        <div class="lp-compare">
+          <table>
+            <thead>
+              <tr>
+                <th>Recurso</th>
+                <th>VitrinePro</th>
+                <th>LinkedIn Recruiter</th>
+                <th>Gupy</th>
+                <th>Catho</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="lp-compare__highlight">
+                <td>Candidatos com portfólio visual</td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="partial">&#126;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+              </tr>
+              <tr>
+                <td>Preço mensal (recrutador)</td>
+                <td><strong>R$79,90</strong></td>
+                <td><strong>R$4.000+</strong></td>
+                <td><strong>R$500+</strong></td>
+                <td><strong>R$300+</strong></td>
+              </tr>
+              <tr class="lp-compare__highlight">
+                <td>Trial gratuito sem cartão</td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+                <td><span class="partial">&#126;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+              </tr>
+              <tr>
+                <td>Filtro por especialidade/tags</td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="partial">&#126;</span></td>
+              </tr>
+              <tr class="lp-compare__highlight">
+                <td>Foco em profissões visuais (design, foto, arq.)</td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="partial">&#126;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+                <td><span class="cross">&#10007;</span></td>
+              </tr>
+              <tr>
+                <td>Contrato anual obrigatório</td>
+                <td><span class="check">&#10003; Não</span></td>
+                <td><span class="cross">&#10007; Sim</span></td>
+                <td><span class="cross">&#10007; Sim</span></td>
+                <td><span class="cross">&#10007; Sim</span></td>
+              </tr>
+              <tr class="lp-compare__highlight">
+                <td>Banco de talentos nicho (BR)</td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="partial">&#126;</span></td>
+                <td><span class="check">&#10003;</span></td>
+                <td><span class="check">&#10003;</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         CASOS DE USO POR SETOR
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Para vários perfis de recrutador</h2>
+        <p class="lp-section-subtitle">Veja como diferentes profissionais de recrutamento usam o VitrinePro para fechar vagas com mais qualidade.</p>
+
+        <div class="lp-cases">
+          <div class="lp-case">
+            <div class="lp-case__icon">&#128187;</div>
+            <div>
+              <h3 class="lp-case__title">Headhunter de Tech</h3>
+              <p class="lp-case__desc">Encontre devs, designers de produto e engenheiros de dados com portfólio técnico real. Filtre por linguagem, stack e tipo de projeto — sem depender de endossos no LinkedIn.</p>
+            </div>
+          </div>
+
+          <div class="lp-case">
+            <div class="lp-case__icon">&#127912;</div>
+            <div>
+              <h3 class="lp-case__title">Recrutador Freelance Criativo</h3>
+              <p class="lp-case__desc">Atenda agências, produtoras e marcas apresentando designers, fotógrafos e motion designers com portfólio visual completo. Seu cliente vê antes de entrevistar — você fecha mais rápido.</p>
+            </div>
+          </div>
+
+          <div class="lp-case">
+            <div class="lp-case__icon">&#128084;</div>
+            <div>
+              <h3 class="lp-case__title">Boutique de Recrutamento</h3>
+              <p class="lp-case__desc">Diferencie sua boutique de grandes ATS entregando candidatos com contexto visual rico. Seu shortlist vem com portfólio — eleva a percepção de valor do seu serviço para o cliente.</p>
+            </div>
+          </div>
+
+          <div class="lp-case">
+            <div class="lp-case__icon">&#127970;</div>
+            <div>
+              <h3 class="lp-case__title">RH de Agência</h3>
+              <p class="lp-case__desc">Contrate criativos para projetos internos ou clientes sem pagar LinkedIn Recruiter. Banco de talentos nicho em design, foto, vídeo e arquitetura — com portfólio publicado e atualizado.</p>
+            </div>
+          </div>
+
+          <div class="lp-case">
+            <div class="lp-case__icon">&#128640;</div>
+            <div>
+              <h3 class="lp-case__title">Recrutador de Startups</h3>
+              <p class="lp-case__desc">Startups não têm verba para R$50k/ano de LinkedIn Recruiter. Com o VitrinePro você equipa seu time com talento técnico e criativo por R$79,90/mês — trial imediato, sem contrato.</p>
+            </div>
+          </div>
+
+          <div class="lp-case">
+            <div class="lp-case__icon">&#128203;</div>
+            <div>
+              <h3 class="lp-case__title">Consultor de RH Especializado</h3>
+              <p class="lp-case__desc">Consultores que atendem múltiplos clientes usam o painel centralizado para publicar vagas de diferentes contratantes e gerenciar candidaturas por vaga — tudo em um só lugar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         PRICING
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section lp-section--alt" id="pricing">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Planos para recrutadores</h2>
+        <p class="lp-section-subtitle">Sem contratos anuais. Cancele quando quiser.</p>
+
+        <div class="lp-pricing">
+
+          <!-- Hunter -->
+          <div class="lp-plan lp-plan--featured">
+            <div class="lp-plan__badge">Ideal para headhunters e recrutadores freelance</div>
+            <div class="lp-plan__name">Hunter</div>
+            <div class="lp-plan__desc">Para headhunters, recrutadores freelance e boutiques de recrutamento que querem encontrar talento por portfólio real.</div>
+            <div class="lp-plan__price"><sup>R$</sup>79<span class="plan-cents">,90</span></div>
+            <div class="lp-plan__period">por mês · cancele quando quiser</div>
+            <ul class="lp-plan__features">
+              <li>Até 15 vagas ativas simultaneamente</li>
+              <li>Dashboard de candidaturas com portfólio</li>
+              <li>Filtros por especialidade, cidade e tags</li>
+              <li>Acesso ao banco de talentos completo</li>
+              <li>Selo "Recrutador Verificado" no perfil</li>
+              <li>Notificações de novas candidaturas</li>
+              <li>Contato direto com candidatos</li>
+              <li>Trial de 14 dias sem cartão de crédito</li>
+            </ul>
+            <a href="/auth/register?role=hunter" class="lp-plan__cta lp-plan__cta--primary"
+               data-cta-location="pricing_hunter" data-cta-label="Começar trial de 14 dias">
+              Começar trial de 14 dias
+            </a>
+            <div class="plan-note">Pague via PIX, boleto ou cartão</div>
+          </div>
+
+          <!-- Empresarial / Times de Recrutamento -->
+          <div class="lp-plan">
+            <div class="lp-plan__name">Times de Recrutamento</div>
+            <div class="lp-plan__desc">Para consultorias de RH, agências de talentos e times com múltiplos recrutadores e alto volume de vagas.</div>
+            <div class="lp-plan__price emp-price">Sob consulta</div>
+            <div class="lp-plan__period">contrato personalizado</div>
+            <ul class="lp-plan__features">
+              <li>Tudo do plano Hunter</li>
+              <li>Até 50 vagas ativas</li>
+              <li>Múltiplos usuários recrutadores</li>
+              <li>Integração via webhook / API</li>
+              <li>Relatórios avançados de funil</li>
+              <li>Gerente de conta dedicado</li>
+              <li>SLA de suporte premium</li>
+              <li>Onboarding personalizado</li>
+            </ul>
+            <a href="mailto:contato@v8pro.com.br?subject=Plano Empresarial VitrinePro" class="lp-plan__cta lp-plan__cta--outline"
+               data-cta-location="pricing_empresarial" data-cta-label="Falar com vendas">
+              Falar com vendas
+            </a>
+            <div class="plan-note">Resposta em até 24 horas</div>
+          </div>
+
+        </div>
+
+        <!-- Selo Recrutador Verificado -->
+        <div class="seal-wrapper">
+          <div class="lp-seal">
+            <div class="lp-seal__icon">&#9989;</div>
+            <div>
+              <p class="lp-seal__title">Selo Recrutador Verificado</p>
+              <p class="lp-seal__desc">Incluído nos planos pagos. Aumenta a taxa de candidatura ao transmitir confiança e credibilidade para os profissionais que veem suas vagas.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         FAQ
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-section">
+      <div class="lp-container">
+        <h2 class="lp-section-title">Perguntas frequentes</h2>
+        <p class="lp-section-subtitle">Dúvidas comuns de headhunters e recrutadores freelance antes de começar.</p>
+
+        <div class="lp-faq" style="max-width:760px;margin:0 auto;">
+          <details class="lp-faq-item">
+            <summary>Quantas vagas posso publicar no plano Hunter?</summary>
+            <p>No plano Hunter você pode publicar até 15 vagas ativas simultaneamente. Para times de recrutamento maiores, o plano Times de Recrutamento oferece 50 vagas e múltiplos usuários recrutadores.</p>
+          </details>
+
+          <details class="lp-faq-item">
+            <summary>O que é o trial de 14 dias?</summary>
+            <p>Você tem acesso completo ao plano Hunter durante 14 dias sem cobrança. Não pedimos cartão de crédito para começar o trial.</p>
+          </details>
+
+          <details class="lp-faq-item">
+            <summary>Como funciona o Selo Recrutador Verificado?</summary>
+            <p>Após validar seus dados profissionais e/ou CNPJ, exibimos um selo de verificação no seu perfil de recrutador. Isso aumenta a confiança dos candidatos e melhora a taxa de candidatura às suas vagas.</p>
+          </details>
+
+          <details class="lp-faq-item">
+            <summary>Posso filtrar candidatos por cidade, especialidade ou tag?</summary>
+            <p>Sim. Você pode buscar e filtrar candidatos por localidade, especialidade, tags de habilidade e até por quem tem portfólio publicado — o que torna a triagem muito mais rápida.</p>
+          </details>
+
+          <details class="lp-faq-item">
+            <summary>Funciona para recrutador freelance que atende múltiplos clientes?</summary>
+            <p>Sim. Você pode publicar vagas para diferentes clientes, gerenciar candidaturas separadas por vaga e usar o dashboard centralizado — tudo em um único plano Hunter.</p>
+          </details>
+
+          <details class="lp-faq-item">
+            <summary>E se eu quiser cancelar?</summary>
+            <p>Você cancela com um clique no painel, sem multa, sem carência. Suas vagas são encerradas ao fim do período pago.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         CTA FINAL
+    ════════════════════════════════════════════════════ -->
+    <section class="lp-cta-final lp-cta-final--empresas">
+      <div class="lp-container">
+        <h2>Pare de triar currículo no escuro</h2>
+        <p>Apresente candidatos com portfólio, feche vagas mais rápido e prove seu valor ao cliente. Comece seu trial de 14 dias agora — sem cartão de crédito.</p>
+        <div class="lp-cta-final__actions">
+          <a href="/auth/register?role=hunter" class="lp-btn lp-btn--white lp-btn--lg"
+             data-cta-location="final" data-cta-label="Começar trial gratuito">
+            Começar trial gratuito
+          </a>
+          <a href="/para-profissionais" class="lp-btn lp-btn--outline"
+             data-cta-location="final" data-cta-label="Sou profissional">
+            Sou profissional &rarr;
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+
+</BaseLayout>
+
+<script is:inline>
+(function () {
+  'use strict';
+
+  var LP_NAME = 'para-empresas';
+
+  // Defensive: guarantee dataLayer exists even if GTM snippet hasn't run yet
+  window.dataLayer = window.dataLayer || [];
+
+  // ─── 1. page_view_lp ─────────────────────────────────────────────────────
+  window.dataLayer.push({
+    event: 'page_view_lp',
+    lp_name: LP_NAME,
+  });
+
+  // ─── 2. cta_clicked (delegated) ──────────────────────────────────────────
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest('[data-cta-location]');
+    if (!el) return;
+
+    var location = el.getAttribute('data-cta-location');
+    var label    = el.getAttribute('data-cta-label') || '';
+    var href     = el.getAttribute('href') || '';
+
+    window.dataLayer.push({
+      event: 'cta_clicked',
+      lp_name: LP_NAME,
+      cta_location: location,
+      cta_label: label,
+    });
+
+    // trial_started: any CTA going to /auth/register?role=hunter
+    if (href.indexOf('/auth/register') !== -1 && href.indexOf('role=hunter') !== -1) {
+      window.dataLayer.push({
+        event: 'trial_started',
+        lp_name: LP_NAME,
+        cta_location: location,
+        cta_label: label,
+      });
+    }
+
+    // contact_sales_clicked: "Falar com vendas" (mailto link in pricing_empresarial)
+    if (location === 'pricing_empresarial' && label === 'Falar com vendas') {
+      window.dataLayer.push({
+        event: 'contact_sales_clicked',
+        lp_name: LP_NAME,
+        cta_location: location,
+      });
+    }
+  });
+
+  // ─── 3. pricing_viewed (IntersectionObserver) ────────────────────────────
+  var pricingSection = document.getElementById('pricing');
+  if (pricingSection && typeof IntersectionObserver !== 'undefined') {
+    var pricingObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          window.dataLayer.push({
+            event: 'pricing_viewed',
+            lp_name: LP_NAME,
+          });
+          pricingObserver.disconnect();
+        }
+      });
+    }, { threshold: 0.25 });
+    pricingObserver.observe(pricingSection);
+  }
+
+  // ─── 4. faq_opened ───────────────────────────────────────────────────────
+  var faqItems = document.querySelectorAll('.lp-faq-item');
+  faqItems.forEach(function (details) {
+    details.addEventListener('toggle', function () {
+      if (details.open) {
+        var summary = details.querySelector('summary');
+        window.dataLayer.push({
+          event: 'faq_opened',
+          lp_name: LP_NAME,
+          faq_question: summary ? summary.textContent.trim() : '',
+        });
+      }
+    });
+  });
+
+  // ─── 5. scroll_depth (25 / 50 / 75 / 100%) ───────────────────────────────
+  var scrollDepthFired = {};
+  var scrollThresholds = [25, 50, 75, 100];
+
+  function getScrollPercent() {
+    var scrollTop  = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var docHeight  = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight
+    ) - window.innerHeight;
+    return docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+  }
+
+  function onScroll() {
+    var pct = getScrollPercent();
+    scrollThresholds.forEach(function (threshold) {
+      if (!scrollDepthFired[threshold] && pct >= threshold) {
+        scrollDepthFired[threshold] = true;
+        window.dataLayer.push({
+          event: 'scroll_depth',
+          lp_name: LP_NAME,
+          scroll_depth_pct: threshold,
+        });
+      }
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+</script>
+
+<style is:global>
+  @import '../styles/landing-pages.css';
+</style>
+
+<style>
+  /* Estilos específicos da LP de Empresas */
+
+  .lp-hero--empresas {
+    background: linear-gradient(145deg, #f0f4ff 0%, #ede9fe 50%, #dbeafe 100%);
+  }
+
+  .lp-hero__badge--empresas {
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--secondary);
+    border-color: rgba(124, 58, 237, 0.2);
+  }
+
+  .em-empresas { color: var(--secondary); }
+
+  .lp-btn--outline-dark {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-dark);
+    padding: 0.875rem 2rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-base);
+    font-weight: 700;
+    text-decoration: none;
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .lp-btn--outline-dark:hover {
+    border-color: var(--secondary);
+    color: var(--secondary);
+  }
+
+  .check-green { color: #10b981; font-weight: 700; }
+
+  /* Dashboard mockup */
+  .mock-dash {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mock-dash-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mock-dash-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .mock-dash-meta {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .mock-candidates {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mock-candidate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+  }
+
+  .mock-candidate--dim { opacity: 0.6; }
+
+  .mock-cand-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .mock-cand-info { flex: 1; min-width: 0; }
+
+  .mock-cand-name {
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mock-cand-role {
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mock-cand-portfolio {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .mock-portfolio-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+  }
+
+  .mock-portfolio-dot--1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .mock-portfolio-dot--2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .mock-portfolio-dot--3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .mock-portfolio-dot--4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+  .mock-portfolio-dot--5 { background: linear-gradient(135deg, #fa709a, #fee140); }
+  .mock-portfolio-dot--6 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+
+  .mock-port-label {
+    font-size: 0.55rem;
+    color: var(--primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .mock-dash-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mock-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
+  }
+
+  .mock-status--green {
+    background: rgba(16,185,129,0.1);
+    color: #065f46;
+  }
+
+  .mock-view-count {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+  }
+
+  /* Floating badges para empresas */
+  .float-badge--empresas {
+    top: -14px;
+    right: -8px;
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #166534;
+  }
+
+  .float-badge--empresas2 {
+    bottom: -14px;
+    left: -8px;
+    background: rgba(37,99,235,0.1);
+    border-color: rgba(37,99,235,0.3);
+    color: var(--primary-dark);
+  }
+
+  .badge-icon { font-size: 1rem; }
+
+  /* Impact section */
+  .impact-sub-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-2xl);
+    margin-top: var(--spacing-xl);
+  }
+
+  .impact-stat {
+    text-align: center;
+    color: #fff;
+  }
+
+  .impact-stat strong {
+    display: block;
+    font-size: var(--text-3xl);
+    font-weight: 900;
+    color: var(--primary-light);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .impact-stat span {
+    font-size: var(--text-xs);
+    opacity: 0.75;
+  }
+
+  /* Dor cards empresas */
+  .lp-card--dor-emp {
+    border-top: 4px solid transparent;
+    transition: border-top-color var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .lp-card--dor-emp:hover {
+    border-top-color: var(--secondary);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .lp-dor-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .dor-icon-emp {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .dor-num {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: var(--radius-full);
+    padding: 2px 10px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .dor-res {
+    margin-top: var(--spacing-md);
+    padding: 8px 12px;
+    background: rgba(124,58,237,0.06);
+    border-left: 3px solid var(--secondary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--secondary-dark);
+  }
+
+  /* Steps numeração para empresas */
+  .lp-step__num--emp {
+    background: var(--secondary);
+  }
+
+  /* ROI */
+  .roi-conclusion {
+    color: rgba(255,255,255,0.9);
+    font-size: var(--text-base);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  .roi-conclusion strong { color: #fff; }
+
+  /* Steps CTA row */
+  .steps-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-3xl);
+  }
+
+  /* Seal wrapper */
+  .seal-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--spacing-3xl);
+  }
+
+  /* Plan price override para "Sob consulta" */
+  .emp-price {
+    font-size: var(--text-3xl) !important;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Plan cents */
+  .plan-cents {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+  }
+
+  /* Plan note */
+  .plan-note {
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+  }
+
+  /* CTA final para empresas */
+  .lp-cta-final--empresas {
+    background: linear-gradient(135deg, #1e40af 0%, var(--secondary) 100%);
+  }
+</style>
