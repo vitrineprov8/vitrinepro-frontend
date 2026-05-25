@@ -744,7 +744,8 @@ const faqSchema = {
     background: transparent;
     color: var(--text-primary);
     border: 2px solid var(--border-dark);
-    padding: 0.875rem 2rem;
+    /* Base mobile: padding compacto, touch target 44px via min-height */
+    padding: 0.875rem 1.25rem;
     border-radius: var(--radius-full);
     font-size: var(--text-base);
     font-weight: 700;
@@ -752,6 +753,17 @@ const faqSchema = {
     transition: all var(--transition-base);
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    width: 100%; /* full-width mobile */
+  }
+
+  @media (min-width: 640px) {
+    .lp-btn--outline-dark {
+      padding: 0.875rem 2rem;
+      width: auto;
+    }
   }
 
   .lp-btn--outline-dark:hover {
@@ -905,13 +917,19 @@ const faqSchema = {
 
   .badge-icon { font-size: 1rem; }
 
-  /* Impact section */
+  /* Impact section — coluna compacta em mobile, row em tablet+ */
   .impact-sub-stats {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--spacing-2xl);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
     margin-top: var(--spacing-xl);
+  }
+
+  @media (min-width: 480px) {
+    .impact-sub-stats {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-xl);
+    }
   }
 
   .impact-stat {
@@ -921,16 +939,28 @@ const faqSchema = {
 
   .impact-stat strong {
     display: block;
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl); /* base mobile: menor para caber em 1 col 320px */
     font-weight: 900;
     color: var(--primary-light);
     line-height: 1;
     margin-bottom: 4px;
   }
 
+  @media (min-width: 480px) {
+    .impact-stat strong {
+      font-size: var(--text-3xl);
+    }
+  }
+
   .impact-stat span {
-    font-size: var(--text-xs);
+    font-size: var(--text-sm); /* base mobile: levemente maior para legibilidade */
     opacity: 0.75;
+  }
+
+  @media (min-width: 480px) {
+    .impact-stat span {
+      font-size: var(--text-xs);
+    }
   }
 
   /* Dor cards empresas */
@@ -986,21 +1016,44 @@ const faqSchema = {
   /* ROI */
   .roi-conclusion {
     color: rgba(255,255,255,0.9);
-    font-size: var(--text-base);
+    font-size: var(--text-sm); /* base mobile: menor para caber em 320px */
     margin: 0;
     line-height: var(--leading-relaxed);
   }
 
+  @media (min-width: 640px) {
+    .roi-conclusion {
+      font-size: var(--text-base);
+    }
+  }
+
   .roi-conclusion strong { color: #fff; }
 
-  /* Steps CTA row */
+  /* Steps CTA row — coluna full-width mobile, row desktop */
   .steps-cta-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--spacing-md);
     margin-top: var(--spacing-3xl);
+  }
+
+  .steps-cta-row .lp-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  @media (min-width: 640px) {
+    .steps-cta-row {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .steps-cta-row .lp-btn {
+      width: auto;
+    }
   }
 
   /* Seal wrapper */
