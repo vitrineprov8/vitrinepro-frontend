@@ -1,5 +1,6 @@
 ---
 import PlansPage from '../../components/dashboard/PlansPage.vue';
+import GoogleAnalytics from '../../components/GoogleAnalytics.astro';
 ---
 <html lang="pt-BR">
   <head>
@@ -7,6 +8,7 @@ import PlansPage from '../../components/dashboard/PlansPage.vue';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Planos · VitrinePro</title>
     <meta name="robots" content="noindex, nofollow" />
+    <GoogleAnalytics />
   </head>
   <body>
     <PlansPage client:load />

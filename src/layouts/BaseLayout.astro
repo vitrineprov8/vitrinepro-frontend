@@ -1,6 +1,7 @@
 ---
 import ClarityScript from '../components/ClarityScript.astro';
 import GTMHead from '../components/GTMHead.astro';
+import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 import GTMNoscript from '../components/GTMNoscript.astro';
 
 const SITE = 'https://v8pro.com.br';
@@ -80,6 +81,9 @@ const organizationSchema = {
 
     <!-- Google Tag Manager -->
     <GTMHead />
+
+    <!-- Google Analytics (GA4) -->
+    <GoogleAnalytics />
 
     <!-- Microsoft Clarity -->
     <ClarityScript />
