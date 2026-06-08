@@ -62,45 +62,9 @@
         </div>
       </div>
 
-      <!-- "Acessando como" selector — only for non-empresa users -->
-      <div class="db-role-selector" v-if="user && !isEmpresaMode">
-        <span class="db-role-label">Acessando como</span>
-        <div class="db-role-btns">
-          <button
-            type="button"
-            class="db-role-btn"
-            :class="{ active: activeRole === 'profissional' }"
-            @click="setActiveRole('profissional')"
-          >
-            Profissional
-          </button>
-          <button
-            type="button"
-            class="db-role-btn"
-            :class="{ active: activeRole === 'hunter', disabled: !canBeHunter }"
-            :disabled="!canBeHunter"
-            :title="!canBeHunter ? 'Disponível a partir do plano Recruiter' : ''"
-            @click="canBeHunter && setActiveRole('hunter')"
-          >
-            Hunter
-          </button>
-        </div>
-      </div>
-
-      <!-- Context switcher — only in Hunter mode -->
-      <ContextSwitcher
-        v-if="user && !isEmpresaMode && activeRole === 'hunter' && canBeHunter"
-        :user="user"
-        @context-changed="onContextChanged"
-      />
-
-      <!-- "Publicando como" badge — visible in Hunter mode with active team context -->
-      <div
-        v-if="user && !isEmpresaMode && activeRole === 'hunter' && user.activeContextTeamId"
-        class="db-publishing-as"
-      >
-        Publicando como: <strong>{{ activeContextName }}</strong>
-      </div>
+      <!-- Context dropdown — workspace switcher for non-empresa users -->
+      <div class="db-context-switcher-row" v-if="user && !isEmpresaMode">
+        <ContextDropdown /></div>
 
       <nav class="db-nav">
         <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
@@ -195,6 +159,9 @@
           </button>
         </div>
         <div class="db-drawer-body">
+          <div v-if="user && !isEmpresaMode" class="db-drawer-context">
+            <ContextDropdown />
+          </div>
           <template v-for="(entry, idx) in navEntries" :key="'divider' in entry ? `d-${idx}` : entry.href">
             <hr v-if="'divider' in entry" class="db-drawer-divider" />
             <button
@@ -244,7 +211,7 @@ import { getFullProfile, getMyPlan, team, updateProfile } from '../../utils/api'
 import type { FullProfile, MyPlanInfo, PlanTier } from '../../utils/api';
 import Toast from '../ui/Toast.vue';
 import PendingInvitesModal from './PendingInvitesModal.vue';
-import ContextSwitcher from '../hunter/ContextSwitcher.vue';
+import ContextDropdown from './ContextDropdown.vue';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
   FREE: 'Gratuito',
@@ -287,43 +254,7 @@ const companyInitials = computed(() => {
 const adminMode = ref(false);
 const planExpiryOpen = ref(false);
 
-// ── Modo ativo (Profissional / Hunter / Empresa) ──────────────────────────────
-
-// Reads/writes activeRole to localStorage; default = 'profissional'
-const activeRole = ref<'profissional' | 'hunter'>('profissional');
-
 const isEmpresaMode = computed(() => user.value?.isCompany === true);
-
-// Hunter is available if plan is RECRUITER/TEAM/ENTERPRISE OR user is a member of any team
-const canBeHunter = computed(() => {
-  const plan = myPlan.value?.plan;
-  const paidPersonal = plan === 'RECRUITER' || plan === 'TEAM' || plan === 'ENTERPRISE';
-  return paidPersonal || accessibleTeamsCount.value > 0;
-});
-
-function loadActiveRole() {
-  if (typeof window === 'undefined') return;
-  const stored = window.localStorage.getItem('activeRole') as 'profissional' | 'hunter' | null;
-  if (stored === 'profissional') {
-    activeRole.value = 'profissional';
-  } else if (stored === 'hunter' && canBeHunter.value) {
-    activeRole.value = 'hunter';
-  } else if (canBeHunter.value) {
-    activeRole.value = 'hunter';
-  } else {
-    activeRole.value = 'profissional';
-  }
-}
-
-function setActiveRole(role: 'profissional' | 'hunter') {
-  activeRole.value = role;
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem('activeRole', role);
-    window.location.href = role === 'hunter'
-      ? '/dashboard/recrutador?tab=publicar'
-      : '/dashboard/recrutador?tab=carreira';
-  }
-}
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -378,48 +309,60 @@ function buildMeusDadosSection(): NavEntry[] {
   return [toggleItem];
 }
 
+// ── Nav entries: derived from URL pathname ────────────────────────────────────
+// Each workspace URL has its own sidebar items. The switcher (ContextDropdown)
+// handles workspace navigation; the sidebar shows contextual items only.
+
 const navEntries = computed<NavEntry[]>(() => {
-  const plan = myPlan.value?.plan;
-  const isTeamOrAbove = plan === 'TEAM' || plan === 'ENTERPRISE';
+  const pth = currentLocation.value.pathname;
   const adminCupons: NavItem = {
     href: '/dashboard/admin/cupons',
     label: 'Validar cupons',
     icon: CUPONS_ICON,
   };
 
-  // ── Modo Empresa ────────────────────────────────────────────────────────────
+  // ── Empresa mode ────────────────────────────────────────────────────────────
   if (isEmpresaMode.value) {
     const entries: NavEntry[] = [
-      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
       { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
       { divider: true },
+      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
     ];
-    if (isTeamOrAbove) {
-      entries.unshift(
-        { href: '/dashboard/recrutador?tab=carreira', label: 'Meu Time', icon: TEAM_ICON },
-        { href: '/dashboard/recrutador?tab=clientes', label: 'Clientes', icon: CLIENTS_ICON },
-        { divider: true }
-      );
-    }
-    entries.push({ href: '/dashboard/recrutador?tab=servicos', label: 'Ver Planos', icon: PLANOS_ICON });
     if (adminMode.value) entries.push({ divider: true }, adminCupons);
     return entries;
   }
 
-  // ── Modo Hunter ─────────────────────────────────────────────────────────────
-  if (activeRole.value === 'hunter') {
+  // ── Hunter Time context ─────────────────────────────────────────────────────
+  const teamIdMatch = pth.match(/^\/dashboard\/hunter\/time\/([^/]+)/);
+  if (teamIdMatch) {
+    const teamId = teamIdMatch[1]!;
+    const entries: NavEntry[] = [
+      { href: `/dashboard/hunter/time/${teamId}`, label: 'Vagas do Time', icon: VAGAS_ICON },
+      { href: `/dashboard/hunter/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
+    ];
+    const isCompanyUser = user.value?.isCompany === true;
+    if (isCompanyUser) {
+      entries.push({ href: `/dashboard/hunter/time/${teamId}/clientes`, label: 'Clientes', icon: CLIENTS_ICON });
+    }
+    if (adminMode.value) entries.push({ divider: true }, adminCupons);
+    return entries;
+  }
+
+  // ── Hunter Pessoal context ──────────────────────────────────────────────────
+  if (pth.startsWith('/dashboard/hunter/pessoal')) {
     const entries: NavEntry[] = [
       ...buildMeusDadosSection(),
       { divider: true },
-      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
       { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
-      { href: '/dashboard/recrutador?tab=servicos', label: 'Ver Planos', icon: PLANOS_ICON },
+      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
     ];
     if (adminMode.value) entries.push({ divider: true }, adminCupons);
     return entries;
   }
 
-  // ── Modo Profissional (default) ─────────────────────────────────────────────
+  // ── Profissional context (default) ──────────────────────────────────────────
   const entries: NavEntry[] = [
     ...buildMeusDadosSection(),
     { divider: true },
@@ -431,20 +374,34 @@ const navEntries = computed<NavEntry[]>(() => {
 });
 
 const mobileNavItems = computed<NavItem[]>(() => {
+  const pth = currentLocation.value.pathname;
+
   if (isEmpresaMode.value) {
     return [
-      { href: '/dashboard/recrutador?tab=publicar', label: 'Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/hunter/pessoal', label: 'Vagas', icon: VAGAS_ICON },
       { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
-      { href: '/dashboard/recrutador?tab=carreira', label: 'Time', icon: TEAM_ICON },
+      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
     ];
   }
-  if (activeRole.value === 'hunter') {
+
+  const teamIdMatch = pth.match(/^\/dashboard\/hunter\/time\/([^/]+)/);
+  if (teamIdMatch) {
+    const teamId = teamIdMatch[1]!;
     return [
-      { href: '/dashboard/recrutador?tab=publicar', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: `/dashboard/hunter/time/${teamId}`, label: 'Vagas', icon: VAGAS_ICON },
+      { href: `/dashboard/hunter/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
       { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
-      { href: '/dashboard/recrutador?tab=servicos', label: 'Planos', icon: PLANOS_ICON },
     ];
   }
+
+  if (pth.startsWith('/dashboard/hunter/pessoal')) {
+    return [
+      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
+    ];
+  }
+
   // Profissional
   return [
     { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
@@ -473,17 +430,25 @@ const currentLocation = ref({
 function isActive(href: string) {
   if (href === '#meus-dados') return meusDadosExpanded.value;
   const [path, query = ''] = href.split('?');
-  if (path === '/dashboard/recrutador') {
-    if (currentLocation.value.pathname !== '/dashboard/recrutador') return false;
-    const expectedTab = new URLSearchParams(query).get('tab');
-    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'carreira';
-    return expectedTab ? expectedTab === currentTab : currentTab === 'carreira';
-  }
   if (path === '/dashboard/profissional') {
     if (currentLocation.value.pathname !== '/dashboard/profissional') return false;
     const expectedTab = new URLSearchParams(query).get('tab');
     const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'radar';
     return expectedTab ? expectedTab === currentTab : currentTab === 'radar';
+  }
+  if (path === '/dashboard/hunter/pessoal') {
+    if (!currentLocation.value.pathname.startsWith('/dashboard/hunter/pessoal')) return false;
+    if (!query) return true;
+    const expectedTab = new URLSearchParams(query).get('tab');
+    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab');
+    return expectedTab ? expectedTab === currentTab : !currentTab || currentTab === 'vagas';
+  }
+  if (path === '/dashboard/recrutador') {
+    // Legacy: keep matching for redirect page
+    if (currentLocation.value.pathname !== '/dashboard/recrutador') return false;
+    const expectedTab = new URLSearchParams(query).get('tab');
+    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'carreira';
+    return expectedTab ? expectedTab === currentTab : currentTab === 'carreira';
   }
   if (path === '/dashboard') return currentLocation.value.pathname === '/dashboard';
   return currentLocation.value.pathname.startsWith(path ?? '');
@@ -547,22 +512,9 @@ onMounted(async () => {
     user.value = profileRes;
     myPlan.value = planRes;
     accessibleTeamsCount.value = teamsRes.length;
-    // Load persisted role after plan is known
-    loadActiveRole();
-    // Hunter mode lands on Minhas Vagas (?tab=publicar) by default
-    if (activeRole.value === 'hunter' && typeof window !== 'undefined') {
-      window.localStorage.setItem('activeRole', 'hunter');
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get('tab');
-      const justLoggedIn = window.sessionStorage.getItem('vp:just-logged-in') === '1';
-      const isOnCarreiraEntry =
-        window.location.pathname === '/dashboard/recrutador' && (!tab || tab === 'carreira');
-      if (justLoggedIn && isOnCarreiraEntry) {
-        window.sessionStorage.removeItem('vp:just-logged-in');
-        window.location.replace('/dashboard/recrutador?tab=publicar');
-        return;
-      }
-      if (justLoggedIn) window.sessionStorage.removeItem('vp:just-logged-in');
+    // Clear old vp:just-logged-in flag if still present
+    if (window.sessionStorage.getItem('vp:just-logged-in') === '1') {
+      window.sessionStorage.removeItem('vp:just-logged-in');
     }
   } catch (e: unknown) {
     const err = e as { statusCode?: number };
@@ -580,78 +532,13 @@ onMounted(async () => {
 });
 
 const pendingInvitesOpen = ref(false);
-
-// ── Hunter context ────────────────────────────────────────────────────────────
-
-const activeContextTeamName = ref<string | null>(null);
-
-const activeContextName = computed(() => activeContextTeamName.value || 'Time');
-
-function onContextChanged(teamId: string | null) {
-  if (!user.value) return;
-  user.value = { ...user.value, activeContextTeamId: teamId };
-  if (!teamId) {
-    activeContextTeamName.value = null;
-  }
-  // Name is loaded inside ContextSwitcher and reflected via the user object
-}
 </script>
 
 <style scoped>
-/* ─── ROLE SELECTOR "Acessando como" ─────────────────────────────────────── */
-.db-role-selector {
-  padding: var(--spacing-sm) var(--spacing-md);
+/* ─── CONTEXT SWITCHER ROW ────────────────────────────────────────────────── */
+.db-context-switcher-row {
+  padding: var(--spacing-xs) var(--spacing-md) var(--spacing-sm);
   border-bottom: 1px solid var(--border-light);
-}
-.db-role-label {
-  display: block;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-.db-role-btns {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.db-role-btn {
-  flex: 1;
-  padding: 4px 8px;
-  border: none;
-  background: none;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-sans);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-  white-space: nowrap;
-}
-.db-role-btn.active {
-  background: var(--primary);
-  color: #fff;
-  font-weight: 600;
-}
-.db-role-btn.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.db-role-btn:not(.active):not(.disabled):hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-/* "Publicando como" badge */
-.db-publishing-as {
-  margin: 0 var(--spacing-md) var(--spacing-xs);
-  padding: 4px 10px;
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.25);
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
-  color: var(--secondary, #7c3aed);
 }
 
 /* Company avatar variant */
@@ -859,6 +746,11 @@ function onContextChanged(teamId: string | null) {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-sm) 0;
+}
+.db-drawer-context {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: var(--spacing-sm);
 }
 .db-drawer-item {
   display: flex;

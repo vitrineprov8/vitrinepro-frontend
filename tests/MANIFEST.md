@@ -30,15 +30,23 @@ Quando a IA modifica um componente, ela deve:
 | `src/components/dashboard/CandidatePipeline.vue` | *(sem teste E2E dedicado ainda — ver notas Task #9 abaixo)* | `dashboard` |
 | `src/components/dashboard/PipelineSettingsModal.vue` | *(novo — sem teste E2E dedicado ainda — ver notas Task #9 abaixo)* | `dashboard` |
 | `src/components/dashboard/CandidateDrawer.vue` | *(sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/components/dashboard/RecrutadorWorkspace.vue` | *(sem teste E2E dedicado ainda — ver notas Task #10 abaixo)* | `dashboard` |
 | `src/components/dashboard/TeamMembersList.vue` | *(novo Task #11 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/ClientsList.vue` | *(novo Task #11 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/ClientEditorModal.vue` | *(novo Task #11 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/PipelineOverviewCard.vue` | *(novo Task #12 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/RecentActivityFeed.vue` | *(novo Task #12 — sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/pages/dashboard/vagas.astro` (redirect) | *(verificação manual — 302 para `/dashboard/recrutador?tab=publicar`)* | — |
-| `src/pages/dashboard/minhas-candidaturas.astro` (redirect) | *(verificação manual — 302 para `/dashboard/recrutador?tab=publicar`)* | — |
-| `src/pages/dashboard/planos.astro` (redirect) | *(verificação manual — 302 para `/dashboard/recrutador?tab=servicos`)* | — |
+| `src/pages/dashboard/vagas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal`)* | — |
+| `src/pages/dashboard/minhas-candidaturas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal`)* | — |
+| `src/pages/dashboard/planos.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal?tab=planos`)* | — |
+| `src/pages/dashboard/recrutador.astro` (redirect legacy) | *(verificação manual — `?tab=publicar`→`/hunter/pessoal`, `?tab=carreira`→`/profissional`, `?tab=servicos`→`/hunter/pessoal?tab=planos`)* | — |
+| `src/components/dashboard/ContextDropdown.vue` | *(novo Fase A URL-based — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterPessoalWorkspace.vue` | *(novo Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterTimeWorkspace.vue` | *(novo Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterShell.vue` | *(novo Fase A — wrapper sem lógica própria)* | — |
+| `src/pages/dashboard/hunter/pessoal.astro` | *(novo Fase A)* | — |
+| `src/pages/dashboard/hunter/time/[teamId].astro` | *(novo Fase A — SSR, prerender=false)* | — |
+| `src/pages/dashboard/hunter/time/[teamId]/membros.astro` | *(novo Fase A — SSR)* | — |
+| `src/pages/dashboard/hunter/time/[teamId]/clientes.astro` | *(novo Fase A — SSR)* | — |
 | `src/components/ui/Toast.vue` | Todos | — |
 | `src/components/ui/ConfirmDialog.vue` | portfolio, curriculos, tags, formacao, vagas | — |
 | `src/utils/auth.ts` | `tests/e2e/login.spec.ts` + `tests/setup/auth.setup.ts` | — |

@@ -252,7 +252,7 @@
           </button>
           <span v-if="isLimitReached" class="publish-limit-tip">
             Limite atingido —
-            <a href="/dashboard/recrutador?tab=servicos" class="link-upgrade">ver planos</a>
+            <a href="/dashboard/hunter/pessoal?tab=planos" class="link-upgrade">ver planos</a>
           </span>
         </div>
       </div>
@@ -633,7 +633,10 @@ async function doPublish() {
     await publishVaga(currentVagaId.value);
     toast.value?.show('Vaga publicada com sucesso!', 'success');
     showPublishConfirm.value = false;
-    setTimeout(() => { window.location.href = '/dashboard/recrutador?tab=publicar&published=1'; }, 700);
+    const destination = activeContextTeamId.value
+      ? `/dashboard/hunter/time/${activeContextTeamId.value}?tab=vagas&published=1`
+      : '/dashboard/hunter/pessoal?tab=vagas&published=1';
+    setTimeout(() => { window.location.href = destination; }, 700);
   } catch (err: unknown) {
     showPublishConfirm.value = false;
 
@@ -660,7 +663,9 @@ async function doPublish() {
 }
 
 function cancel() {
-  window.location.href = '/dashboard/recrutador?tab=publicar';
+  window.location.href = activeContextTeamId.value
+    ? `/dashboard/hunter/time/${activeContextTeamId.value}`
+    : '/dashboard/hunter/pessoal';
 }
 
 onMounted(async () => {
@@ -670,7 +675,7 @@ onMounted(async () => {
     userPlan.value = info.plan;
     // FREE users cannot publish vagas — redirect to plan upsell
     if (info.plan === 'FREE') {
-      window.location.href = '/dashboard/recrutador?tab=servicos';
+      window.location.href = '/dashboard/hunter/pessoal?tab=planos';
       return;
     }
     myTeamRole.value = info.teamRole ?? null;

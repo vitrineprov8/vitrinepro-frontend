@@ -3,8 +3,8 @@
     <Toast ref="toast" />
 
     <Breadcrumb :items="[
-      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
-      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Dashboard', href: '/dashboard/profissional' },
+      { label: 'Carreira', href: '/dashboard/profissional' },
       { label: 'Portfólio', href: '/dashboard/portfolio' },
       { label: portfolioId ? 'Editar item' : 'Novo item' },
     ]" />

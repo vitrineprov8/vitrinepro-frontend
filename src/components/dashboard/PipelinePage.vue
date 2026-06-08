@@ -10,7 +10,7 @@
       />
       <div v-else class="pp-empty">
         <h3>Vaga não encontrada</h3>
-        <p>O id <code>{{ vagaId }}</code> não existe nos dados mock. <a href="/dashboard/recrutador">Voltar</a></p>
+        <p>O id <code>{{ vagaId }}</code> não existe nos dados mock. <a href="/dashboard/profissional">Voltar</a></p>
       </div>
     </div>
   </DashboardLayout>
@@ -33,7 +33,7 @@ const candidates = computed(() => {
 });
 const crumbs = computed(() => [
   { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Publicar vagas', href: '/dashboard/recrutador' },
+  { label: 'Publicar vagas', href: '/dashboard/profissional' },
   { label: vaga.value?.title ?? 'Vaga' },
   { label: 'Candidatos' },
 ]);

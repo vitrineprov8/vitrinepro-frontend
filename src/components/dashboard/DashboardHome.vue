@@ -141,7 +141,7 @@
 
       <!-- ── Atalhos + Banner Recrutador (shown when wizard is done) ─ -->
       <template v-else>
-        <a v-if="!recrutadorBannerDismissed" href="/dashboard/recrutador" class="dh-recrutador-banner" style="margin-bottom: var(--spacing-lg);">
+        <a v-if="!recrutadorBannerDismissed" href="/dashboard/profissional" class="dh-recrutador-banner" style="margin-bottom: var(--spacing-lg);">
           <div class="dh-rb-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.75 6.75h16.5M3.75 12h10.5m-10.5 5.25h16.5M18 9l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>

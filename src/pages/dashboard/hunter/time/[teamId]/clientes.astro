@@ -1,0 +1,10 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../../../layouts/DashboardLayout.astro';
+import HunterTimeWorkspace from '../../../../../components/dashboard/HunterTimeWorkspace.vue';
+
+const { teamId } = Astro.params;
+---
+<DashboardLayout title="Clientes | Dashboard VitrinePro">
+  <HunterTimeWorkspace client:load teamId={teamId!} initialTab="clientes" />
+</DashboardLayout>

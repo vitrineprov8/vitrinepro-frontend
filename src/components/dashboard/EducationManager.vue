@@ -74,8 +74,8 @@
     </Modal>
 
     <Breadcrumb :items="[
-      { label: 'Dashboard', href: '/dashboard/recrutador?tab=carreira' },
-      { label: 'Carreira', href: '/dashboard/recrutador?tab=carreira' },
+      { label: 'Dashboard', href: '/dashboard/profissional' },
+      { label: 'Carreira', href: '/dashboard/profissional' },
       { label: 'Formação' },
     ]" />
 
