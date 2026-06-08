@@ -11,7 +11,7 @@
       @cancel="closeTargetVaga = null"
     />
 
-    <HunterShell title="Hunter Pessoal" subtitle="Publicação e gestão de vagas como pessoa">
+    <HunterShell title="Recrutador Pessoal" subtitle="Publicação e gestão de vagas como pessoa">
       <template #header-actions>
         <button v-if="activeTab === 'vagas' && !isFreePlan" class="hpw-cta" type="button" @click="onNewVaga">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -23,7 +23,7 @@
         <SubTabs
           :tabs="tabs"
           :active="activeTab"
-          aria-label="Abas do Hunter Pessoal"
+          aria-label="Abas do Recrutador Pessoal"
           @update:active="(id) => setTab(id as TabId)"
         />
       </template>
@@ -35,7 +35,7 @@
           <div class="hpw-hero">
             <h3>Plano pago necessário para publicar vagas</h3>
             <p>
-              Para publicar vagas como Hunter Pessoal, você precisa de um plano Recruiter ou superior.
+              Para publicar vagas como Recrutador Pessoal, você precisa de um plano Recruiter ou superior.
               <a href="/dashboard/planos">Página completa de planos →</a>
             </p>
           </div>
@@ -168,7 +168,7 @@
               <div class="hpw-pipeline-tabs">
                 <button type="button" class="hpw-pipeline-tab" :class="{ active: pipelineTab === 'pipeline' }" @click="pipelineTab = 'pipeline'">Candidatos</button>
                 <button type="button" class="hpw-pipeline-tab" :class="{ active: pipelineTab === 'hunters' }" @click="pipelineTab = 'hunters'">
-                  Hunters
+                  Recrutadores
                   <span class="hpw-pipeline-tab-badge">{{ selectedVagaAllowHunters ? 'ativo' : 'inativo' }}</span>
                 </button>
               </div>
@@ -178,7 +178,7 @@
               </template>
               <template v-else-if="pipelineTab === 'hunters'">
                 <div v-if="!selectedVagaAllowHunters" class="hpw-placeholder">
-                  <p>Esta vaga não tem "Permitir Hunters" ativado. Edite a vaga para habilitar.</p>
+                  <p>Esta vaga não tem "Permitir Recrutadores" ativado. Edite a vaga para habilitar.</p>
                 </div>
                 <HunterInterestsList v-else :vaga-id="selectedVagaId" />
               </template>
@@ -601,7 +601,7 @@ onMounted(async () => {
   // Post-publish toast
   if (search.get('published') === '1') {
     showToast('Vaga publicada com sucesso!', 'success');
-    window.history.replaceState(null, '', '/dashboard/hunter/pessoal?tab=vagas');
+    window.history.replaceState(null, '', '/dashboard/recrutador/pessoal?tab=vagas');
   }
 
   // If starting on planos tab, load serviços

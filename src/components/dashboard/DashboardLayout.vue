@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <!-- Profissional / Hunter header -->
+      <!-- Candidato / Recrutador header -->
       <div class="db-sidebar-user" v-else-if="user && !isEmpresaMode">
         <div class="db-user-avatar" :class="myPlan ? `ring-${myPlan.plan.toLowerCase()}` : ''">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="user.firstName" />
@@ -324,50 +324,50 @@ const navEntries = computed<NavEntry[]>(() => {
   // ── Empresa mode ────────────────────────────────────────────────────────────
   if (isEmpresaMode.value) {
     const entries: NavEntry[] = [
-      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
-      { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/candidato?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
       { divider: true },
-      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
+      { href: '/dashboard/recrutador/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
     ];
     if (adminMode.value) entries.push({ divider: true }, adminCupons);
     return entries;
   }
 
-  // ── Hunter Time context ─────────────────────────────────────────────────────
-  const teamIdMatch = pth.match(/^\/dashboard\/hunter\/time\/([^/]+)/);
+  // ── Recrutador Time context ─────────────────────────────────────────────────
+  const teamIdMatch = pth.match(/^\/dashboard\/recrutador\/time\/([^/]+)/);
   if (teamIdMatch) {
     const teamId = teamIdMatch[1]!;
     const entries: NavEntry[] = [
-      { href: `/dashboard/hunter/time/${teamId}`, label: 'Vagas do Time', icon: VAGAS_ICON },
-      { href: `/dashboard/hunter/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
+      { href: `/dashboard/recrutador/time/${teamId}`, label: 'Vagas do Time', icon: VAGAS_ICON },
+      { href: `/dashboard/recrutador/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
     ];
     const isCompanyUser = user.value?.isCompany === true;
     if (isCompanyUser) {
-      entries.push({ href: `/dashboard/hunter/time/${teamId}/clientes`, label: 'Clientes', icon: CLIENTS_ICON });
+      entries.push({ href: `/dashboard/recrutador/time/${teamId}/clientes`, label: 'Clientes', icon: CLIENTS_ICON });
     }
     if (adminMode.value) entries.push({ divider: true }, adminCupons);
     return entries;
   }
 
-  // ── Hunter Pessoal context ──────────────────────────────────────────────────
-  if (pth.startsWith('/dashboard/hunter/pessoal')) {
+  // ── Recrutador Pessoal context ──────────────────────────────────────────────
+  if (pth.startsWith('/dashboard/recrutador/pessoal')) {
     const entries: NavEntry[] = [
       ...buildMeusDadosSection(),
       { divider: true },
-      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
-      { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
-      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
+      { href: '/dashboard/recrutador/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/candidato?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador/pessoal?tab=planos', label: 'Ver Planos', icon: PLANOS_ICON },
     ];
     if (adminMode.value) entries.push({ divider: true }, adminCupons);
     return entries;
   }
 
-  // ── Profissional context (default) ──────────────────────────────────────────
+  // ── Candidato context (default) ─────────────────────────────────────────────
   const entries: NavEntry[] = [
     ...buildMeusDadosSection(),
     { divider: true },
-    { href: '/dashboard/profissional?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
-    { href: '/dashboard/profissional?tab=salvas', label: 'Vagas Salvas', icon: HEART_ICON },
+    { href: '/dashboard/candidato?tab=radar', label: 'Radar de Vagas', icon: RADAR_ICON },
+    { href: '/dashboard/candidato?tab=salvas', label: 'Vagas Salvas', icon: HEART_ICON },
   ];
   if (adminMode.value) entries.push({ divider: true }, adminCupons);
   return entries;
@@ -378,35 +378,35 @@ const mobileNavItems = computed<NavItem[]>(() => {
 
   if (isEmpresaMode.value) {
     return [
-      { href: '/dashboard/hunter/pessoal', label: 'Vagas', icon: VAGAS_ICON },
-      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
-      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
+      { href: '/dashboard/recrutador/pessoal', label: 'Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/candidato?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
     ];
   }
 
-  const teamIdMatch = pth.match(/^\/dashboard\/hunter\/time\/([^/]+)/);
+  const teamIdMatch = pth.match(/^\/dashboard\/recrutador\/time\/([^/]+)/);
   if (teamIdMatch) {
     const teamId = teamIdMatch[1]!;
     return [
-      { href: `/dashboard/hunter/time/${teamId}`, label: 'Vagas', icon: VAGAS_ICON },
-      { href: `/dashboard/hunter/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
-      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: `/dashboard/recrutador/time/${teamId}`, label: 'Vagas', icon: VAGAS_ICON },
+      { href: `/dashboard/recrutador/time/${teamId}/membros`, label: 'Membros', icon: TEAM_ICON },
+      { href: '/dashboard/candidato?tab=radar', label: 'Radar', icon: RADAR_ICON },
     ];
   }
 
-  if (pth.startsWith('/dashboard/hunter/pessoal')) {
+  if (pth.startsWith('/dashboard/recrutador/pessoal')) {
     return [
-      { href: '/dashboard/hunter/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
-      { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
-      { href: '/dashboard/hunter/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
+      { href: '/dashboard/recrutador/pessoal', label: 'Minhas Vagas', icon: VAGAS_ICON },
+      { href: '/dashboard/candidato?tab=radar', label: 'Radar', icon: RADAR_ICON },
+      { href: '/dashboard/recrutador/pessoal?tab=planos', label: 'Planos', icon: PLANOS_ICON },
     ];
   }
 
-  // Profissional
+  // Candidato
   return [
-    { href: '/dashboard/profissional?tab=radar', label: 'Radar', icon: RADAR_ICON },
-    { href: '/dashboard/profissional?tab=preferencias', label: 'Preferências', icon: PREFS_ICON },
-    { href: '/dashboard/profissional?tab=salvas', label: 'Salvas', icon: HEART_ICON },
+    { href: '/dashboard/candidato?tab=radar', label: 'Radar', icon: RADAR_ICON },
+    { href: '/dashboard/candidato?tab=preferencias', label: 'Preferências', icon: PREFS_ICON },
+    { href: '/dashboard/candidato?tab=salvas', label: 'Salvas', icon: HEART_ICON },
   ];
 });
 
@@ -430,25 +430,18 @@ const currentLocation = ref({
 function isActive(href: string) {
   if (href === '#meus-dados') return meusDadosExpanded.value;
   const [path, query = ''] = href.split('?');
-  if (path === '/dashboard/profissional') {
-    if (currentLocation.value.pathname !== '/dashboard/profissional') return false;
+  if (path === '/dashboard/candidato') {
+    if (currentLocation.value.pathname !== '/dashboard/candidato') return false;
     const expectedTab = new URLSearchParams(query).get('tab');
     const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'radar';
     return expectedTab ? expectedTab === currentTab : currentTab === 'radar';
   }
-  if (path === '/dashboard/hunter/pessoal') {
-    if (!currentLocation.value.pathname.startsWith('/dashboard/hunter/pessoal')) return false;
+  if (path === '/dashboard/recrutador/pessoal') {
+    if (!currentLocation.value.pathname.startsWith('/dashboard/recrutador/pessoal')) return false;
     if (!query) return true;
     const expectedTab = new URLSearchParams(query).get('tab');
     const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab');
     return expectedTab ? expectedTab === currentTab : !currentTab || currentTab === 'vagas';
-  }
-  if (path === '/dashboard/recrutador') {
-    // Legacy: keep matching for redirect page
-    if (currentLocation.value.pathname !== '/dashboard/recrutador') return false;
-    const expectedTab = new URLSearchParams(query).get('tab');
-    const currentTab  = new URLSearchParams(currentLocation.value.search).get('tab') || 'carreira';
-    return expectedTab ? expectedTab === currentTab : currentTab === 'carreira';
   }
   if (path === '/dashboard') return currentLocation.value.pathname === '/dashboard';
   return currentLocation.value.pathname.startsWith(path ?? '');

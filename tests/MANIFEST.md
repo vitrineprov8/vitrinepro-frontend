@@ -35,18 +35,17 @@ Quando a IA modifica um componente, ela deve:
 | `src/components/dashboard/ClientEditorModal.vue` | *(novo Task #11 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/PipelineOverviewCard.vue` | *(novo Task #12 — sem teste E2E dedicado ainda)* | `dashboard` |
 | `src/components/dashboard/RecentActivityFeed.vue` | *(novo Task #12 — sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/pages/dashboard/vagas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal`)* | — |
-| `src/pages/dashboard/minhas-candidaturas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal`)* | — |
-| `src/pages/dashboard/planos.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/hunter/pessoal?tab=planos`)* | — |
-| `src/pages/dashboard/recrutador.astro` (redirect legacy) | *(verificação manual — `?tab=publicar`→`/hunter/pessoal`, `?tab=carreira`→`/profissional`, `?tab=servicos`→`/hunter/pessoal?tab=planos`)* | — |
-| `src/components/dashboard/ContextDropdown.vue` | *(novo Fase A URL-based — sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/components/dashboard/HunterPessoalWorkspace.vue` | *(novo Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/components/dashboard/HunterTimeWorkspace.vue` | *(novo Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
-| `src/components/dashboard/HunterShell.vue` | *(novo Fase A — wrapper sem lógica própria)* | — |
-| `src/pages/dashboard/hunter/pessoal.astro` | *(novo Fase A)* | — |
-| `src/pages/dashboard/hunter/time/[teamId].astro` | *(novo Fase A — SSR, prerender=false)* | — |
-| `src/pages/dashboard/hunter/time/[teamId]/membros.astro` | *(novo Fase A — SSR)* | — |
-| `src/pages/dashboard/hunter/time/[teamId]/clientes.astro` | *(novo Fase A — SSR)* | — |
+| `src/pages/dashboard/vagas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/recrutador/pessoal`)* | — |
+| `src/pages/dashboard/minhas-candidaturas.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/recrutador/pessoal`)* | — |
+| `src/pages/dashboard/planos.astro` (redirect) | *(verificação manual — redireciona para `/dashboard/recrutador/pessoal?tab=planos`)* | — |
+| `src/components/dashboard/ContextDropdown.vue` | *(Fase A URL-based — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterPessoalWorkspace.vue` | *(Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterTimeWorkspace.vue` | *(Fase A — sem teste E2E dedicado ainda)* | `dashboard` |
+| `src/components/dashboard/HunterShell.vue` | *(Fase A — wrapper sem lógica própria)* | — |
+| `src/pages/dashboard/recrutador/pessoal.astro` | *(Fase A — renomeado de hunter/pessoal)* | — |
+| `src/pages/dashboard/recrutador/time/[teamId].astro` | *(Fase A — SSR, prerender=false; renomeado de hunter/time)* | — |
+| `src/pages/dashboard/recrutador/time/[teamId]/membros.astro` | *(Fase A — SSR; renomeado de hunter/time)* | — |
+| `src/pages/dashboard/recrutador/time/[teamId]/clientes.astro` | *(Fase A — SSR; renomeado de hunter/time)* | — |
 | `src/components/ui/Toast.vue` | Todos | — |
 | `src/components/ui/ConfirmDialog.vue` | portfolio, curriculos, tags, formacao, vagas | — |
 | `src/utils/auth.ts` | `tests/e2e/login.spec.ts` + `tests/setup/auth.setup.ts` | — |
@@ -171,9 +170,9 @@ Comportamento adicionado:
 - Aba "Carreira" exibe 4 atalhos de navegação (Currículos / Publicações / Perfil / Formação).
 
 Testes E2E necessários (não escritos ainda):
-- [ ] Navegar para `/dashboard/recrutador?tab=carreira` → aba "Carreira" ativa ao montar
-- [ ] Navegar para `/dashboard/recrutador?tab=publicar` → aba "Publicar vagas" ativa ao montar
-- [ ] Navegar para `/dashboard/recrutador?tab=servicos` → aba "Solicitar serviços" ativa ao montar
+- [ ] Navegar para `/dashboard/recrutador/pessoal?tab=carreira` → aba "Carreira" ativa ao montar
+- [ ] Navegar para `/dashboard/recrutador/pessoal?tab=publicar` → aba "Publicar vagas" ativa ao montar
+- [ ] Navegar para `/dashboard/recrutador/pessoal?tab=servicos` → aba "Solicitar serviços" ativa ao montar
 - [ ] Param desconhecido ou ausente → aba padrão "Publicar vagas" ativa
 
 Mudanças Task #12:
@@ -258,11 +257,13 @@ Mudanças:
 - Selecionar membro chama `PATCH /vagas/:id/assign { userId }`.
 - "Remover atribuição" chama `PATCH /vagas/:id/assign { userId: null }`.
 
-### Redirects das rotas legadas (Task #10)
+### Redirects das rotas legadas (Task #10 + rename Fase B)
 
-- `GET /dashboard/vagas` → 302 `/dashboard/recrutador?tab=publicar`
-- `GET /dashboard/minhas-candidaturas` → 302 `/dashboard/recrutador?tab=publicar`
-- `GET /dashboard/planos` → 302 `/dashboard/recrutador?tab=servicos`
+- `GET /dashboard/vagas` → 302 `/dashboard/recrutador/pessoal`
+- `GET /dashboard/minhas-candidaturas` → 302 `/dashboard/recrutador/pessoal`
+- `GET /dashboard/planos` → 302 `/dashboard/recrutador/pessoal?tab=planos`
+- `GET /dashboard/profissional` → 302 `/dashboard/candidato` (via dashboard.astro)
+- `GET /dashboard/hunter/pessoal` → 302 `/dashboard/recrutador/pessoal` (via dashboard.astro / vagas.astro)
 
 ### CandidateDrawer
 

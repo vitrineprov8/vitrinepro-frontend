@@ -16,7 +16,7 @@ import { MOCK_VAGAS } from '../../data/mock-recrutador';
 const vagas = MOCK_VAGAS;
 const crumbs = [
   { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Publicar vagas', href: '/dashboard/profissional' },
+  { label: 'Publicar vagas', href: '/dashboard/recrutador/pessoal' },
   { label: 'Timeline' },
 ];
 </script>

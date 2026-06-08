@@ -202,20 +202,20 @@
         </div>
       </div>
 
-      <!-- Permitir Hunters externos -->
+      <!-- Permitir Recrutadores externos -->
       <div class="vaga-hunters-box">
         <label class="vaga-hunters-toggle">
           <input v-model="form.allowHunters" type="checkbox" />
           <div class="vaga-hunters-text">
-            <span class="vaga-hunters-title">Permitir Hunters externos</span>
+            <span class="vaga-hunters-title">Permitir Recrutadores externos</span>
             <span class="vaga-hunters-desc">
-              Outros recrutadores (Hunters) poderao se voluntariar para trabalhar nesta vaga
+              Outros recrutadores poderao se voluntariar para trabalhar nesta vaga
               e indicar candidatos. Voce mantem o controle final do processo seletivo.
             </span>
           </div>
         </label>
         <label v-if="form.allowHunters" class="db-field vaga-hunters-phone">
-          <span class="db-label">Telefone de contato para Hunters</span>
+          <span class="db-label">Telefone de contato para Recrutadores</span>
           <input
             v-model="form.hunterContactPhone"
             type="tel"
@@ -224,7 +224,7 @@
             class="db-input"
           />
           <span class="vaga-hunters-hint">
-            Exibido apenas para Hunters que demonstrarem interesse na vaga.
+            Exibido apenas para Recrutadores que demonstrarem interesse na vaga.
           </span>
         </label>
       </div>
@@ -252,7 +252,7 @@
           </button>
           <span v-if="isLimitReached" class="publish-limit-tip">
             Limite atingido —
-            <a href="/dashboard/hunter/pessoal?tab=planos" class="link-upgrade">ver planos</a>
+            <a href="/dashboard/recrutador/pessoal?tab=planos" class="link-upgrade">ver planos</a>
           </span>
         </div>
       </div>
@@ -634,8 +634,8 @@ async function doPublish() {
     toast.value?.show('Vaga publicada com sucesso!', 'success');
     showPublishConfirm.value = false;
     const destination = activeContextTeamId.value
-      ? `/dashboard/hunter/time/${activeContextTeamId.value}?tab=vagas&published=1`
-      : '/dashboard/hunter/pessoal?tab=vagas&published=1';
+      ? `/dashboard/recrutador/time/${activeContextTeamId.value}?tab=vagas&published=1`
+      : '/dashboard/recrutador/pessoal?tab=vagas&published=1';
     setTimeout(() => { window.location.href = destination; }, 700);
   } catch (err: unknown) {
     showPublishConfirm.value = false;
@@ -664,8 +664,8 @@ async function doPublish() {
 
 function cancel() {
   window.location.href = activeContextTeamId.value
-    ? `/dashboard/hunter/time/${activeContextTeamId.value}`
-    : '/dashboard/hunter/pessoal';
+    ? `/dashboard/recrutador/time/${activeContextTeamId.value}`
+    : '/dashboard/recrutador/pessoal';
 }
 
 onMounted(async () => {
@@ -675,7 +675,7 @@ onMounted(async () => {
     userPlan.value = info.plan;
     // FREE users cannot publish vagas — redirect to plan upsell
     if (info.plan === 'FREE') {
-      window.location.href = '/dashboard/hunter/pessoal?tab=planos';
+      window.location.href = '/dashboard/recrutador/pessoal?tab=planos';
       return;
     }
     myTeamRole.value = info.teamRole ?? null;

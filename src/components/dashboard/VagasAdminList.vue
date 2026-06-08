@@ -14,7 +14,7 @@
           <div class="spinner" />
         </div>
         <div v-else-if="teamMembers.length === 0" class="assign-empty">
-          <p>Nenhum membro no time. <a href="/dashboard/hunter/pessoal">Convidar membros →</a></p>
+          <p>Nenhum membro no time. <a href="/dashboard/recrutador/pessoal">Convidar membros →</a></p>
         </div>
         <div v-else class="assign-list">
           <button

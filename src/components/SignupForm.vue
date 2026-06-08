@@ -98,7 +98,7 @@ async function handleSubmit() {
       {{ error }}
     </div>
 
-    <!-- Toggle Empresa / Profissional -->
+    <!-- Toggle Empresa / Candidato -->
     <div class="company-toggle-row">
       <button
         type="button"
@@ -106,7 +106,7 @@ async function handleSubmit() {
         :class="{ active: !isCompany }"
         @click="isCompany = false"
       >
-        Profissional
+        Candidato
       </button>
       <button
         type="button"

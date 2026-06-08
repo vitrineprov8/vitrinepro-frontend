@@ -293,8 +293,8 @@ export const MOCK_CANDIDATES: MockCandidate[] = [
 ];
 
 export const MOCK_SUBSCRIPTION_HISTORY = [
-  { id: 's-001', plan: 'Hunter', date: '2026-05-11', amount: 'R$ 99,00', status: 'pending' as const },
-  { id: 's-002', plan: 'Hunter', date: '2026-04-11', amount: 'R$ 99,00', status: 'paid' as const },
+  { id: 's-001', plan: 'Recrutador', date: '2026-05-11', amount: 'R$ 99,00', status: 'pending' as const },
+  { id: 's-002', plan: 'Recrutador', date: '2026-04-11', amount: 'R$ 99,00', status: 'paid' as const },
   { id: 's-003', plan: 'Personal', date: '2026-03-11', amount: 'R$ 49,00', status: 'paid' as const },
 ];
 

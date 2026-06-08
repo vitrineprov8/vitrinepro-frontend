@@ -12,7 +12,7 @@ const staticPages = [
   { url: '/vitrine',     priority: '0.9', changefreq: 'daily' },
   { url: '/explorar',    priority: '0.8', changefreq: 'daily' },
   { url: '/vagas',       priority: '0.8', changefreq: 'daily' },
-  { url: '/para-profissionais', priority: '0.9', changefreq: 'monthly' },
+  { url: '/para-candidatos', priority: '0.9', changefreq: 'monthly' },
   { url: '/para-empresas',     priority: '0.9', changefreq: 'monthly' },
   { url: '/faq',         priority: '0.6', changefreq: 'monthly' },
   { url: '/contato',     priority: '0.5', changefreq: 'yearly' },

@@ -14,7 +14,7 @@
     <!-- Access denied -->
     <div v-if="accessDenied" class="htw-denied">
       <p>Você não tem acesso a este time.</p>
-      <a href="/dashboard/profissional" class="htw-denied-link">Voltar ao dashboard</a>
+      <a href="/dashboard/candidato" class="htw-denied-link">Voltar ao dashboard</a>
     </div>
 
     <!-- Loading context -->
@@ -559,7 +559,7 @@ onMounted(async () => {
   // Post-publish toast
   if (search.get('published') === '1') {
     showToast('Vaga publicada com sucesso!', 'success');
-    window.history.replaceState(null, '', `/dashboard/hunter/time/${props.teamId}?tab=vagas`);
+    window.history.replaceState(null, '', `/dashboard/recrutador/time/${props.teamId}?tab=vagas`);
   }
 });
 </script>

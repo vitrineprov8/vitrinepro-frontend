@@ -12,8 +12,8 @@
     />
 
     <Breadcrumb :items="[
-      { label: 'Dashboard', href: '/dashboard/profissional' },
-      { label: 'Carreira', href: '/dashboard/profissional' },
+      { label: 'Dashboard', href: '/dashboard/candidato' },
+      { label: 'Carreira', href: '/dashboard/candidato' },
       { label: 'Portfólio' },
     ]" />
 

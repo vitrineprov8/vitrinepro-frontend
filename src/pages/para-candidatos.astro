@@ -4,12 +4,12 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 const SITE = 'https://v8pro.com.br';
-const canonicalUrl = `${SITE}/para-profissionais`;
+const canonicalUrl = `${SITE}/para-candidatos`;
 
 const webPageSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'VitrinePro para Profissionais — Crie Sua Vitrine Profissional',
+  name: 'VitrinePro para Candidatos — Crie Sua Vitrine Profissional',
   description: 'Pare de mandar currículo em PDF. Crie sua vitrine, apareça no Google e receba propostas — sem saber nada de tecnologia.',
   url: canonicalUrl,
   inLanguage: 'pt-BR',
@@ -24,7 +24,7 @@ const faqSchema = {
       name: 'Preciso saber programar para criar minha vitrine?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Não. O VitrinePro foi feito para qualquer profissional criar sua vitrine em minutos, sem nenhum conhecimento técnico. Você preenche os campos, sobe suas fotos e está no ar.',
+        text: 'Não. O VitrinePro foi feito para qualquer candidato criar sua vitrine em minutos, sem nenhum conhecimento técnico. Você preenche os campos, sobe suas fotos e está no ar.',
       },
     },
     {
@@ -32,7 +32,7 @@ const faqSchema = {
       name: 'É realmente gratuito? Vou ter que pagar depois?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Sim, é totalmente grátis. Não existe plano pago para profissionais — você tem acesso completo a perfil ilimitado, portfólio, candidatura a vagas, botão WhatsApp e URL personalizada sem pagar nada. Nunca pediremos cartão de crédito.',
+        text: 'Sim, é totalmente grátis. Não existe plano pago para candidatos — você tem acesso completo a perfil ilimitado, portfólio, candidatura a vagas, botão WhatsApp e URL personalizada sem pagar nada. Nunca pediremos cartão de crédito.',
       },
     },
     {
@@ -40,7 +40,7 @@ const faqSchema = {
       name: 'Tem plano pago? Vou ter que pagar depois?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Não. Para profissionais o VitrinePro é e continuará sendo gratuito. Monetizamos pelo lado dos recrutadores e empresas, não pelo lado de quem busca oportunidades. Pode criar sua vitrine sem medo.',
+        text: 'Não. Para candidatos o VitrinePro é e continuará sendo gratuito. Monetizamos pelo lado dos recrutadores e empresas, não pelo lado de quem busca oportunidades. Pode criar sua vitrine sem medo.',
       },
     },
     {
@@ -48,7 +48,7 @@ const faqSchema = {
       name: 'Minha vitrine vai aparecer no Google?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Sim. Cada vitrine é otimizada para SEO desde o primeiro dia — título, meta descrição, structured data e URL amigável. Muitos profissionais relatam aparecer nas primeiras buscas em menos de 30 dias.',
+        text: 'Sim. Cada vitrine é otimizada para SEO desde o primeiro dia — título, meta descrição, structured data e URL amigável. Muitos candidatos relatam aparecer nas primeiras buscas em menos de 30 dias.',
       },
     },
   ],
@@ -56,7 +56,7 @@ const faqSchema = {
 ---
 
 <BaseLayout
-  title="VitrinePro para Profissionais — Apareça no Google, Receba Propostas"
+  title="VitrinePro para Candidatos — Apareça no Google, Receba Propostas"
   description="Pare de mandar currículo em PDF. Crie sua vitrine profissional, apareça no Google e receba propostas — grátis, em 5 minutos, sem precisar saber de tecnologia."
   canonical={canonicalUrl}
   ogImage="https://v8pro.com.br/og-default.png"
@@ -81,7 +81,7 @@ const faqSchema = {
           <!-- Texto -->
           <div class="lp-hero__text">
             <div class="lp-hero__badge">
-              Novo — para profissionais brasileiros
+              Novo — para candidatos brasileiros
             </div>
             <h1 class="lp-hero__title">
               Pare de mandar<br/>
@@ -169,7 +169,7 @@ const faqSchema = {
           <div class="lp-social-proof__grid">
             <div>
               <div class="lp-social-proof__stat">+2.400</div>
-              <div class="lp-social-proof__label">profissionais com vitrine no ar</div>
+              <div class="lp-social-proof__label">candidatos com vitrine no ar</div>
             </div>
             <div>
               <div class="lp-social-proof__stat">+18k</div>
@@ -205,7 +205,7 @@ const faqSchema = {
     <section class="lp-section lp-section--alt">
       <div class="lp-container">
         <h2 class="lp-section-title">Você já se reconheceu em alguma dessas situações?</h2>
-        <p class="lp-section-subtitle">Esses são os problemas que todo profissional autônomo enfrenta — e o VitrinePro resolve cada um deles.</p>
+        <p class="lp-section-subtitle">Esses são os problemas que todo candidato enfrenta — e o VitrinePro resolve cada um deles.</p>
 
         <div class="lp-cards">
 
@@ -365,7 +365,7 @@ const faqSchema = {
     <section class="lp-section">
       <div class="lp-container">
         <h2 class="lp-section-title">Vagas esperando por você</h2>
-        <p class="lp-section-subtitle">Profissionais com vitrine no VitrinePro se candidatam com portfólio anexado — aumentando muito as chances de contratação.</p>
+        <p class="lp-section-subtitle">Candidatos com vitrine no VitrinePro se candidatam com portfólio anexado — aumentando muito as chances de contratação.</p>
 
         <div class="lp-vagas-grid">
           <div class="lp-vaga-card">
@@ -479,7 +479,7 @@ const faqSchema = {
     <section class="lp-section lp-section--alt">
       <div class="lp-container">
         <h2 class="lp-section-title">O que dizem quem já tem sua vitrine</h2>
-        <p class="lp-section-subtitle">Profissionais reais que pararam de mandar PDF e começaram a receber propostas.</p>
+        <p class="lp-section-subtitle">Candidatos reais que pararam de mandar PDF e começaram a receber propostas.</p>
 
         <div class="lp-testimonials">
           <div class="lp-testimonial">
@@ -530,7 +530,7 @@ const faqSchema = {
     <section class="lp-section" id="pricing">
       <div class="lp-container">
         <h2 class="lp-section-title">Totalmente grátis</h2>
-        <p class="lp-section-subtitle">Sem plano pago, sem cartão, sem pegadinha. Profissionais nunca pagam.</p>
+        <p class="lp-section-subtitle">Sem plano pago, sem cartão, sem pegadinha. Candidatos nunca pagam.</p>
 
         <div class="lp-pricing lp-pricing--single">
 
@@ -579,27 +579,27 @@ const faqSchema = {
         <div class="lp-faq" style="max-width:760px;margin:0 auto;">
           <details class="lp-faq-item">
             <summary>Preciso saber programar para criar minha vitrine?</summary>
-            <p>Não. O VitrinePro foi feito para qualquer profissional criar sua vitrine em minutos, sem nenhum conhecimento técnico. Você preenche os campos, sobe suas fotos e está no ar.</p>
+            <p>Não. O VitrinePro foi feito para qualquer candidato criar sua vitrine em minutos, sem nenhum conhecimento técnico. Você preenche os campos, sobe suas fotos e está no ar.</p>
           </details>
 
           <details class="lp-faq-item">
             <summary>É realmente gratuito? Vou ter que pagar depois?</summary>
-            <p>Sim, é totalmente grátis. Não existe plano pago para profissionais — portfólio ilimitado, vagas, WhatsApp, SEO e URL personalizada, tudo incluso sem custo. Nunca pediremos cartão de crédito.</p>
+            <p>Sim, é totalmente grátis. Não existe plano pago para candidatos — portfólio ilimitado, vagas, WhatsApp, SEO e URL personalizada, tudo incluso sem custo. Nunca pediremos cartão de crédito.</p>
           </details>
 
           <details class="lp-faq-item">
             <summary>Tem plano pago? Vou ter que pagar depois?</summary>
-            <p>Não. Para profissionais o VitrinePro é e continuará sendo gratuito. O negócio é monetizado pelo lado dos recrutadores e empresas que pagam para encontrar talento — você é o produto que eles buscam, não o cliente que paga. Crie sua vitrine sem medo.</p>
+            <p>Não. Para candidatos o VitrinePro é e continuará sendo gratuito. O negócio é monetizado pelo lado dos recrutadores e empresas que pagam para encontrar talento — você é o candidato que eles buscam, não o cliente que paga. Crie sua vitrine sem medo.</p>
           </details>
 
           <details class="lp-faq-item">
             <summary>Minha vitrine vai aparecer no Google?</summary>
-            <p>Sim. Cada vitrine é otimizada para SEO desde o primeiro dia — título, meta descrição, structured data e URL amigável. Muitos profissionais relatam aparecer nas primeiras buscas em menos de 30 dias.</p>
+            <p>Sim. Cada vitrine é otimizada para SEO desde o primeiro dia — título, meta descrição, structured data e URL amigável. Muitos candidatos relatam aparecer nas primeiras buscas em menos de 30 dias.</p>
           </details>
 
           <details class="lp-faq-item">
             <summary>Posso me candidatar às vagas?</summary>
-            <p>Sim. Candidaturas a vagas estão disponíveis para todos os profissionais, sem qualquer custo. Você se candidata com seu portfólio já anexado automaticamente — aumentando muito suas chances frente a quem só manda PDF.</p>
+            <p>Sim. Candidaturas a vagas estão disponíveis para todos os candidatos, sem qualquer custo. Você se candidata com seu portfólio já anexado automaticamente — aumentando muito suas chances frente a quem só manda PDF.</p>
           </details>
 
           <details class="lp-faq-item">
@@ -616,7 +616,7 @@ const faqSchema = {
     <section class="lp-cta-final">
       <div class="lp-container">
         <h2>Sua vitrine está esperando por você</h2>
-        <p>Mais de 2.400 profissionais já pararam de mandar PDF e começaram a ser encontrados. Você é o próximo?</p>
+        <p>Mais de 2.400 candidatos já pararam de mandar PDF e começaram a ser encontrados. Você é o próximo?</p>
         <div class="lp-cta-final__actions">
           <a href="/auth/register" class="lp-btn lp-btn--white lp-btn--lg"
              data-cta-location="final" data-cta-label="Criar minha vitrine grátis">
@@ -640,7 +640,7 @@ const faqSchema = {
 (function () {
   'use strict';
 
-  var LP_NAME = 'para-profissionais';
+  var LP_NAME = 'para-candidatos';
 
   // Defensive: guarantee dataLayer exists even if GTM snippet hasn't run yet
   window.dataLayer = window.dataLayer || [];
@@ -746,7 +746,7 @@ const faqSchema = {
 </style>
 
 <style>
-  /* Estilos específicos da LP de Profissionais */
+  /* Estilos específicos da LP de Candidatos */
 
   .lp-hero__text { order: 1; }
   .lp-hero__visual { order: 2; }
